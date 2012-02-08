@@ -16,6 +16,9 @@
 			return this._y;
 		},
 		paint: function () {
+		},
+		isInBounds: function () {
+			return false;
 		}
 	});
 

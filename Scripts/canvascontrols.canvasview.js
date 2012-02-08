@@ -40,12 +40,17 @@
 				throw new Error("Selector " + id + " does not return one unique element");
 		},
 		_initializeCanvas: function () {
+			var self = this;
 			this._canvas = this._jq[0];
 			if (!this._canvas.getContext)
 				throw new Error("Canvas not supported, or " + this.selector + " isn't a canvas");
 
 			this._jq.attr("width", this._width = this._jq.width());
 			this._jq.attr("height", this._height = this._jq.height());
+
+			this._jq.click(function (e) {
+				self._canvasClicked.apply(self, [e]);
+			});
 
 			this.context = this._canvas.getContext("2d");
 		},
@@ -66,6 +71,20 @@
 			this.context.translate(shape.x(), shape.y());
 			shape.paint(this.context);
 			this.context.restore();
+		},
+		_canvasClicked: function (e) {
+			var shape;
+			for (var i = 0; i < this.getShapeCount(); i++) {
+				shape = this.getShape(i);
+				var shapeOffset = {
+					x: e.offsetX - shape.x(),
+					y: e.offsetY - shape.y()
+				};
+				if (shape.isInBounds(shapeOffset)) {
+					shape.clicked(shapeOffset);
+					break;
+				}
+			}
 		}
 	});
 })(canvascontrols);

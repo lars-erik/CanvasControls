@@ -17,36 +17,70 @@
 	<script type="text/javascript">
 
 		var canvasView = new canvascontrols.CanvasView("canvas");
-		var box1 = new canvascontrols.TimelineTreeNode({
+		var root = new canvascontrols.TimelineTreeNode({
 			x: 10,
 			y: 10,
 			width: 150,
 			height: 25,
-			label: "Boks",
+			label: "Root",
+			hasChildren: true,
+			expanded: true
+		});
+		var box1 = new canvascontrols.TimelineTreeNode({
+			width: 150,
+			height: 25,
+			label: "Boks 1",
 			hasChildren: true,
 			expanded: true
 		});
 		var box2 = new canvascontrols.TimelineTreeNode({
-			x: 10,
-			y: 70,
 			width: 150,
 			height: 25,
-			label: "Boks",
+			label: "Boks 2",
 			hasChildren: true
 		});
 		var childBox = new canvascontrols.TimelineTreeNode({
 			width: 150,
 			height: 25,
-			label: "Boks 2",
+			label: "Boks 1.1",
+			hasChildren: true,
+			expanded: false
+		});
+		var childBox2 = new canvascontrols.TimelineTreeNode({
+			width: 150,
+			height: 25,
+			label: "Boks 2.1",
+			hasChildren: true,
+			expanded: false
+		});
+		var grandChildBox = new canvascontrols.TimelineTreeNode({
+			width: 150,
+			height: 25,
+			label: "Boks 1.1.1",
 			hasChildren: true,
 			expanded: false
 		});
 		box1.add(childBox);
-		canvasView.add(box1);
-		canvasView.add(box2);
+		box2.add(childBox2);
+		childBox.add(grandChildBox);
+		root.add(box1);
+		root.add(box2);
+		canvasView.add(root);
+
+		var obj = new Object();
+		root.addListener(obj, repaint);
+
 		canvasView.paint();
 
+		function repaint() {
+			canvasView.paint();
+		}
+
 	</script>
+	
+	<input type="button" onclick="box1.toggle();"/>
+	<input type="button" onclick="box2.toggle();"/>
+	<input type="button" onclick="childBox.toggle();"/>
 
 </body>
 </html>

@@ -33,3 +33,8 @@ test("initializes x and y to 0 if not set", function () {
 	equal(s.x(), 20);
 	equal(s.y(), 10);
 });
+
+test("is in bounds defaults to false", function () {
+	var s = createShape();
+	equal(s.isInBounds({ x: 5, y: 5 }), false);
+});

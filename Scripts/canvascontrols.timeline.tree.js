@@ -10,12 +10,25 @@
 				children: []
 			}, options);
 			this._children = settings.children;
-
+			this._listeners = [];
 		},
 		add: function (node) {
 			node._y = this._getChildHeight();
 			node.addListener(this, this._childToggled);
 			this._children.push(node);
+			this._hasChildren = true;
+		},
+		addListener: function (instance, handler) {
+			this._listeners.push([instance, handler]);
+		},
+		_notifyListeners: function (event) {
+			var args = [this].concat([event]);
+			var i;
+			for (i = 1; i < arguments.length; i++)
+				args.push(arguments[i]);
+			for (i = 0; i < this._listeners.length; i++) {
+				this._listeners[i][1].apply(this._listeners[i][0], args);
+			}
 		},
 		_getChildHeight: function () {
 			var height = 0;
@@ -24,25 +37,23 @@
 			}
 			return height;
 		},
-		_childToggled: function (sender) {
-			var self = this;
-			if (this instanceof Array)
-				self = this[0];
+		_childToggled: function (sender, event, expanded) {
 			var i, currentY = 0, startAt = -1;
-			for (i = 0; i < self._children.length; i++) {
-				if (self._children[i] === sender) {
+			for (i = 0; i < this._children.length; i++) {
+				if (this._children[i] === sender) {
 					startAt = i;
 					break;
 				}
 			}
 			if (startAt == -1) return;
 			for (i = 0; i <= startAt; i++) {
-				currentY += self._children[i].getHeight() + 5;
+				currentY += this._children[i].getHeight() + 5;
 			}
-			for (; i < self._children.length; i++) {
-				self._children[i]._y = currentY;
-				currentY += self._children[i].getHeight() + 5;
+			for (; i < this._children.length; i++) {
+				this._children[i]._y = currentY;
+				currentY += this._children[i].getHeight() + 5;
 			}
+			this._notifyListeners("toggle", expanded);
 		}
 	});
 
@@ -64,7 +75,6 @@
 			this._label = settings.label;
 			this._expanded = settings.expanded;
 			this._hasChildren = settings.hasChildren;
-			this._listeners = [];
 		},
 		getHeight: function () {
 			var height = this._height;
@@ -90,14 +100,47 @@
 				}
 			}
 		},
-		addListener: function (instance, handler) {
-			this._listeners.push([instance, handler]);
-		},
 		toggle: function () {
 			this._expanded = !this._expanded;
-			for (var i = 0; i < this._listeners.length; i++) {
-				this._listeners[i][1](this, this._expanded);
+			this._notifyListeners("toggle", this._expanded);
+		},
+		isInBounds: function (coords) {
+			if (this._isInOwnOffset(coords))
+				return true;
+			return this._findChildAtCoords(coords) != null;
+		},
+		clicked: function (coords) {
+			if (this._isInOwnOffset(coords)) {
+				var centerY = this._height / 2;
+				if (coords.x >= 5 && coords.x <= 15 &&
+					coords.y >= centerY - 5 && coords.y <= centerY + 5) {
+					this.toggle();
+				}
 			}
+			else {
+				var child = this._findChildAtCoords(coords);
+				if (child != null)
+					child.clicked(this._getChildOffset(coords, child));
+			}
+		},
+		_getChildOffset: function (coords, child) {
+			return {
+				x: coords.x - child.x() - this._boxX,
+				y: coords.y - child.y() - this._height - 5
+			};
+		},
+		_isInOwnOffset: function (coords) {
+			return coords.x >= 0 && coords.x <= this._width &&
+				coords.y >= 0 && coords.y <= this._height;
+		},
+		_findChildAtCoords: function (coords) {
+			for (var i = 0; i < this._children.length; i++) {
+				var child = this._children[i];
+				var offset = this._getChildOffset(coords, child);
+				if (child.isInBounds(offset))
+					return child;
+			};
+			return null;
 		},
 		_drawExpandButton: function (context) {
 			context.save();
@@ -112,7 +155,6 @@
 			context.stroke();
 			context.restore();
 		}
-
 	});
 
 	cc.TimelineTreeController = function (view) {

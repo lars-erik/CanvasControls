@@ -28,6 +28,10 @@ var MockShape = canvascontrols.Shape.extend({
 	init: function () { this._super.apply(this, arguments); },
 	paint: function () {
 		params.push(arguments);
+	},
+	isInBounds: function (coords) {
+		return coords.x >= 0 && coords.x <= 10 &&
+			coords.y >= 0 && coords.y <= 10;
 	}
 });
 
@@ -155,4 +159,30 @@ test("paint saves, translates to shape x,y then restores for each shape", functi
 	equal(params[3][1], 20);
 	equal(params[6][0], 30);
 	equal(params[6][1], 25);
+});
+
+test("when clicked, finds shape at event coordinates and forwards event", function () {
+	createCanvas();
+	var v = createView("canvas");
+	var shape1 = new MockShape({ x: 10, y: 20 });
+	var shape2 = new MockShape({ x: 30, y: 25 });
+	v.add(shape1);
+	v.add(shape2);
+
+	var shape1Clicked = false, shape2Clicked = false, offset;
+	shape1.clicked = function (e) { offset = e; shape1Clicked = true; };
+	shape2.clicked = function (e) { offset = e; shape2Clicked = true; };
+	v._canvasClicked({ offsetX: 15, offsetY: 25 });
+	equal(shape1Clicked, true);
+	equal(shape2Clicked, false);
+	equal(offset.x, 5);
+	equal(offset.y, 5);
+
+	shape1Clicked = false;
+	shape2Clicked = false;
+	v._canvasClicked({ offsetX: 33, offsetY: 32 });
+	equal(shape1Clicked, false);
+	equal(shape2Clicked, true);
+	equal(offset.x, 3);
+	equal(offset.y, 7);
 });

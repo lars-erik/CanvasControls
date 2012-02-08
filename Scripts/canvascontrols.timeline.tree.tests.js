@@ -62,29 +62,40 @@ test("can create treenode", function () {
 	equal(node._listeners.length, 0);
 });
 
-test("toggle changes expanded and fires event", function () {
+test("can add subnode", function () {
+	var node = new canvascontrols.TimelineTreeNode();
+	var child = new canvascontrols.TimelineTreeNode();
+	node.add(child);
+	ok(node._hasChildren);
+	equal(node._children.length, 1);
+	ok(node._children[0] === child);
+});
+
+test("toggle changes expanded and bubble notifies listeners", function () {
 	var node = createParentNode();
-	var child = createParentNode();
+	var child = new canvascontrols.TimelineTreeNode();
 	node.add(child);
 	node._expanded = false;
-	child._expanded = false;
-	child._hasChildren = false;
 
 	var obj = new Object();
-	var status;
-	node.addListener(obj, function (sender, newStatus) { status = newStatus; });
+	var status, eventName;
+	node.addListener(obj, function (sender, event, newStatus) {
+		eventName = event;
+		status = newStatus;
+	});
 	node.toggle();
+	equal(eventName, "toggle");
 	equal(status, true);
 	equal(node._expanded, true);
 	node.toggle();
 	equal(status, false);
 	equal(node._expanded, false);
+	child.toggle();
+	equal(status, true);
 });
 
 test("childless treenode only draws box and label", function () {
 	var node = new canvascontrols.TimelineTreeNode({
-		x: 10,
-		y: 10,
 		width: 110,
 		height: 25,
 		label: "Boks"
@@ -141,15 +152,10 @@ test("calculates height recursively and stops at collapsed nodes", function () {
 	var node = createParentNode();
 	var childNode = new canvascontrols.TimelineTreeNode({
 		height: 25,
-		label: "Boks 2",
-		hasChildren: true,
-		expanded: false
+		hasChildren: true
 	});
 	var grandChildNode = new canvascontrols.TimelineTreeNode({
-		height: 25,
-		label: "Boks 2",
-		hasChildren: true,
-		expanded: false
+		height: 25
 	});
 	node.add(childNode);
 	childNode.add(grandChildNode);
@@ -160,45 +166,22 @@ test("calculates height recursively and stops at collapsed nodes", function () {
 
 test("adjusts y of following children when one child is expanded", function () {
 	var node = createParentNode();
-	var childNode = new canvascontrols.TimelineTreeNode({
-		height: 25,
-		label: "Boks 2",
-		hasChildren: true,
-		expanded: false
-	});
-	var childNode2 = new canvascontrols.TimelineTreeNode({
-		height: 25,
-		label: "Boks 3",
-		hasChildren: true,
-		expanded: false
-	});
-	var grandChildNode = new canvascontrols.TimelineTreeNode({
-		height: 25,
-		label: "Boks 2.1",
-		hasChildren: true,
-		expanded: false
-	});
+	var childNode = new canvascontrols.TimelineTreeNode();
+	var childNode2 = new canvascontrols.TimelineTreeNode();
+	var grandChildNode = new canvascontrols.TimelineTreeNode();
 	node.add(childNode);
 	node.add(childNode2);
 	childNode.add(grandChildNode);
-	equal(childNode2.y(), 30);
+	equal(childNode2.y(), 25);
 	childNode.toggle();
-	equal(childNode2.y(), 60);
+	equal(childNode2.y(), 50);
 });
 
 test("expanded parent treenode adjusts and draws children", function () {
 	var node = createParentNode();
 	node._height = 20;
-	var childNode = new canvascontrols.TimelineTreeNode({
-		label: "SubBoks 1",
-		hasChildren: true,
-		expanded: false
-	});
-	var childNode2 = new canvascontrols.TimelineTreeNode({
-		label: "SubBoks 2",
-		hasChildren: true,
-		expanded: false
-	});
+	var childNode = new canvascontrols.TimelineTreeNode();
+	var childNode2 = new canvascontrols.TimelineTreeNode();
 	mock.logged = ["translate"];
 	node.add(childNode);
 	node.add(childNode2);
@@ -207,27 +190,40 @@ test("expanded parent treenode adjusts and draws children", function () {
 	equal(childNode.y(), 0);
 	equal(childNode2.y(), 25);
 
-	equal(mock.params.length, 6);
-	equal(mock.logCalls, 39);
+	equal(mock.params.length, 4);
+	equal(mock.logCalls, 21);
 
 	equal(mock.params[1][1][0], 20);
 	equal(mock.params[1][1][1], 25);
-	equal(mock.params[4][1][0], 0);
-	equal(mock.params[4][1][1], 25);
+	equal(mock.params[3][1][0], 0);
+	equal(mock.params[3][1][1], 25);
 	equal(node.getHeight(), 70);
 });
 
 test("collapsed parent treenode does not draw children", function () {
 	var node = createParentNode();
 	node._expanded = false;
-	var childNode = new canvascontrols.TimelineTreeNode({
-		label: "Boks 2",
-		hasChildren: true,
-		expanded: false
-	});
+	var childNode = new canvascontrols.TimelineTreeNode();
 	node.add(childNode);
 	node.paint(mock);
 	equal(mock.logCalls, 11);
+});
+
+test("childs triangle is in bounds", function () {
+	var node = createParentNode();
+	var childNode = new canvascontrols.TimelineTreeNode();
+	node.add(childNode);
+	ok(node.isInBounds({ x: 30, y: 45 }));
+});
+
+test("can find click on triangles", function () {
+	var node = createParentNode();
+	var childNode = new canvascontrols.TimelineTreeNode();
+	var grandChildNode = new canvascontrols.TimelineTreeNode();
+	node.add(childNode);
+	childNode.add(grandChildNode);
+	node.clicked({ x: 30, y: 37 });
+	ok(childNode._expanded);
 });
 
 function createParentNode() {
