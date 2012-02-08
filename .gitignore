@@ -1,5 +1,1 @@
-﻿*.user
-*.csproj
-bin/*
-obj/*
-packages/*
+﻿*.user *.csproj *.sln *.suo *.config properties/* bin/* obj/* packages/* 
