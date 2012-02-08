@@ -7,8 +7,6 @@
 /// <reference path="canvascontrols.timeline.js"/>
 /// <reference path="canvascontrols.timeline.tree.js"/>
 
-var fakeView;
-
 var MockContext = Class.extend({
 	logged: [],
 	params: [],
@@ -240,26 +238,6 @@ function createParentNode() {
 
 module("canvascontrols.timeline.tree", {
 	setup: function () {
-
-/*
-		fakeView = new (function () {
-			this.cleared = false;
-			this.drawnBoxes = [];
-			this.drawnLabels = [];
-			this.drawnShapes = [];
-			this.clear = function () {
-				this.cleared = true;
-				this.drawnBoxes = [];
-				this.drawnLabels = [];
-				this.drawnShapes = [];
-			};
-			this.drawBox = function (x, y, width, height) { this.drawnBoxes.push({ x: x, y: y, width: width, height: height }); };
-			this.drawLabel = function (x, y, label) { this.drawnLabels.push({ x: x, y: y, label: label }); };
-			this.drawShape = function(points) { this.drawnShapes.push({ points: points }); };
-			this.getWidth = function () { return 200; };
-			this.getHeight = function () { return 500; };
-		})();
-*/
 	},
 	teardown: function () {
 		fakeView = null;
@@ -294,128 +272,6 @@ test("detects and expands child on click", function () {
 });
 
 /*
-test("initializer clears board", function () {
-	canvascontrols.TimelineTreeController(fakeView);
-	equals(fakeView.cleared, true);
-});
-
-test("redraw calls clear", function() {
-	var controller = new canvascontrols.TimelineTreeController(fakeView);
-	fakeView.cleared = false;
-	controller.redraw();
-	ok(fakeView.cleared);
-});
-
-test("does nothing without model", function () {
-	var controller = new canvascontrols.TimelineTreeController(fakeView);
-	controller.redraw();
-	ok(fakeView.cleared);
-	equals(fakeView.drawnBoxes.length, 0);
-});
-
-test("draws boxes and labels for top level", function () {
-	var controller = new canvascontrols.TimelineTreeController(fakeView);
-	var model = [
-		{ id: "1", label: "mål 1", parents:[] },
-		{ id: "2", label: "mål 2", parents: [] }
-	];
-	controller.setModel(model);
-	controller.redraw();
-
-	equals(fakeView.drawnBoxes.length, 2, "drawn box count");
-	equals(fakeView.drawnBoxes[0].x, 20.5, "box 1 x");
-	equals(fakeView.drawnBoxes[0].y, 5.5, "box 1 y");
-	equals(fakeView.drawnBoxes[0].width, 175, "box 1 width");
-	equals(fakeView.drawnBoxes[0].height, 20, "box 1 height");
-	equals(fakeView.drawnBoxes[1].x, 20.5, "box 2 x");
-	equals(fakeView.drawnBoxes[1].y, 30.5, "box 2 y");
-	equals(fakeView.drawnBoxes[1].width, 175, "box 2 width");
-	equals(fakeView.drawnBoxes[1].height, 20, "box 2 height");
-
-	equals(fakeView.drawnLabels.length, 2, "drawn label count");
-	equals(fakeView.drawnLabels[0].x, 25.5, "label 1 x");
-	equals(fakeView.drawnLabels[0].y, 19.5, "label 1 y");
-	equals(fakeView.drawnLabels[0].label, "mål 1", "label 1 text");
-	equals(fakeView.drawnLabels[1].x, 25.5, "label 2 x");
-	equals(fakeView.drawnLabels[1].y, 44.5, "label 2 y");
-	equals(fakeView.drawnLabels[1].label, "mål 2", "label 2 text");
-});
-
-test("draws sidewise arrow for collapsed element with child", function () {
-	var controller = new canvascontrols.TimelineTreeController(fakeView);
-	var model = [
-		{ id: "1", label: "mål 1", hasChildren: true, parents:[] }
-	];
-	controller.setModel(model);
-	controller.redraw();
-	equals(fakeView.drawnShapes.length, 1);
-	equals(fakeView.drawnShapes[0].points.length, 3);
-	equals(fakeView.drawnShapes[0].points[0].x, 5.5, "point 1 x");
-	equals(fakeView.drawnShapes[0].points[0].y, 9.5, "point 1 y");
-	equals(fakeView.drawnShapes[0].points[1].x, 16.5, "point 2 x");
-	equals(fakeView.drawnShapes[0].points[1].y, 15, "point 2 y");
-	equals(fakeView.drawnShapes[0].points[2].x, 5.5, "point 3 x");
-	equals(fakeView.drawnShapes[0].points[2].y, 20.5, "point 3 y");
-});
-
-test("draws down arrow for expanded element with child", function () {
-	var controller = new canvascontrols.TimelineTreeController(fakeView);
-	var model = [
-		{ id: "1", label: "mål 1", hasChildren: true, expanded: true, parents: [] }
-	];
-	controller.setModel(model);
-	controller.redraw();
-	equals(fakeView.drawnShapes.length, 1);
-	equals(fakeView.drawnShapes[0].points.length, 3);
-	equals(fakeView.drawnShapes[0].points[0].x, 5.5, "point 1 x");
-	equals(fakeView.drawnShapes[0].points[0].y, 9.5, "point 1 y");
-	equals(fakeView.drawnShapes[0].points[1].x, 16.5, "point 2 x");
-	equals(fakeView.drawnShapes[0].points[1].y, 9.5, "point 2 y");
-	equals(fakeView.drawnShapes[0].points[2].x, 11, "point 3 x");
-	equals(fakeView.drawnShapes[0].points[2].y, 20.5, "point 3 y");
-});
-
-test("can find position of arrow and its model element from coordinates and then fire expand", function () {
-	var controller = new canvascontrols.TimelineTreeController(fakeView);
-	var model = [
-		{ id: "1", label: "mål 1", hasChildren: true, expanded: true, parents: [] },
-		{ id: "4", label: "mål 1.1", hasChildren: true, expanded: false, parents: ["1"] },
-		{ id: "2", label: "mål 2", hasChildren: false, expanded: false, parents: [] },
-		{ id: "3", label: "mål 3", hasChildren: true, expanded: false, parents: [] }
-	];
-	controller.setModel(model);
-	var expandedElement = null;
-	fakeView.expandToggled = function (modelElement) {
-		expandedElement = modelElement;
-	};
-	fakeView.clicked({ x: 7, y: 90 });
-	equals(expandedElement, model[3]);
-	fakeView.clicked({ x: 7, y: 90 });
-	equals(expandedElement, model[3]);
-	fakeView.clicked({ x: 27, y: 35 });
-	equals(expandedElement, model[1]);
-	fakeView.clicked({ x: 27, y: 35 });
-	equals(expandedElement, model[1]);
-});
-
-test("draws childs with indents", function () {
-	var controller = new canvascontrols.TimelineTreeController(fakeView);
-	var model = [
-		{ id: "1", label: "", hasChildren: true, expanded: true, parents: [] },
-		{ id: "2", label: "", hasChildren: true, expanded: true, parents: ["1"] },
-		{ id: "3", label: "", hasChildren: false, expanded: false, parents: ["1", "2"] }
-	];
-	controller.setModel(model);
-	controller.redraw();
-	equals(3, fakeView.drawnBoxes.length);
-	equals(20.5, fakeView.drawnBoxes[0].x);
-	equals(40.5, fakeView.drawnBoxes[1].x);
-	equals(60.5, fakeView.drawnBoxes[2].x);
-	equals(2, fakeView.drawnShapes.length);
-	equals(5.5, fakeView.drawnShapes[0].points[0].x);
-	equals(25.5, fakeView.drawnShapes[1].points[0].x);
-});
-
 test("can start dragging element", function () {
 	var controller = new canvascontrols.TimelineTreeController(fakeView);
 	var model = [

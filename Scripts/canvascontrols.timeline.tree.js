@@ -1,8 +1,5 @@
 ﻿(function (cc) {
 
-	//	cc.TimelineTreeController = function (view) {
-	//	};
-
 	cc.TimelineTreeBase = cc.Shape.extend({
 		init: function (options) {
 			this._super(options);
@@ -90,6 +87,15 @@
 		}
 	});
 
+	cc.TimelineTree = cc.TimelineTreeBase.extend({
+		init: function (options) {
+			this._super(options);
+		},
+		paint: function (context) {
+			this._paintChildren(context);
+		}
+	});
+
 	cc.TimelineTreeNode = cc.TimelineTreeBase.extend({
 		init: function (options) {
 			this._super(options);
@@ -171,15 +177,7 @@
 		}
 	});
 
-	cc.TimelineTree = cc.TimelineTreeBase.extend({
-		init: function (options) {
-			this._super(options);
-		},
-		paint: function (context) {
-			this._paintChildren(context);
-		}
-	});
-
+	// obsolete
 	cc.TimelineTreeController = function (view) {
 
 		var yStart = 5.5;
@@ -311,6 +309,7 @@
 		}
 	};
 
+	// obsolete
 	cc.CanvasTimelineTreeView = function (canvasId) {
 		var jqCanvas = $(canvasId);
 		var canvas = jqCanvas[0];
