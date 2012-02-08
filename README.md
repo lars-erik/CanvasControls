@@ -113,3 +113,13 @@ This is the main focus of the project I am going to use the API in, so this will
 - Integrate with jQuery mobile to allow swiping the timeline
 - Research mobile device pinch support for timeline
 
+## Notes about pull requests / contributions
+
+There's nothing I'd like more than contributions to this framework.
+I couldn't find any other projects with this focus, so I hope it'll be useful for someone. 
+If you'd like to contribute, keep this in mind:
+
+- I aim to keep ~100% test coverage using QUnit.
+- I use Visual Studio 2010 and NuGet to keep track of jQuery and possibly other stuff
+  - (Project files are not checked in)
+- The project is currently under development, I might change stuff on a whim
