@@ -2,16 +2,18 @@
 
 	cc.Shape = Class.extend({
 		init: function (options) {
-			this._options = $.extend({
+			var settings = $.extend({
 				x: 0,
 				y: 0
 			}, options);
+			this._x = settings.x;
+			this._y = settings.y;
 		},
 		x: function () {
-			return this._options.x;
+			return this._x;
 		},
 		y: function () {
-			return this._options.y;
+			return this._y;
 		},
 		paint: function () {
 		}

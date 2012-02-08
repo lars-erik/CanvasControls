@@ -52,33 +52,33 @@ test("can create treenode", function () {
 	notEqual(node, null);
 	ok(node instanceof canvascontrols.Shape);
 	ok(node instanceof canvascontrols.TimelineTreeNode);
-	equal(node._options.width, 100);
-	equal(node._options.height, 20);
-	equal(node._options.boxX, 20);
-	equal(node._options.label, "");
-	equal(node._options.hasChildren, false);
-	equal(node._options.expanded, false);
-	equal(node._options.children.length, 0);
-	equal(node.listeners.length, 0);
+	equal(node._width, 100);
+	equal(node._height, 20);
+	equal(node._boxX, 20);
+	equal(node._label, "");
+	equal(node._hasChildren, false);
+	equal(node._expanded, false);
+	equal(node._children.length, 0);
+	equal(node._listeners.length, 0);
 });
 
 test("toggle changes expanded and fires event", function () {
 	var node = createParentNode();
 	var child = createParentNode();
 	node.add(child);
-	node._options.expanded = false;
-	child._options.expanded = false;
-	child._options.hasChildren = false;
+	node._expanded = false;
+	child._expanded = false;
+	child._hasChildren = false;
 
 	var obj = new Object();
 	var status;
 	node.addListener(obj, function (newStatus) { status = newStatus; });
 	node.toggle();
 	equal(status, true);
-	equal(node._options.expanded, true);
+	equal(node._expanded, true);
 	node.toggle();
 	equal(status, false);
-	equal(node._options.expanded, false);
+	equal(node._expanded, false);
 });
 
 test("childless treenode only draws box and label", function () {
@@ -104,7 +104,7 @@ test("childless treenode only draws box and label", function () {
 
 test("collapsed parent treenode draws triangle", function () {
 	var node = createParentNode();
-	node._options.expanded = false;
+	node._expanded = false;
 	mock.logged = ["save", "restore", "translate", "beginPath", "closePath", "stroke", "moveTo", "lineTo"];
 	node.paint(mock);
 	equal(mock.logCalls, 11);
@@ -154,7 +154,7 @@ test("calculates height recursively and stops at collapsed nodes", function () {
 	node.add(childNode);
 	childNode.add(grandChildNode);
 	equal(node.getHeight(), 55);
-	childNode._options.expanded = true;
+	childNode._expanded = true;
 	equal(node.getHeight(), 85);
 });
 
@@ -189,7 +189,7 @@ test("adjusts y of following children when one child is expanded", function () {
 
 test("expanded parent treenode adjusts and draws children", function () {
 	var node = createParentNode();
-	node._options.height = 20;
+	node._height = 20;
 	var childNode = new canvascontrols.TimelineTreeNode({
 		label: "SubBoks 1",
 		hasChildren: true,
@@ -220,7 +220,7 @@ test("expanded parent treenode adjusts and draws children", function () {
 
 test("collapsed parent treenode does not draw children", function () {
 	var node = createParentNode();
-	node._options.expanded = false;
+	node._expanded = false;
 	var childNode = new canvascontrols.TimelineTreeNode({
 		label: "Boks 2",
 		hasChildren: true,

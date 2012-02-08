@@ -1,22 +1,25 @@
 ﻿(function (cc) {
 
-//	cc.TimelineTreeController = function (view) {
-//	};
+	//	cc.TimelineTreeController = function (view) {
+	//	};
 
 	cc.TimelineTreeBase = cc.Shape.extend({
 		init: function (options) {
-			this._super($.extend({
+			this._super(options);
+			var settings = $.extend({
 				children: []
-			}, options));
+			}, options);
+			this._children = settings.children;
+
 		},
 		add: function (node) {
-			node._options.y = this._getChildHeight();
-			this._options.children.push(node);
+			node._y = this._getChildHeight();
+			this._children.push(node);
 		},
 		_getChildHeight: function () {
 			var height = 0;
-			for (var i = 0; i < this._options.children.length; i++) {
-				height += this._options.children[i].getHeight() + 5;
+			for (var i = 0; i < this._children.length; i++) {
+				height += this._children[i].getHeight() + 5;
 			}
 			return height;
 		}
@@ -24,7 +27,8 @@
 
 	cc.TimelineTreeNode = cc.TimelineTreeBase.extend({
 		init: function (options) {
-			this._super($.extend({
+			this._super(options);
+			var settings = $.extend({
 				width: 100,
 				height: 20,
 				boxX: 20,
@@ -32,46 +36,52 @@
 				expanded: false,
 				hasChildren: false,
 				children: []
-			}, options));
-			this.listeners = [];
+			}, options);
+			this._width = settings.width;
+			this._height = settings.height;
+			this._boxX = settings.boxX;
+			this._label = settings.label;
+			this._expanded = settings.expanded;
+			this._hasChildren = settings.hasChildren;
+			this._listeners = [];
 		},
 		getHeight: function () {
-			var height = this._options.height;
-			if (this._options.hasChildren && this._options.expanded) {
+			var height = this._height;
+			if (this._hasChildren && this._expanded) {
 				height += this._getChildHeight();
 			}
 			return height;
 		},
 		paint: function (context) {
-			this._centerY = Math.round(this._options.height / 2);
-			context.strokeRect(this._options.boxX, 0, this._options.width, this._options.height);
-			context.fillText(this._options.label, this._options.boxX + 5, this._centerY + 3);
-			if (this._options.hasChildren) {
+			this._centerY = Math.round(this._height / 2);
+			context.strokeRect(this._boxX, 0, this._width, this._height);
+			context.fillText(this._label, this._boxX + 5, this._centerY + 3);
+			if (this._hasChildren) {
 				this._drawExpandButton(context);
-				if (this._options.expanded) {
+				if (this._expanded) {
 					context.save();
-					context.translate(this._options.boxX, this._options.height + 5);
-					for (var i = 0; i < this._options.children.length; i++) {
-						context.translate(0, this._options.children[i].y());
-						this._options.children[i].paint(context);
+					context.translate(this._boxX, this._height + 5);
+					for (var i = 0; i < this._children.length; i++) {
+						context.translate(0, this._children[i].y());
+						this._children[i].paint(context);
 					}
 					context.restore();
 				}
 			}
 		},
 		addListener: function (instance, handler) {
-			this.listeners.push([instance, handler]);
+			this._listeners.push([instance, handler]);
 		},
 		toggle: function () {
-			this._options.expanded = !this._options.expanded;
-			for (var i = 0; i < this.listeners.length; i++) {
-				this.listeners[i][1](this._options.expanded);
+			this._expanded = !this._expanded;
+			for (var i = 0; i < this._listeners.length; i++) {
+				this._listeners[i][1](this._expanded);
 			}
 		},
 		_drawExpandButton: function (context) {
 			context.save();
-			context.translate(this._options.boxX - 10, this._centerY);
-			if (this._options.expanded)
+			context.translate(this._boxX - 10, this._centerY);
+			if (this._expanded)
 				context.rotate(Math.PI * 2 / 4);
 			context.beginPath();
 			context.moveTo(-5, -5);
