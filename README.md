@@ -1,4 +1,4 @@
-﻿# CanvasControls
+# CanvasControls
 ## A composite shape/control API for the HTML 5 Canvas
 
 CanvasControls aims to provide a simple and reusable framework for UI controls in the HTML 5 Canvas.
