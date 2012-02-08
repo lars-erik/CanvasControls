@@ -14,6 +14,7 @@
 		},
 		add: function (node) {
 			node._y = this._getChildHeight();
+			node.addListener(this, this._childToggled);
 			this._children.push(node);
 		},
 		_getChildHeight: function () {
@@ -22,6 +23,26 @@
 				height += this._children[i].getHeight() + 5;
 			}
 			return height;
+		},
+		_childToggled: function (sender) {
+			var self = this;
+			if (this instanceof Array)
+				self = this[0];
+			var i, currentY = 0, startAt = -1;
+			for (i = 0; i < self._children.length; i++) {
+				if (self._children[i] === sender) {
+					startAt = i;
+					break;
+				}
+			}
+			if (startAt == -1) return;
+			for (i = 0; i <= startAt; i++) {
+				currentY += self._children[i].getHeight() + 5;
+			}
+			for (; i < self._children.length; i++) {
+				self._children[i]._y = currentY;
+				currentY += self._children[i].getHeight() + 5;
+			}
 		}
 	});
 
@@ -75,7 +96,7 @@
 		toggle: function () {
 			this._expanded = !this._expanded;
 			for (var i = 0; i < this._listeners.length; i++) {
-				this._listeners[i][1](this._expanded);
+				this._listeners[i][1](this, this._expanded);
 			}
 		},
 		_drawExpandButton: function (context) {

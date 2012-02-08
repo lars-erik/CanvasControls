@@ -72,7 +72,7 @@ test("toggle changes expanded and fires event", function () {
 
 	var obj = new Object();
 	var status;
-	node.addListener(obj, function (newStatus) { status = newStatus; });
+	node.addListener(obj, function (sender, newStatus) { status = newStatus; });
 	node.toggle();
 	equal(status, true);
 	equal(node._expanded, true);
@@ -184,7 +184,6 @@ test("adjusts y of following children when one child is expanded", function () {
 	equal(childNode2.y(), 30);
 	childNode.toggle();
 	equal(childNode2.y(), 60);
-	ok(false, "under development");
 });
 
 test("expanded parent treenode adjusts and draws children", function () {
