@@ -266,12 +266,32 @@ module("canvascontrols.timeline.tree", {
 	}
 });
 
-//test("can create instance", function () {
-//	var controller = new canvascontrols.TimelineTreeController(fakeView);
-//	notEqual(controller, null);
-//});
+test("can create tree", function () {
+	var tree = new canvascontrols.TimelineTree();
+	notEqual(tree, null);
+	ok(tree instanceof canvascontrols.TimelineTreeBase);
+});
 
+test("can add nodes to tree", function () {
+	var tree = new canvascontrols.TimelineTree();
+	tree.add(new canvascontrols.TimelineTreeNode());
+	ok(tree._hasChildren);
+	equal(tree._children.length, 1);
+});
 
+test("detects and expands child on click", function () {
+	var tree = new canvascontrols.TimelineTree();
+	var child1 = new canvascontrols.TimelineTreeNode();
+	var child2 = new canvascontrols.TimelineTreeNode();
+	var grandChild = new canvascontrols.TimelineTreeNode();
+	tree.add(child1);
+	tree.add(child2);
+	child1.add(grandChild);
+	equal(child2.y(), 25);
+	tree.clicked({ x: 10, y: 15 });
+	ok(child1._expanded);
+	equal(child2.y(), 50);
+});
 
 /*
 test("initializer clears board", function () {

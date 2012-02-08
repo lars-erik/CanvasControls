@@ -21,6 +21,14 @@
 		addListener: function (instance, handler) {
 			this._listeners.push([instance, handler]);
 		},
+		isInBounds: function (coords) {
+			return this._findChildAtCoords(coords) != null;
+		},
+		clicked: function (coords) {
+			var child = this._findChildAtCoords(coords);
+			if (child != null)
+				child.clicked(this._getChildOffset(coords, child));
+		},
 		_notifyListeners: function (event) {
 			var args = [this].concat([event]);
 			var i;
@@ -28,6 +36,12 @@
 				args.push(arguments[i]);
 			for (i = 0; i < this._listeners.length; i++) {
 				this._listeners[i][1].apply(this._listeners[i][0], args);
+			}
+		},
+		_paintChildren: function (context) {
+			for (var i = 0; i < this._children.length; i++) {
+				context.translate(0, this._children[i].y());
+				this._children[i].paint(context);
 			}
 		},
 		_getChildHeight: function () {
@@ -54,6 +68,25 @@
 				currentY += this._children[i].getHeight() + 5;
 			}
 			this._notifyListeners("toggle", expanded);
+		},
+		_getChildOffset: function (coords, child) {
+			return {
+				x: coords.x - child.x(),
+				y: coords.y - child.y()
+			};
+		},
+		_isInOwnOffset: function (coords) {
+			return coords.x >= 0 && coords.x <= this._width &&
+				coords.y >= 0 && coords.y <= this._height;
+		},
+		_findChildAtCoords: function (coords) {
+			for (var i = 0; i < this._children.length; i++) {
+				var child = this._children[i];
+				var offset = this._getChildOffset(coords, child);
+				if (child.isInBounds(offset))
+					return child;
+			};
+			return null;
 		}
 	});
 
@@ -66,8 +99,7 @@
 				boxX: 20,
 				label: "",
 				expanded: false,
-				hasChildren: false,
-				children: []
+				hasChildren: false
 			}, options);
 			this._width = settings.width;
 			this._height = settings.height;
@@ -92,10 +124,7 @@
 				if (this._expanded) {
 					context.save();
 					context.translate(this._boxX, this._height + 5);
-					for (var i = 0; i < this._children.length; i++) {
-						context.translate(0, this._children[i].y());
-						this._children[i].paint(context);
-					}
+					this._paintChildren(context);
 					context.restore();
 				}
 			}
@@ -107,7 +136,7 @@
 		isInBounds: function (coords) {
 			if (this._isInOwnOffset(coords))
 				return true;
-			return this._findChildAtCoords(coords) != null;
+			return this._super(coords);
 		},
 		clicked: function (coords) {
 			if (this._isInOwnOffset(coords)) {
@@ -118,9 +147,7 @@
 				}
 			}
 			else {
-				var child = this._findChildAtCoords(coords);
-				if (child != null)
-					child.clicked(this._getChildOffset(coords, child));
+				this._super(coords);
 			}
 		},
 		_getChildOffset: function (coords, child) {
@@ -128,19 +155,6 @@
 				x: coords.x - child.x() - this._boxX,
 				y: coords.y - child.y() - this._height - 5
 			};
-		},
-		_isInOwnOffset: function (coords) {
-			return coords.x >= 0 && coords.x <= this._width &&
-				coords.y >= 0 && coords.y <= this._height;
-		},
-		_findChildAtCoords: function (coords) {
-			for (var i = 0; i < this._children.length; i++) {
-				var child = this._children[i];
-				var offset = this._getChildOffset(coords, child);
-				if (child.isInBounds(offset))
-					return child;
-			};
-			return null;
 		},
 		_drawExpandButton: function (context) {
 			context.save();
@@ -154,6 +168,15 @@
 			context.closePath();
 			context.stroke();
 			context.restore();
+		}
+	});
+
+	cc.TimelineTree = cc.TimelineTreeBase.extend({
+		init: function (options) {
+			this._super(options);
+		},
+		paint: function (context) {
+			this._paintChildren(context);
 		}
 	});
 

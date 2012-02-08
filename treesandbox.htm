@@ -17,15 +17,7 @@
 	<script type="text/javascript">
 
 		var canvasView = new canvascontrols.CanvasView("canvas");
-		var root = new canvascontrols.TimelineTreeNode({
-			x: 10,
-			y: 10,
-			width: 150,
-			height: 25,
-			label: "Root",
-			hasChildren: true,
-			expanded: true
-		});
+		var tree = new canvascontrols.TimelineTree();
 		var box1 = new canvascontrols.TimelineTreeNode({
 			width: 150,
 			height: 25,
@@ -63,12 +55,12 @@
 		box1.add(childBox);
 		box2.add(childBox2);
 		childBox.add(grandChildBox);
-		root.add(box1);
-		root.add(box2);
-		canvasView.add(root);
+		tree.add(box1);
+		tree.add(box2);
+		canvasView.add(tree);
 
 		var obj = new Object();
-		root.addListener(obj, repaint);
+		tree.addListener(obj, repaint);
 
 		canvasView.paint();
 
