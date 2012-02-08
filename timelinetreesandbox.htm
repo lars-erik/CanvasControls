@@ -1,0 +1,274 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title></title>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+	<script src="Scripts/jquery-mousewheel-3.0.6/jquery.mousewheel.min.js" type="text/javascript"></script>
+	<script src="Scripts/class.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.canvasview.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.shape.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.timeline.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.timelineboard.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.timeline.tree.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.timelinemodel.js" type="text/javascript"></script>
+</head>
+<style type="text/css">
+	/*
+		debug
+	*/
+	
+	.help {
+		position: absolute;
+		top: 510px;
+	}
+	
+	#output {
+		position: relative;
+		top: 50px;
+	}
+	
+	/*
+		real
+	*/
+	
+	.wrapper {
+		position: relative;
+	}
+	
+	.container 
+	{
+		position: absolute;
+		left: 10px;
+		top: 10px;
+		right: 10px;
+		height: 500px;
+		background-color: #EFEFEF;
+		border: 1px solid black;
+	}
+	
+	.timeline
+	{
+		position: absolute;
+		left: 200px;
+		width: 100%;
+		height: 45px;
+	}
+	
+	.board
+	{
+		position: absolute;
+
+		left: 200px;
+		top: 0px;
+	}
+	
+	.tree {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 200px;
+	}
+	
+	.boardContainer {
+		position: absolute;
+		width: 100%;
+		left: 0px;
+		top: 45px;
+		height: 300px;
+		overflow-y: auto;
+		overflow-x: hidden;
+	}
+	
+	.overlays {
+		position: fixed;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+		display: none;
+		z-index: 9999;
+	}
+</style>
+	<body>
+		<canvas id="overlays" class="overlays">
+		</canvas>
+		<div class="wrapper">
+			<div class="container">
+				<canvas id="timeline" class="timeline"></canvas>
+				<div id="boardContainer" class="boardContainer">
+					<canvas id="tree" class="tree" width="200"></canvas>
+					<canvas id="board" class="board"></canvas>
+				</div>
+			</div>
+			<div class="help">
+				<p>
+					Drag the timeline to move the view back or forth in time.<br/>
+					Drag with a bit of speed and release to have it ease out.<br/>
+					Scroll within the timeline header to zoom to larger or smaller periods. (Years, Quarters, Months, Days)<br/>
+				</p>
+			</div>
+		</div>
+	
+		<div id="output"></div>
+		
+		<script type="text/javascript">
+
+			var timeline = $("#timeline");
+			var board = $("#board");
+			var tree = $("#tree");
+
+			var boardHeight = $(".container").height() - $("#timeline").height();
+			board.css("height", boardHeight);
+
+			tree.css("height", boardHeight);
+
+			$("#overlays").attr("width", $("#overlays").width());
+			$("#overlays").attr("height", $("#overlays").height());
+			$("#overlays").mouseup(treeDragStopped);
+			$("#overlays").mousemove(treeDragging);
+
+			setWidths();
+			$(window).resize(setWidths);
+
+			var model = createInitialModel();
+			var treeModel = null;
+			var timeModel = null;
+			prepareModels();
+
+			var boardView = new canvascontrols.CanvasTimelineBoard("#board");
+			var boardController = new canvascontrols.TimelineBoardController(boardView);
+			boardController.setModel(timeModel);
+
+			var treeView = new canvascontrols.CanvasTimelineTreeView("#tree");
+			var treeController = new canvascontrols.TimelineTreeController(treeView);
+			treeView.expandToggled = expandToggled;
+			treeView.dragStarted = treeDragStarted;
+			treeController.setModel(treeModel);
+
+			var timelineView = new canvascontrols.CanvasTimelineView("#timeline");
+			canvascontrols.TimelineController(timelineView, new canvascontrols.Period(canvascontrols.Month()), drawnHandler);
+
+			function setWidths() {
+				timeline.css("width", timeline.parent().width() - timeline.position().left);
+				board.css("width", board.parent().width() - board.position().left);
+			}
+
+			function drawnHandler(e) {
+				boardController.redraw(e);
+				treeController.redraw(e);
+			}
+
+			function expandToggled(element) {
+				var hierElem = canvascontrols.timelinemodel.findHierarchialFromFlat(model, element);
+				hierElem.expanded = !hierElem.expanded;
+				prepareModels();
+
+				treeController.setModel(treeModel);
+				treeController.redraw();
+				boardController.setModel(timeModel);
+				boardController.redraw();
+			};
+
+			function prepareModels() {
+				treeModel = canvascontrols.timelinemodel.flattenModel(model);
+				timeModel = treeModel.map(function (e) {
+					if (e.timeline) {
+						return e.timeline;
+					} else return [];
+				});
+			}
+
+			var treeIsDown = false;
+			var dragged = null;
+
+			function treeDragStarted(e, element) {
+				treeIsDown = true;
+				dragged = element;
+				var jqOverlay = $("#overlays");
+				jqOverlay.show();
+				var overlayCanvas = jqOverlay[0];
+				var ctx = overlayCanvas.getContext("2d");
+				ctx.globalAlpha = 0.5;
+				ctx.fillStyle = "#C0C0C0";
+				ctx.clearRect(0, 0, jqOverlay.width(), jqOverlay.height());
+				ctx.fillRect(e.globalX + element.offsetX, e.globalY + element.offsetY, element.width, element.height);
+				ctx.strokeRect(e.globalX + element.offsetX, e.globalY + element.offsetY, element.width, element.height);
+				ctx.fillStyle = "#000000";
+				ctx.fillText(element.label, e.globalX + element.offsetX + 5, e.globalY + element.offsetY + 15, element.width);
+			}
+			
+			function treeDragging(e) {
+				var jqOverlay = $("#overlays");
+				var overlayCanvas = jqOverlay[0];
+				var ctx = overlayCanvas.getContext("2d");
+				var pos = {
+					x: e.pageX,
+					y: e.pageY
+				};
+				ctx.globalAlpha = 0.5;
+				ctx.fillStyle = "#C0C0C0";
+				ctx.clearRect(0, 0, jqOverlay.width(), jqOverlay.height());
+				ctx.fillRect(pos.x + dragged.offsetX, pos.y + dragged.offsetY, dragged.width, dragged.height);
+				ctx.strokeRect(pos.x + dragged.offsetX, pos.y + dragged.offsetY, dragged.width, dragged.height);
+				ctx.fillStyle = "#000000";
+				ctx.fillText(dragged.label, pos.x + dragged.offsetX + 5, pos.y + dragged.offsetY + 15, dragged.width);
+			}
+
+			function treeDragStopped() {
+				treeIsDown = false;
+				dragged = null;
+				var jqOverlay = $("#overlays");
+				jqOverlay.hide();
+				var overlayCanvas = jqOverlay[0];
+				var ctx = overlayCanvas.getContext("2d");
+				ctx.clearRect(0, 0, jqOverlay.width(), jqOverlay.height());
+			}
+
+			function createInitialModel() {
+				return [
+					{
+						id: "1",
+						title: "box 1",
+						hasChildren: true,
+						timeline: [
+							{ label: "hei hei", start: new Date(2012, 2, 1), end: new Date(2012, 4, 15, 23, 59, 59) },
+							{ label: "hei hei", start: new Date(2012, 6, 10), end: new Date(2012, 7, 20, 23, 59, 59) }
+						],
+						children: [
+							{
+								id: "2",
+								title: "box 1.1",
+								hasChildren: true,
+								children: [
+									{
+										id: "3",
+										title: "box 1.1.1",
+										haschildren: false,
+										children: []
+									}
+								]
+							},
+							{
+								id: "4",
+								title: "box 1.2",
+								hasChildren: false,
+								children: []
+							}
+						]
+					},
+					{
+						id: "5",
+						title: "box 2",
+						hasChildren: false,
+						timeline: [
+							{ label: "hei hei", start: new Date(2011, 10, 1), end: new Date(2012, 10, 31, 23, 59, 59) },
+							{ label: "hei hei", start: new Date(2011, 6, 10), end: new Date(2011, 7, 20, 23, 59, 59) }
+						],
+						children: []
+					}
+				];
+			}
+		</script>
+	</body>
+</html>

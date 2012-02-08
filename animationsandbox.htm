@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>Canvas sandbox</title>
+	<script type="text/javascript" src="Scripts/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="Scripts/class.js"></script>
+	<script type="text/javascript" src="Scripts/canvascontrols.js"></script>
+	<script type="text/javascript" src="Scripts/canvascontrols.shape.js"></script>
+	<script type="text/javascript" src="Scripts/canvascontrols.canvasview.js"></script>
+</head>
+<body>
+	
+	<canvas style="width:100%;height:500px;border:1px solid black;">
+	</canvas>
+	
+	<script type="text/javascript">
+		var Box = canvascontrols.Shape.extend({
+			init: function (x, y, width, height) {
+				this._super({
+					x: x,
+					y: y,
+					width: width,
+					height: height,
+					start: new Date().getTime(),
+					color: "#" + parseInt(Math.random() * 0xFFFFFF).toString(16)
+				});
+			},
+			width: function () {
+				return this._options.width;
+			},
+			height: function () {
+				return this._options.height;
+			},
+			paint: function (context) {
+				var rotTime = 2500;
+				var now = new Date().getTime();
+				var passed = (now - this._options.start) % rotTime;
+				context.translate(this.width() / 2, this.height() / 2);
+				context.rotate(Math.PI * 2 * passed / rotTime);
+				context.fillStyle = this._options.color;
+				context.fillRect(this.width() / 2 * -1, this.height() / 2 * -1, this.width(), this.height());
+			}
+		});
+
+		$("canvas").height($(window).height() - 100);
+		var view = new canvascontrols.CanvasView("canvas");
+		var size = 20;
+		var pad = 5;
+		for (var x = pad; x < $(window).width() - size - pad; x += size + pad) {
+			for (var y = pad; y < $(window).height() - size - pad; y += size + pad) {
+				view.add(new Box(x, y, size, size));
+			}
+		}
+		setInterval(function () {
+			view.paint();
+		}, 1000 / 30);
+
+	</script>
+
+</body>
+</html>
