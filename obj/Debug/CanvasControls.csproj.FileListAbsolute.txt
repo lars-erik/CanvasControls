@@ -1,5 +1,0 @@
-C:\Users\bi-lea\Documents\Visual Studio 2010\Projects\Prototyping\CanvasControls\bin\CanvasControls.dll
-C:\Users\bi-lea\Documents\Visual Studio 2010\Projects\Prototyping\CanvasControls\bin\CanvasControls.pdb
-C:\Users\bi-lea\Documents\Visual Studio 2010\Projects\Prototyping\CanvasControls\obj\Debug\ResolveAssemblyReference.cache
-C:\Users\bi-lea\Documents\Visual Studio 2010\Projects\Prototyping\CanvasControls\obj\Debug\CanvasControls.dll
-C:\Users\bi-lea\Documents\Visual Studio 2010\Projects\Prototyping\CanvasControls\obj\Debug\CanvasControls.pdb
