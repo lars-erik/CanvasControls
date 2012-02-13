@@ -66,10 +66,20 @@ test("can create treenode", function () {
 	equal(node._listeners.length, 0);
 });
 
-test("can add subnode", function () {
+test("can add subnode and fires event", function () {
 	var node = new canvascontrols.TimelineTreeNode();
 	var child = new canvascontrols.TimelineTreeNode();
+	var firedEvent, eventName;
+	node.addListener({}, function (sender, event, parent, sentChild) {
+		firedEvent = true;
+		eventName = event;
+		ok(node === sender);
+		ok(node === parent);
+		ok(child === sentChild);
+	});
 	node.add(child);
+	ok(firedEvent);
+	equal(eventName, "nodeAdded");
 	ok(node._hasChildren);
 	equal(node._children.length, 1);
 	ok(node._children[0] === child);
@@ -302,6 +312,24 @@ test("adding to a node notifies parent and parent updates bounds", function () {
 	equal(childNode2.y(), 25);
 	childNode.add(new canvascontrols.TimelineTreeNode());
 	equal(childNode2.y(), 50);
+});
+
+test("can find position relative to root node", function () {
+	var node = new canvascontrols.TimelineTreeNode();
+	node.add(new canvascontrols.TimelineTreeNode());
+	node._children[0].add(new canvascontrols.TimelineTreeNode());
+	node._children[0].add(new canvascontrols.TimelineTreeNode());
+	node.toggle();
+	node._children[0].toggle();
+	equal(node._children[0]._children[0].globalX(), 40);
+	equal(node._children[0]._children[0].globalY(), 50);
+	equal(node._children[0]._children[1].globalY(), 75);
+});
+
+test("added node gets new state", function () {
+	var node = createParentNode();
+	node.add(new canvascontrols.TimelineTreeNode());
+	equal(node._children[0]._state, "new");
 });
 
 function createParentNode() {

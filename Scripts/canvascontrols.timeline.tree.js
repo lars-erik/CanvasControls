@@ -14,8 +14,9 @@
 			node.addListener(this, this._childEvent);
 			this._children.push(node);
 			node._parent = this;
+			node._state = "new";
 			this._hasChildren = true;
-			this._notifyListeners("nodeAdded", this);
+			this._notifyListeners("nodeAdded", this, node);
 		},
 		remove: function (node) {
 			var index = this._findChild(node);
@@ -73,21 +74,22 @@
 			switch (event) {
 				case "toggle":
 					this._childBoundsChanged(sender, event, arguments[2]);
+					this._notifyListeners("toggle", arguments[2]);
 					break;
 				case "nodeAdded":
 				case "nodeRemoved":
 					this._childBoundsChanged(sender, event);
+					this._notifyListeners(event, arguments[2], arguments[3]);
 					break;
 				case "click":
 					this._notifyListeners("click", arguments[2], arguments[3]);
 					break;
 			}
 		},
-		_childBoundsChanged: function (sender, event, expanded) {
+		_childBoundsChanged: function (sender) {
 			var childIndex = this._findChild(sender);
 			if (childIndex == -1) return;
 			this._updateBounds(childIndex);
-			this._notifyListeners("toggle", expanded);
 		},
 		_findChild: function (child) {
 			for (var i = 0; i < this._children.length; i++) {
@@ -154,6 +156,20 @@
 			this._label = settings.label;
 			this._expanded = settings.expanded;
 			this._hasChildren = settings.hasChildren;
+		},
+		globalX: function () {
+			if (this._parent != null) {
+				return this._parent.globalX() + this._parent._boxX + this._x;
+			} else {
+				return this._x;
+			}
+		},
+		globalY: function () {
+			if (this._parent != null) {
+				return this._parent.globalY() + this._parent._height + 5 + this._y;
+			} else {
+				return this._y;
+			}
 		},
 		getHeight: function () {
 			var height = this._height;
