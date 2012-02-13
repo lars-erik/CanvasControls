@@ -22,7 +22,8 @@
 			if (index == -1) return;
 			this._children = this._children.slice(0, index).concat(this._children.slice(index + 1));
 			this._hasChildren = this._children.length > 0;
-
+			this._updateBounds(index - 1);
+			this._notifyListeners("nodeRemoved", this);
 		},
 		addListener: function (instance, handler) {
 			this._listeners.push([instance, handler]);
@@ -55,8 +56,10 @@
 		},
 		_paintChildren: function (context) {
 			for (var i = 0; i < this._children.length; i++) {
+				context.save();
 				context.translate(0, this._children[i].y());
 				this._children[i].paint(context);
+				context.restore();
 			}
 		},
 		_getChildHeight: function () {
@@ -72,6 +75,7 @@
 					this._childBoundsChanged(sender, event, arguments[2]);
 					break;
 				case "nodeAdded":
+				case "nodeRemoved":
 					this._childBoundsChanged(sender, event);
 					break;
 				case "click":

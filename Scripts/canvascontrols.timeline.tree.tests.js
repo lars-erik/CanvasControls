@@ -82,9 +82,18 @@ test("can remove subnodes", function () {
 	var child2 = new canvascontrols.TimelineTreeNode();
 	node.add(child);
 	node.add(child2);
+
+	var gotSender, eventName;
+	node.addListener({}, function (sender, event) {
+		gotSender = sender;
+		eventName = event;
+	});
+
 	node.remove(child);
 	equal(node._children.length, 1);
 	ok(node._children[0] === child2);
+	equal(eventName, "nodeRemoved");
+	equal(node._children[0]._y, 0);
 	node.remove(child2);
 	equal(node._children.length, 0);
 	equal(node._hasChildren, false);
@@ -201,7 +210,7 @@ test("expanded parent treenode adjusts and draws children", function () {
 	node._height = 20;
 	var childNode = new canvascontrols.TimelineTreeNode();
 	var childNode2 = new canvascontrols.TimelineTreeNode();
-	mock.logged = ["translate"];
+	mock.logged = ["save", "restore", "translate"];
 	node.add(childNode);
 	node.add(childNode2);
 	node.paint(mock);
@@ -209,13 +218,16 @@ test("expanded parent treenode adjusts and draws children", function () {
 	equal(childNode.y(), 0);
 	equal(childNode2.y(), 25);
 
-	equal(mock.params.length, 4);
-	equal(mock.logCalls, 21);
+	equal(mock.params.length, 12);
+	equal(mock.logCalls, 25);
 
-	equal(mock.params[1][1][0], 20);
-	equal(mock.params[1][1][1], 25);
-	equal(mock.params[3][1][0], 0);
-	equal(mock.params[3][1][1], 25);
+	equal(mock.params[3][0], "save");
+	equal(mock.params[4][1][0], 20);
+	equal(mock.params[4][1][1], 25);
+	equal(mock.params[9][1][0], 0);
+	equal(mock.params[9][1][1], 25);
+	equal(mock.params[10][0], "restore");
+	equal(mock.params[11][0], "restore");
 	equal(node.getHeight(), 70);
 });
 
@@ -354,6 +366,24 @@ test("detects and raises event on child box click", function () {
 	});
 	tree.evaluateClick({ x: 30, y: 15 });
 	ok(clickedChild === child1);
+});
+
+test("calculates correct height after added node", function () {
+	var tree = new canvascontrols.TimelineTree();
+	var node = new canvascontrols.TimelineTreeNode();
+	tree.add(node);
+	tree.add(new canvascontrols.TimelineTreeNode());
+	node.add(new canvascontrols.TimelineTreeNode());
+	node._children[0].add(new canvascontrols.TimelineTreeNode());
+	node.add(new canvascontrols.TimelineTreeNode());
+	node.toggle();
+	equal(node.getHeight(), 70);
+	node._children[0].toggle();
+	equal(node.getHeight(), 95);
+	node.add(new canvascontrols.TimelineTreeNode());
+	equal(node.getHeight(), 120);
+	equal(node._children[2].y(), 75);
+	equal(tree._children[1].y(), 125);
 });
 
 /*
