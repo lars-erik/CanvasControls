@@ -18,10 +18,16 @@ var MockContext = Class.extend({
 	},
 	log: function (name, args) {
 		this.logCalls++;
+		if (this.shouldLog(name))
+			this.params.push([name, args]);
+	},
+	shouldLog: function (name) {
 		for (var i = 0; i < this.logged.length; i++) {
-			if (this.logged[i] == name)
-				this.params.push([name, args]);
+			if (this.logged[i] == name) {
+				return true;
+			}
 		}
+		return false;
 	},
 	save: function () { this.log("save", arguments); },
 	restore: function () { this.log("restore", arguments); },
@@ -67,6 +73,21 @@ test("can add subnode", function () {
 	ok(node._hasChildren);
 	equal(node._children.length, 1);
 	ok(node._children[0] === child);
+	ok(child._parent === node);
+});
+
+test("can remove subnodes", function () {
+	var node = new canvascontrols.TimelineTreeNode();
+	var child = new canvascontrols.TimelineTreeNode();
+	var child2 = new canvascontrols.TimelineTreeNode();
+	node.add(child);
+	node.add(child2);
+	node.remove(child);
+	equal(node._children.length, 1);
+	ok(node._children[0] === child2);
+	node.remove(child2);
+	equal(node._children.length, 0);
+	equal(node._hasChildren, false);
 });
 
 test("toggle changes expanded and bubble notifies listeners", function () {
@@ -214,14 +235,61 @@ test("childs triangle is in bounds", function () {
 	ok(node.isInBounds({ x: 30, y: 45 }));
 });
 
-test("can find click on triangles", function () {
+test("detects click on triangles and calls expand", function () {
 	var node = createParentNode();
 	var childNode = new canvascontrols.TimelineTreeNode();
 	var grandChildNode = new canvascontrols.TimelineTreeNode();
 	node.add(childNode);
 	childNode.add(grandChildNode);
-	node.clicked({ x: 30, y: 37 });
+	node.evaluateClick({ x: 30, y: 37 });
 	ok(childNode._expanded);
+});
+
+test("detects click on box and raises clicked event", function () {
+	var node = createParentNode({ label: "root" });
+	var childNode = new canvascontrols.TimelineTreeNode({ label: "child" });
+	var grandChildNode = new canvascontrols.TimelineTreeNode({ label: "grandchild" });
+	node.add(childNode);
+	childNode.add(grandChildNode);
+
+	var clickedChild, eventName, clickedButton, sentData;
+	node.addListener({}, function (sender, event, child, data) {
+		eventName = event;
+		clickedChild = child;
+		clickedButton = data.button;
+		sentData = data;
+	});
+
+	node.evaluateClick({ x: 50, y: 37 });
+
+	equal(sentData.x, 30);
+	equal(sentData.y, 7);
+	equal(sentData.originalX, 50);
+	equal(sentData.originalY, 37);
+	equal(eventName, "click");
+	equal(clickedChild._label, "child");
+	ok(clickedChild === childNode);
+	equal(clickedButton, "left");
+
+	node.evaluateClick({ x: 70, y: 62, button: "right" });
+
+	equal(eventName, "click");
+	equal(clickedChild._label, "grandchild");
+	ok(clickedChild === grandChildNode);
+	equal(clickedButton, "right");
+});
+
+test("adding to a node notifies parent and parent updates bounds", function () {
+	var node = createParentNode();
+	var childNode = new canvascontrols.TimelineTreeNode();
+	var childNode2 = new canvascontrols.TimelineTreeNode();
+	node.add(childNode);
+	node.add(childNode2);
+	childNode.toggle();
+	equal(childNode._expanded, true);
+	equal(childNode2.y(), 25);
+	childNode.add(new canvascontrols.TimelineTreeNode());
+	equal(childNode2.y(), 50);
 });
 
 function createParentNode() {
@@ -255,6 +323,7 @@ test("can add nodes to tree", function () {
 	tree.add(new canvascontrols.TimelineTreeNode());
 	ok(tree._hasChildren);
 	equal(tree._children.length, 1);
+	ok(tree._children[0]._parent === tree);
 });
 
 test("detects and expands child on click", function () {
@@ -266,9 +335,25 @@ test("detects and expands child on click", function () {
 	tree.add(child2);
 	child1.add(grandChild);
 	equal(child2.y(), 25);
-	tree.clicked({ x: 10, y: 15 });
+	tree.evaluateClick({ x: 10, y: 15 });
 	ok(child1._expanded);
 	equal(child2.y(), 50);
+});
+
+test("detects and raises event on child box click", function () {
+	var tree = new canvascontrols.TimelineTree();
+	var child1 = new canvascontrols.TimelineTreeNode();
+	var child2 = new canvascontrols.TimelineTreeNode();
+	var grandChild = new canvascontrols.TimelineTreeNode();
+	tree.add(child1);
+	tree.add(child2);
+	child1.add(grandChild);
+	var clickedChild;
+	tree.addListener({}, function (sender, event, child, button) {
+		clickedChild = child;
+	});
+	tree.evaluateClick({ x: 30, y: 15 });
+	ok(clickedChild === child1);
 });
 
 /*

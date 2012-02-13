@@ -11,9 +11,18 @@
 		},
 		add: function (node) {
 			node._y = this._getChildHeight();
-			node.addListener(this, this._childToggled);
+			node.addListener(this, this._childEvent);
 			this._children.push(node);
+			node._parent = this;
 			this._hasChildren = true;
+			this._notifyListeners("nodeAdded", this);
+		},
+		remove: function (node) {
+			var index = this._findChild(node);
+			if (index == -1) return;
+			this._children = this._children.slice(0, index).concat(this._children.slice(index + 1));
+			this._hasChildren = this._children.length > 0;
+
 		},
 		addListener: function (instance, handler) {
 			this._listeners.push([instance, handler]);
@@ -21,10 +30,19 @@
 		isInBounds: function (coords) {
 			return this._findChildAtCoords(coords) != null;
 		},
-		clicked: function (coords) {
-			var child = this._findChildAtCoords(coords);
+		evaluateClick: function (data) {
+			if (!data.originalX) {
+				data.originalX = data.x;
+				data.originalY = data.y;
+			}
+			var child = this._findChildAtCoords(data);
 			if (child != null)
-				child.clicked(this._getChildOffset(coords, child));
+				child.evaluateClick($.extend(data, this._getChildOffset(data, child)));
+		},
+		clicked: function (node, data) {
+			if (!data.button)
+				data.button = "left";
+			this._notifyListeners("click", node, data);
 		},
 		_notifyListeners: function (event) {
 			var args = [this].concat([event]);
@@ -48,15 +66,35 @@
 			}
 			return height;
 		},
-		_childToggled: function (sender, event, expanded) {
-			var i, currentY = 0, startAt = -1;
-			for (i = 0; i < this._children.length; i++) {
-				if (this._children[i] === sender) {
-					startAt = i;
+		_childEvent: function (sender, event) {
+			switch (event) {
+				case "toggle":
+					this._childBoundsChanged(sender, event, arguments[2]);
 					break;
+				case "nodeAdded":
+					this._childBoundsChanged(sender, event);
+					break;
+				case "click":
+					this._notifyListeners("click", arguments[2], arguments[3]);
+					break;
+			}
+		},
+		_childBoundsChanged: function (sender, event, expanded) {
+			var childIndex = this._findChild(sender);
+			if (childIndex == -1) return;
+			this._updateBounds(childIndex);
+			this._notifyListeners("toggle", expanded);
+		},
+		_findChild: function (child) {
+			for (var i = 0; i < this._children.length; i++) {
+				if (this._children[i] === child) {
+					return i;
 				}
 			}
-			if (startAt == -1) return;
+			return -1;
+		},
+		_updateBounds: function (startAt) {
+			var i, currentY = 0;
 			for (i = 0; i <= startAt; i++) {
 				currentY += this._children[i].getHeight() + 5;
 			}
@@ -64,7 +102,6 @@
 				this._children[i]._y = currentY;
 				currentY += this._children[i].getHeight() + 5;
 			}
-			this._notifyListeners("toggle", expanded);
 		},
 		_getChildOffset: function (coords, child) {
 			return {
@@ -144,17 +181,27 @@
 				return true;
 			return this._super(coords);
 		},
-		clicked: function (coords) {
-			if (this._isInOwnOffset(coords)) {
-				var centerY = this._height / 2;
-				if (coords.x >= 5 && coords.x <= 15 &&
-					coords.y >= centerY - 5 && coords.y <= centerY + 5) {
+		evaluateClick: function (data) {
+			if (this._isInOwnOffset(data)) {
+				if (this._isTriangleClick(data)) {
 					this.toggle();
+				}
+				else if (this._isBoxClick(data)) {
+					this.clicked(this, data);
 				}
 			}
 			else {
-				this._super(coords);
+				this._super(data);
 			}
+		},
+		_isTriangleClick: function (coords) {
+			var centerY = this._height / 2;
+			return coords.x >= 5 && coords.x <= 15 &&
+				   coords.y >= centerY - 5 && coords.y <= centerY + 5;
+		},
+		_isBoxClick: function (coords) {
+			return coords.x >= this._boxX && coords.x < this._width &&
+				   coords.y >= 0 && coords.y <= this._height;
 		},
 		_getChildOffset: function (coords, child) {
 			return {
@@ -322,7 +369,7 @@
 
 		function initialize() {
 			$(window).resize(function (e) { self.onResized(e); });
-			$(jqCanvas).click(function (e) { self.onClicked(e); });
+			$(jqCanvas).evaluateClick(function (e) { self.onClicked(e); });
 			$(jqCanvas).mousedown(function (e) { self.onMouseDown(e); });
 
 			initializeLayout();

@@ -51,6 +51,11 @@
 			this._jq.click(function (e) {
 				self._canvasClicked.apply(self, [e]);
 			});
+			this._jq.contextmenu(function (e) {
+				self._canvasClicked.apply(self, [e]);
+				e.preventDefault();
+				return false;
+			});
 
 			this.context = this._canvas.getContext("2d");
 		},
@@ -78,10 +83,11 @@
 				shape = this.getShape(i);
 				var shapeOffset = {
 					x: e.offsetX - shape.x(),
-					y: e.offsetY - shape.y()
+					y: e.offsetY - shape.y(),
+					button: e.which == 1 ? "left" : e.which == 3 ? "right" : "middle"
 				};
 				if (shape.isInBounds(shapeOffset)) {
-					shape.clicked(shapeOffset);
+					shape.evaluateClick(shapeOffset);
 					break;
 				}
 			}
