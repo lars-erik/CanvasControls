@@ -1,13 +1,28 @@
 ﻿///<reference path="jquery-1.7.1.min.js"/>
 ///<reference path="qunit.extensions.js"/>
 ///<reference path="class.js"/>
+///<reference path="Mock.js"/>
+///<reference path="MockContext.js"/>
 ///<reference path="canvascontrols.js"/>
 ///<reference path="canvascontrols.canvasview.js"/>
 ///<reference path="canvascontrols.shape.js"/>
 
+var mock = new MockContext();
+
+var MockShape = canvascontrols.Shape.extend({
+	init: function () { this._super.apply(this, arguments); },
+	paint: function () {
+		this.lastArgs = arguments;
+	},
+	isInBounds: function (coords) {
+		return coords.x >= 0 && coords.x <= 10 &&
+			coords.y >= 0 && coords.y <= 10;
+	}
+});
+
 module("canvascontrols canvasview", {
 	setup: function () {
-		params = [];
+		mock.reset();
 	},
 	teardown: function () {
 		$("div", document.body).remove();
@@ -22,18 +37,6 @@ function createView(selector) {
 function createCanvas() {
 	$(document.body).append("<canvas></canvas>");
 }
-
-var params = [];
-var MockShape = canvascontrols.Shape.extend({
-	init: function () { this._super.apply(this, arguments); },
-	paint: function () {
-		params.push(arguments);
-	},
-	isInBounds: function (coords) {
-		return coords.x >= 0 && coords.x <= 10 &&
-			coords.y >= 0 && coords.y <= 10;
-	}
-});
 
 test("can create view for canvas", function () {
 	$(document.body).append("<canvas></canvas>");
@@ -90,38 +93,26 @@ test("fails if adding an object not derived from shape", function() {
 test("paint clears entire canvas and translates to 0.5,0.5", function () {
 	createCanvas();
 	var v = createView("canvas");
-	var mock = {
-		clearRect: function () { params.push({ n: "clear", a: arguments }); },
-		save: function () { params.push({ n: "save", a: arguments }); },
-		restore: function () { params.push({ n: "restore", a: arguments }); },
-		translate: function () { params.push({ n: "translate", a: arguments }); }
-	};
+	mock.logged = ["clearRect", "save", "translate", "restore"];
 	v.mockContext(mock);
 	v.paint();
 
-	equal(params.length, 4);
-	equal(params[0].n, "clear");
-	equal(params[0].a[0], 0);
-	equal(params[0].a[1], 0);
-	equal(params[0].a[2], 300);
-	equal(params[0].a[3], 150);
-	equal(params[1].n, "save");
-	equal(params[2].n, "translate");
-	equal(params[2].a[0], 0.5);
-	equal(params[2].a[1], 0.5);
-	equal(params[3].n, "restore");
+	equal(mock.calls.length, 4);
+	equal(mock.calls[0].name, "clearRect");
+	equal(mock.calls[0].args.x, 0);
+	equal(mock.calls[0].args.y, 0);
+	equal(mock.calls[0].args.w, 300);
+	equal(mock.calls[0].args.h, 150);
+	equal(mock.calls[1].name, "save");
+	equal(mock.calls[2].name, "translate");
+	equal(mock.calls[2].args.x, 0.5);
+	equal(mock.calls[2].args.y, 0.5);
+	equal(mock.calls[3].name, "restore");
 });
 
 test("paint calls paint on each shape", function () {
 	createCanvas();
 	var v = createView("canvas");
-	var mock = {
-		clearRect: function () { },
-		save: function () { },
-		restore: function () { },
-		translate: function () { },
-		paint: function () { params.push(arguments); }
-	};
 	var shape1 = new MockShape();
 	var shape2 = new MockShape();
 
@@ -130,35 +121,28 @@ test("paint calls paint on each shape", function () {
 	v.add(shape2);
 	v.paint();
 
-	equal(params.length, 2);
-	equal(params[0][0], mock);
-	equal(params[1][0], mock);
+	equal(shape1.lastArgs[0], mock);
+	equal(shape1.lastArgs[0], mock);
 });
 
 test("paint saves, translates to shape x,y then restores for each shape", function () {
 	createCanvas();
 	var v = createView("canvas");
-	var params = [];
-	var mock = {
-		clearRect: function () { },
-		translate: function () { params.push(arguments); },
-		save: function () { params.push(arguments); },
-		restore: function () { params.push(arguments); }
-	};
-
 	var shape1 = new MockShape({ x: 10, y: 20 });
 	var shape2 = new MockShape({ x: 30, y: 25 });
+
+	mock.logged = ["save", "translate", "restore"];
 
 	v.mockContext(mock);
 	v.add(shape1);
 	v.add(shape2);
 	v.paint();
 
-	equal(params.length, 9);
-	equal(params[3][0], 10);
-	equal(params[3][1], 20);
-	equal(params[6][0], 30);
-	equal(params[6][1], 25);
+	equal(mock.calls.length, 9);
+	equal(mock.calls[3].args.x, 10);
+	equal(mock.calls[3].args.y, 20);
+	equal(mock.calls[6].args.x, 30);
+	equal(mock.calls[6].args.y, 25);
 });
 
 test("when clicked, finds shape at event coordinates and forwards event", function () {
@@ -170,8 +154,8 @@ test("when clicked, finds shape at event coordinates and forwards event", functi
 	v.add(shape2);
 
 	var shape1Clicked = false, shape2Clicked = false, offset;
-	shape1.clicked = function (e) { offset = e; shape1Clicked = true; };
-	shape2.clicked = function (e) { offset = e; shape2Clicked = true; };
+	shape1.evaluateClick = function (e) { offset = e; shape1Clicked = true; };
+	shape2.evaluateClick = function (e) { offset = e; shape2Clicked = true; };
 	v._canvasClicked({ offsetX: 15, offsetY: 25 });
 	equal(shape1Clicked, true);
 	equal(shape2Clicked, false);
