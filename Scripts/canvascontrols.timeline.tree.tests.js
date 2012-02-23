@@ -1,46 +1,14 @@
 ﻿/// <reference path="jquery-1.7.1.js" />
 /// <reference path="class.js"/>
 /// <reference path="qunit.extensions.js"/>
+/// <reference path="Mock.js"/>
+/// <reference path="MockContext.js"/>
 /// <reference path="canvascontrols.js"/>
 /// <reference path="canvascontrols.canvasview.js"/>
 /// <reference path="canvascontrols.shape.js"/>
 /// <reference path="canvascontrols.timeline.js"/>
 /// <reference path="canvascontrols.timeline.tree.js"/>
 
-var MockContext = Class.extend({
-	logged: [],
-	params: [],
-	logCalls: 0,
-	reset: function () {
-		this.logCalls = 0;
-		this.logged = [];
-		this.params = [];
-	},
-	log: function (name, args) {
-		this.logCalls++;
-		if (this.shouldLog(name))
-			this.params.push([name, args]);
-	},
-	shouldLog: function (name) {
-		for (var i = 0; i < this.logged.length; i++) {
-			if (this.logged[i] == name) {
-				return true;
-			}
-		}
-		return false;
-	},
-	save: function () { this.log("save", arguments); },
-	restore: function () { this.log("restore", arguments); },
-	strokeRect: function () { this.log("strokeRect", arguments); },
-	beginPath: function () { this.log("beginPath", arguments); },
-	closePath: function () { this.log("closePath", arguments); },
-	stroke: function () { this.log("stroke", arguments); },
-	moveTo: function () { this.log("moveTo", arguments); },
-	lineTo: function () { this.log("lineTo", arguments); },
-	translate: function () { this.log("translate", arguments); },
-	rotate: function () { this.log("rotate", arguments); },
-	fillText: function () { this.log("fillText", arguments); }
-});
 var mock = new MockContext();
 
 module("canvascontrols.timeline.treenode", {
@@ -141,14 +109,14 @@ test("childless treenode only draws box and label", function () {
 	mock.logged = ["strokeRect","fillText"];
 	node.paint(mock);
 	equal(mock.logCalls, 2);
-	notEqual(mock.params.length, 0);
-	equal(mock.params[0][1][0], 20);
-	equal(mock.params[0][1][1], 0);
-	equal(mock.params[0][1][2], 110);
-	equal(mock.params[0][1][3], 25);
-	equal(mock.params[1][1][0], "Boks");
-	equal(mock.params[1][1][1], 25);
-	equal(mock.params[1][1][2], 16);
+	notEqual(mock.calls.length, 0);
+	equal(mock.calls[0].args.x, 20);
+	equal(mock.calls[0].args.y, 0);
+	equal(mock.calls[0].args.w, 110);
+	equal(mock.calls[0].args.h, 25);
+	equal(mock.calls[1].args.text, "Boks");
+	equal(mock.calls[1].args.x, 25);
+	equal(mock.calls[1].args.y, 16);
 });
 
 test("collapsed parent treenode draws triangle", function () {
@@ -157,21 +125,21 @@ test("collapsed parent treenode draws triangle", function () {
 	mock.logged = ["save", "restore", "translate", "beginPath", "closePath", "stroke", "moveTo", "lineTo"];
 	node.paint(mock);
 	equal(mock.logCalls, 11);
-	notEqual(mock.params.length, 0);
-	equal(mock.params[0][0], "save");
-	equal(mock.params[1][0], "translate");
-	equal(mock.params[1][1][0], 10);
-	equal(mock.params[1][1][1], 13);
-	equal(mock.params[2][0], "beginPath");
-	equal(mock.params[3][1][0], -5);
-	equal(mock.params[3][1][1], -5);
-	equal(mock.params[4][1][0], 5);
-	equal(mock.params[4][1][1], 0);
-	equal(mock.params[5][1][0], -5);
-	equal(mock.params[5][1][1], 5);
-	equal(mock.params[6][0], "closePath");
-	equal(mock.params[7][0], "stroke");
-	equal(mock.params[8][0], "restore");
+	notEqual(mock.calls.length, 0);
+	equal(mock.calls[0].name, "save");
+	equal(mock.calls[1].name, "translate");
+	equal(mock.calls[1].args.x, 10);
+	equal(mock.calls[1].args.y, 13);
+	equal(mock.calls[2].name, "beginPath");
+	equal(mock.calls[3].args.x, -5);
+	equal(mock.calls[3].args.y, -5);
+	equal(mock.calls[4].args.x, 5);
+	equal(mock.calls[4].args.y, 0);
+	equal(mock.calls[5].args.x, -5);
+	equal(mock.calls[5].args.y, 5);
+	equal(mock.calls[6].name, "closePath");
+	equal(mock.calls[7].name, "stroke");
+	equal(mock.calls[8].name, "restore");
 });
 
 test("expanded parent treenode rotates before drawing triangle", function () {
@@ -179,11 +147,11 @@ test("expanded parent treenode rotates before drawing triangle", function () {
 	mock.logged = ["translate", "rotate", "beginPath"];
 	node.paint(mock);
 	equal(mock.logCalls, 15);
-	notEqual(mock.params.length, 0);
-	equal(mock.params[0][0], "translate");
-	equal(mock.params[1][0], "rotate");
-	equal(mock.params[1][1][0], Math.PI * 2 / 4);
-	equal(mock.params[2][0], "beginPath");
+	notEqual(mock.calls.length, 0);
+	equal(mock.calls[0].name, "translate");
+	equal(mock.calls[1].name, "rotate");
+	equal(mock.calls[1].args.angle, Math.PI * 2 / 4);
+	equal(mock.calls[2].name, "beginPath");
 });
 
 test("calculates height recursively and stops at collapsed nodes", function () {
@@ -228,16 +196,16 @@ test("expanded parent treenode adjusts and draws children", function () {
 	equal(childNode.y(), 0);
 	equal(childNode2.y(), 25);
 
-	equal(mock.params.length, 12);
+	equal(mock.calls.length, 12);
 	equal(mock.logCalls, 25);
 
-	equal(mock.params[3][0], "save");
-	equal(mock.params[4][1][0], 20);
-	equal(mock.params[4][1][1], 25);
-	equal(mock.params[9][1][0], 0);
-	equal(mock.params[9][1][1], 25);
-	equal(mock.params[10][0], "restore");
-	equal(mock.params[11][0], "restore");
+	equal(mock.calls[3].name, "save");
+	equal(mock.calls[4].args.x, 20);
+	equal(mock.calls[4].args.y, 25);
+	equal(mock.calls[9].args.x, 0);
+	equal(mock.calls[9].args.y, 25);
+	equal(mock.calls[10].name, "restore");
+	equal(mock.calls[11].name, "restore");
 	equal(node.getHeight(), 70);
 });
 
