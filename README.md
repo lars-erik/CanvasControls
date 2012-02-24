@@ -112,7 +112,7 @@ This is the code from animationsandbox.htm
 
 This is the code from dragsandbox.htm
 
-```
+```javascript
 	$("#root").height($(window).height());
 
 	var rootView = new canvascontrols.CanvasView("#root");
