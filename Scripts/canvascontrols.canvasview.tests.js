@@ -4,6 +4,7 @@
 ///<reference path="Mock.js"/>
 ///<reference path="MockContext.js"/>
 ///<reference path="canvascontrols.js"/>
+///<reference path="canvascontrols.observable.js"/>
 ///<reference path="canvascontrols.canvasview.js"/>
 ///<reference path="canvascontrols.shape.js"/>
 
@@ -40,7 +41,9 @@ function createCanvas() {
 
 test("can create view for canvas", function () {
 	$(document.body).append("<canvas></canvas>");
-	createView("canvas");
+	var view = createView("canvas");
+	ok(view instanceof canvascontrols.Observable);
+	ok(view instanceof canvascontrols.CanvasView);
 });
 
 test("fails when given non existing id", function () {

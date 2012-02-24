@@ -1,7 +1,8 @@
 ﻿(function (cc) {
 
-	cc.CanvasView = Class.extend({
+	cc.CanvasView = cc.Observable.extend({
 		init: function (selector) {
+			this._super();
 			this.selector = selector;
 			this._initializeJq(selector);
 			this._initializeCanvas();

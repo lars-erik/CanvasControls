@@ -26,9 +26,6 @@
 			this._updateBounds(index - 1);
 			this._notifyListeners("nodeRemoved", this);
 		},
-		addListener: function (instance, handler) {
-			this._listeners.push([instance, handler]);
-		},
 		isInBounds: function (coords) {
 			return this._findChildAtCoords(coords) != null;
 		},
@@ -46,15 +43,6 @@
 				data.button = "left";
 			this._notifyListeners("click", node, data);
 		},
-		_notifyListeners: function (event) {
-			var args = [this].concat([event]);
-			var i;
-			for (i = 1; i < arguments.length; i++)
-				args.push(arguments[i]);
-			for (i = 0; i < this._listeners.length; i++) {
-				this._listeners[i][1].apply(this._listeners[i][0], args);
-			}
-		},
 		_paintChildren: function (context) {
 			for (var i = 0; i < this._children.length; i++) {
 				context.save();
@@ -71,20 +59,15 @@
 			return height;
 		},
 		_childEvent: function (sender, event) {
+			var params = Array.prototype.slice.apply(arguments, [1,arguments.length]);
 			switch (event) {
 				case "toggle":
-					this._childBoundsChanged(sender, event, arguments[2]);
-					this._notifyListeners("toggle", arguments[2]);
-					break;
 				case "nodeAdded":
 				case "nodeRemoved":
-					this._childBoundsChanged(sender, event);
-					this._notifyListeners(event, arguments[2], arguments[3]);
-					break;
-				case "click":
-					this._notifyListeners("click", arguments[2], arguments[3]);
+					this._childBoundsChanged(sender, event, arguments[2]);
 					break;
 			}
+			this._notifyListeners.apply(this, params);
 		},
 		_childBoundsChanged: function (sender) {
 			var childIndex = this._findChild(sender);

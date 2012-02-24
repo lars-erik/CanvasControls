@@ -1,6 +1,6 @@
 ﻿(function (cc) {
 
-	cc.Shape = Class.extend({
+	cc.Shape = cc.Observable.extend({
 		init: function (options) {
 			var settings = $.extend({
 				x: 0,
