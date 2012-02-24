@@ -41,6 +41,20 @@
 			}
 			this._afterPaint();
 		},
+		findShapeAt: function (coords) {
+			var shape;
+			for (var i = 0; i < this.getShapeCount(); i++) {
+				shape = this.getShape(i);
+				var shapeOffset = this._getShapeOffset(shape, coords);
+				if (shape.isInBounds(shapeOffset)) {
+					return shape;
+				}
+			}
+			return null;
+		},
+		on: function (event, owner, handler) {
+			this._on(event.indexOf(".") > -1 ? $(this) : this._jq, event, owner, handler);
+		},
 		_initializeJq: function (id) {
 			this._jq = $(id);
 			if (this._jq.length != 1)
@@ -55,14 +69,12 @@
 			this._jq.attr("width", this._width = this._jq.width());
 			this._jq.attr("height", this._height = this._jq.height());
 
-			this._jq.click(function (e) {
-				self._canvasClicked.apply(self, [e]);
-			});
-			this._jq.contextmenu(function (e) {
-				self._canvasClicked.apply(self, [e]);
-				e.preventDefault();
-				return false;
-			});
+			//			this._jq.click(function (e) { self._canvasClicked.apply(self, [e]); });
+			//			this._jq.contextmenu(function (e) {
+			//				self._canvasClicked.apply(self, [e]);
+			//				e.preventDefault();
+			//				return false;
+			//			});
 
 			this.context = this._canvas.getContext("2d");
 		},
@@ -84,19 +96,18 @@
 			shape.paint(this.context);
 			this.context.restore();
 		},
+		_getShapeOffset: function (shape, coords) {
+			return {
+				x: coords.offsetX - shape.x(),
+				y: coords.offsetY - shape.y()
+			};
+		},
 		_canvasClicked: function (e) {
-			var shape;
-			for (var i = 0; i < this.getShapeCount(); i++) {
-				shape = this.getShape(i);
-				var shapeOffset = {
-					x: e.offsetX - shape.x(),
-					y: e.offsetY - shape.y(),
-					button: e.which == 1 ? "left" : e.which == 3 ? "right" : "middle"
-				};
-				if (shape.isInBounds(shapeOffset)) {
-					shape.evaluateClick(shapeOffset);
-					break;
-				}
+			var shape = this.findShapeAt(e);
+			if (shape != null) {
+				var shapeOffset = this._getShapeOffset(shape, e);
+				shapeOffset.button = e.which == 1 ? "left" : e.which == 3 ? "right" : "middle"
+				shape.evaluateClick(shapeOffset);
 			}
 		}
 	});

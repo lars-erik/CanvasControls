@@ -16,7 +16,7 @@
 			node._parent = this;
 			node._state = "new";
 			this._hasChildren = true;
-			this._notifyListeners("nodeAdded", this, node);
+			this._raise("nodeAdded.cc", { parent: this, child: node });
 		},
 		remove: function (node) {
 			var index = this._findChild(node);
@@ -59,7 +59,7 @@
 			return height;
 		},
 		_childEvent: function (sender, event) {
-			var params = Array.prototype.slice.apply(arguments, [1,arguments.length]);
+			var params = Array.prototype.slice.apply(arguments, [1, arguments.length]);
 			switch (event) {
 				case "toggle":
 				case "nodeAdded":

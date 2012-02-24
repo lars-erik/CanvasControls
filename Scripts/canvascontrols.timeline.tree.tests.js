@@ -39,12 +39,12 @@ test("can add subnode and fires event", function () {
 	var node = new canvascontrols.TimelineTreeNode();
 	var child = new canvascontrols.TimelineTreeNode();
 	var firedEvent, eventName;
-	node.addListener({}, function (sender, event, parent, sentChild) {
+	node.on("nodeAdded.cc", {}, function (sender, params) {
 		firedEvent = true;
-		eventName = event;
+		eventName = params.type;
 		ok(node === sender);
-		ok(node === parent);
-		ok(child === sentChild);
+		ok(node === params.parent);
+		ok(child === params.child);
 	});
 	node.add(child);
 	ok(firedEvent);

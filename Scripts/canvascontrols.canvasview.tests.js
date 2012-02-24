@@ -148,14 +148,74 @@ test("paint saves, translates to shape x,y then restores for each shape", functi
 	equal(mock.calls[6].args.y, 25);
 });
 
-test("when clicked, finds shape at event coordinates and forwards event", function () {
+test("can find shape at canvas coordinates", function () {
 	createCanvas();
 	var v = createView("canvas");
+
 	var shape1 = new MockShape({ x: 10, y: 20 });
 	var shape2 = new MockShape({ x: 30, y: 25 });
 	v.add(shape1);
 	v.add(shape2);
 
+	equal(v.findShapeAt({ offsetX: 15, offsetY: 25 }), shape1);
+	equal(v.findShapeAt({ offsetX: 37, offsetY: 35 }), shape2);
+});
+
+test("raises mouse events", function () {
+
+	createCanvas();
+	var v = createView("canvas");
+	var extraParams = { pageX: 10, pageY: 20 };
+	var lastE, lastS, lastThis;
+	var handler = function (s, e) {
+		lastThis = this;
+		lastS = s;
+		lastE = e;
+	};
+	var owner = {};
+	v.on("mousedown mousemove mouseup click", owner, handler);
+
+	$("canvas").trigger($.Event("mousedown", extraParams));
+	equal(lastThis, owner);
+	equal(lastS, v);
+	equal(lastE.type, "mousedown");
+	equal(lastE.pageX, extraParams.pageX);
+	equal(lastE.pageY, extraParams.pageY);
+
+	$("canvas").trigger($.Event("mousemove", extraParams));
+	equal(lastE.type, "mousemove");
+
+	$("canvas").trigger($.Event("mouseup", extraParams));
+	equal(lastE.type, "mouseup");
+
+	$("canvas").trigger($.Event("click", extraParams));
+	equal(lastE.type, "click");
+
+	lastE = null;
+
+	$("canvas").trigger($.Event("keyup", extraParams));
+	equal(lastE, null);
+
+});
+
+test("does not apply events with . in name to canvas, but can raise", function () {
+	createCanvas();
+	var v = createView("canvas");
+	var lastS, lastE;
+	v.on("event.mine", this, function (s, e) {
+		lastS = s;
+		lastE = e;
+	});
+	v._raise("event.mine");
+	equal(lastS, v);
+	equal(lastE.type, "event");
+	equal(lastE.namespace, "mine");
+	lastS = null;
+	$("canvas").trigger("event.mine");
+	equal(lastS, null);
+});
+
+/*
 	var shape1Clicked = false, shape2Clicked = false, offset;
 	shape1.evaluateClick = function (e) { offset = e; shape1Clicked = true; };
 	shape2.evaluateClick = function (e) { offset = e; shape2Clicked = true; };
@@ -172,4 +232,4 @@ test("when clicked, finds shape at event coordinates and forwards event", functi
 	equal(shape2Clicked, true);
 	equal(offset.x, 3);
 	equal(offset.y, 7);
-});
+*/
