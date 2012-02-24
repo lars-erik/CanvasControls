@@ -2,6 +2,7 @@
 
 	cc.Shape = cc.Observable.extend({
 		init: function (options) {
+			this._super();
 			var settings = $.extend({
 				x: 0,
 				y: 0
@@ -18,6 +19,9 @@
 		paint: function () {
 		},
 		isInBounds: function () {
+			return false;
+		},
+		evaluateClick: function () {
 			return false;
 		}
 	});

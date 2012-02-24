@@ -22,6 +22,12 @@
 				throw new Error("Cannot add instances not derived from canvascontrols.Shape");
 			this._shapes.push(shape);
 		},
+		// todo: add test for remove
+		remove: function (shape) {
+			for (var i = 0; i < this._shapes.length && this._shapes[i] != shape; i++) { }
+			if (i < this._shapes.length)
+				this._shapes.splice(i, 1);
+		},
 		getShapeCount: function () {
 			return this._shapes.length;
 		},

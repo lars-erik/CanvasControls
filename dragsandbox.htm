@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Dragging sandbox</title>
+	<script type="text/javascript" src="Scripts/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="Scripts/class.js"></script>
+	<script type="text/javascript" src="Scripts/canvascontrols.js"></script>
+	<script type="text/javascript" src="Scripts/canvascontrols.observable.js"></script>
+	<script type="text/javascript" src="Scripts/canvascontrols.canvasview.js"></script>
+	<script type="text/javascript" src="Scripts/canvascontrols.shape.js"></script>
+	<script type="text/javascript" src="Scripts/canvascontrols.image.js"></script>
+	<script type="text/javascript" src="Scripts/canvascontrols.dragging.js"></script>
+</head>
+<body>
+	
+	<canvas id="root" style="width:100%; height: 100%; position: absolute;"></canvas>
+	<canvas id="drag" style="width:100%; height: 100%; position: absolute;"></canvas>
+	
+	<script type="text/javascript">
+
+		$("#root").height($(window).height());
+
+		var rootView = new canvascontrols.CanvasView("#root");
+		var dragView = new canvascontrols.DragView("#drag");
+
+		var img = new canvascontrols.Image("hacking/koala.jpg");
+		rootView.add(img);
+		img.addListener({}, function (s, e) {
+			if (e == "loaded") {
+				imageLoaded();
+			}
+			else if (e == "clicked") {
+				startIt(arguments[2]);
+			}
+		});
+
+		dragView.addListener({}, function (s, e, pos) {
+			if (e == "dragStopped") {
+				img._x = pos.pageX - $("#root").offset().left;
+				img._y = pos.pageY - $("#root").offset().top;
+				rootView.paint();
+			}
+		});
+
+		function imageLoaded() {
+			var size = img.getSize();
+			img.setSize(300, 300 * size.height / size.width);
+			rootView.paint();
+		}
+
+		function startIt(e) {
+			var ctx = $("#root")[0].getContext("2d");
+			var dragShape = canvascontrols.DragShape.create(
+				ctx,
+				img.x(), img.y(), 200, 150
+			);
+			dragView.startDrag(dragShape, e.x, e.y);
+		}
+
+	</script>
+
+</body>
+</html>
