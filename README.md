@@ -113,54 +113,46 @@ This is the code from animationsandbox.htm
 This is the code from dragsandbox.htm
 
 ```
-	<canvas id="root" style="width:100%; height: 100%; position: absolute;"></canvas>
-	<canvas id="drag" style="width:100%; height: 100%; position: absolute;"></canvas>
-	
-	<script type="text/javascript">
+	$("#root").height($(window).height());
 
-		$("#root").height($(window).height());
+	var rootView = new canvascontrols.CanvasView("#root");
+	var dragView = new canvascontrols.DragView("#drag");
 
-		var rootView = new canvascontrols.CanvasView("#root");
-		var dragView = new canvascontrols.DragView("#drag");
+	// this is the windows sample pictures koala.
+	// add the hacking folder and image to your project to see something. :)
+	var img = new canvascontrols.Image("hacking/koala.jpg");
+	rootView.add(img);
+	img.addListener({}, function (s, e) {
+		if (e == "loaded") {
+			imageLoaded();
+		}
+		else if (e == "clicked") {
+			startIt(arguments[2]);
+		}
+	});
 
-		// this is the windows sample pictures koala.
-		// add the hacking folder and image to your project to see something. :)
-		var img = new canvascontrols.Image("hacking/koala.jpg");
-		rootView.add(img);
-		img.addListener({}, function (s, e) {
-			if (e == "loaded") {
-				imageLoaded();
-			}
-			else if (e == "clicked") {
-				startIt(arguments[2]);
-			}
-		});
-
-		dragView.addListener({}, function (s, e, pos) {
-			if (e == "dragStopped") {
-				img._x = pos.pageX - $("#root").offset().left;
-				img._y = pos.pageY - $("#root").offset().top;
-				rootView.paint();
-			}
-		});
-
-		function imageLoaded() {
-			var size = img.getSize();
-			img.setSize(300, 300 * size.height / size.width);
+	dragView.addListener({}, function (s, e, pos) {
+		if (e == "dragStopped") {
+			img._x = pos.pageX - $("#root").offset().left;
+			img._y = pos.pageY - $("#root").offset().top;
 			rootView.paint();
 		}
+	});
 
-		function startIt(e) {
-			var ctx = $("#root")[0].getContext("2d");
-			var dragShape = canvascontrols.DragShape.create(
-				ctx,
-				img.x(), img.y(), 200, 150
-			);
-			dragView.startDrag(dragShape, e.x, e.y);
-		}
+	function imageLoaded() {
+		var size = img.getSize();
+		img.setSize(300, 300 * size.height / size.width);
+		rootView.paint();
+	}
 
-	</script>
-
+	function startIt(e) {
+		var ctx = $("#root")[0].getContext("2d");
+		var dragShape = canvascontrols.DragShape.create(
+			ctx,
+			img.x(), img.y(), 200, 150
+		);
+		dragView.startDrag(dragShape, e.x, e.y);
+	}
 ```
 
 ## Current status / todos
