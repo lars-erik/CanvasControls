@@ -16,8 +16,8 @@ var MockShape = canvascontrols.Shape.extend({
 		this.lastArgs = arguments;
 	},
 	isInBounds: function (coords) {
-		return coords.x >= 0 && coords.x <= 10 &&
-			coords.y >= 0 && coords.y <= 10;
+		return coords.offsetX >= 0 && coords.offsetX <= 10 &&
+			coords.offsetY >= 0 && coords.offsetY <= 10;
 	}
 });
 
@@ -240,10 +240,10 @@ test("fires own and passes mouse event with offset to controls", function () {
 	equal(notified[0][0], shape1);
 	equal(notified[0][1].pageX, params.pageX);
 	equal(notified[0][1].pageY, params.pageY);
-	equal(notified[0][1].offsetX, 12);
-	equal(notified[0][1].offsetY, 23);
-	equal(notified[0][1].x, 2);
-	equal(notified[0][1].y, 3);
+	equal(notified[0][1].orignalX, 12);
+	equal(notified[0][1].orignalY, 23);
+	equal(notified[0][1].offsetX, 2);
+	equal(notified[0][1].offsetY, 3);
 	notEqual(notified[0][0], shape2);
 });
 

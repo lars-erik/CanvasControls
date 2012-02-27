@@ -6,6 +6,7 @@
 	<script src="Scripts/class.js" type="text/javascript"></script>
 	<script src="Scripts/jquery-1.7.1.min.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.observable.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.shape.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.canvasview.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.timeline.tree.js" type="text/javascript"></script>
@@ -67,33 +68,23 @@
 		canvasView.add(tree);
 
 		var obj = new Object();
-		tree.addListener(obj, handleEvent);
+//		tree.on("toggled.cc nodeRemoved.cc nodeAdded.cc", obj, repaint);
 
 		canvasView.paint();
 
 		var currentNode;
 
-		function handleEvent(sender, event) {
+		tree.on("contextmenu", { }, function(s, e) {
 			$("#menu").hide();
-			switch (event) {
-				case "toggle":
-				case "nodeRemoved":
-					canvasView.paint();
-					break;
-				case "nodeAdded":
-					canvasView.paint();
-					break;
-				case "click":
-					var data = arguments[3];
-					if (data.button != "right") {
-						return;
-					}
-					currentNode = arguments[2];
-					$("#menu").css("left", $("canvas").position().left + data.originalX);
-					$("#menu").css("top", $("canvas").position().top + data.originalY);
-					$("#menu").show();
-			}	
-		}
+			currentNode = e.child;
+			$("#menu").css("left", $("canvas").position().left + data.originalX);
+			$("#menu").css("top", $("canvas").position().top + data.originalY);
+			$("#menu").show();
+		});
+
+		tree.on("mousedown", {}, function (s, e) {
+			alert(e.child._label);
+		});
 
 		$("#add").click(function () {
 			currentNode.add(new canvascontrols.TimelineTreeNode());

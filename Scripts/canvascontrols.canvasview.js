@@ -100,8 +100,10 @@
 		},
 		_getShapeOffset: function (shape, coords) {
 			return {
-				x: coords.offsetX - shape.x(),
-				y: coords.offsetY - shape.y()
+				originalX: coords.offsetX,
+				originalY: coords.offsetY,
+				offsetX: coords.offsetX - shape.x(),
+				offsetY: coords.offsetY - shape.y()
 			};
 		},
 		_onMouseEvent: function (s, e) {
