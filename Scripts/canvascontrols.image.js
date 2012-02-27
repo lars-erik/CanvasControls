@@ -32,8 +32,8 @@
 		},
 		isInBounds: function (offset) {
 			var size = this.getSize();
-			return offset.x >= 0 && offset.x <= size.width &&
-				   offset.y >= 0 && offset.y <= size.height;
+			return offset.offsetX >= 0 && offset.offsetX <= size.width &&
+				   offset.offsetY >= 0 && offset.offsetY <= size.height;
 		},
 		evaluateClick: function (offset) {
 			this._notifyListeners("clicked", offset);
