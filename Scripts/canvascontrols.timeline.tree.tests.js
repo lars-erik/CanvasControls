@@ -22,7 +22,7 @@ module("canvascontrols.timeline.treenode", {
 
 test("can create treenode", function () {
 	var node = new canvascontrols.TimelineTreeNode();
-	notEqual(node, null);
+	ok(node != null);
 	ok(node instanceof canvascontrols.Shape);
 	ok(node instanceof canvascontrols.TimelineTreeNode);
 	equal(node._width, 100);
@@ -32,7 +32,6 @@ test("can create treenode", function () {
 	equal(node._hasChildren, false);
 	equal(node._expanded, false);
 	equal(node._children.length, 0);
-	equal(node._listeners.length, 0);
 });
 
 test("can add subnode and fires event", function () {
@@ -63,9 +62,9 @@ test("can remove subnodes", function () {
 	node.add(child2);
 
 	var gotSender, eventName;
-	node.addListener({}, function (sender, event) {
+	node.on("nodeRemoved.cc", {}, function (sender, event) {
 		gotSender = sender;
-		eventName = event;
+		eventName = event.type;
 	});
 
 	node.remove(child);
@@ -84,14 +83,14 @@ test("toggle changes expanded and bubble notifies listeners", function () {
 	node.add(child);
 	node._expanded = false;
 
-	var obj = new Object();
+	var obj = {};
 	var status, eventName;
-	node.addListener(obj, function (sender, event, newStatus) {
-		eventName = event;
-		status = newStatus;
+	node.on("toggled.cc", obj, function (sender, event) {
+		eventName = event.type;
+		status = event.expanded;
 	});
 	node.toggle();
-	equal(eventName, "toggle");
+	equal(eventName, "toggled");
 	equal(status, true);
 	equal(node._expanded, true);
 	node.toggle();
@@ -223,17 +222,22 @@ test("childs triangle is in bounds", function () {
 	var node = createParentNode();
 	var childNode = new canvascontrols.TimelineTreeNode();
 	node.add(childNode);
-	ok(node.isInBounds({ x: 30, y: 45 }));
+	ok(node.isInBounds({ offsetX: 30, offsetY: 45 }));
 });
 
-test("detects click on triangles and calls expand", function () {
+test("detects click on triangles, calls expand and raises toggled.cc", function () {
 	var node = createParentNode();
 	var childNode = new canvascontrols.TimelineTreeNode();
 	var grandChildNode = new canvascontrols.TimelineTreeNode();
+	var toggled;
 	node.add(childNode);
 	childNode.add(grandChildNode);
-	node.evaluateClick({ x: 30, y: 37 });
+	node.on("toggled.cc", {}, function (s, e) {
+		toggled = true;
+	});
+	node._raise("click", { offsetX: 30, offsetY: 37 });
 	ok(childNode._expanded);
+	ok(toggled);
 });
 
 test("detects click on box and raises clicked event", function () {
@@ -244,30 +248,30 @@ test("detects click on box and raises clicked event", function () {
 	childNode.add(grandChildNode);
 
 	var clickedChild, eventName, clickedButton, sentData;
-	node.addListener({}, function (sender, event, child, data) {
-		eventName = event;
-		clickedChild = child;
-		clickedButton = data.button;
-		sentData = data;
+	node.on("click", {}, function (sender, event) {
+		eventName = event.type;
+		clickedChild = event.child;
+		clickedButton = event.which;
+		sentData = event;
 	});
 
-	node.evaluateClick({ x: 50, y: 37 });
+	node._raise("click", { offsetX: 50, offsetY: 37, which: 1 });
 
-	equal(sentData.x, 30);
-	equal(sentData.y, 7);
+	equal(sentData.offsetX, 30);
+	equal(sentData.offsetY, 7);
 	equal(sentData.originalX, 50);
 	equal(sentData.originalY, 37);
 	equal(eventName, "click");
 	equal(clickedChild._label, "child");
 	ok(clickedChild === childNode);
-	equal(clickedButton, "left");
+	equal(clickedButton, 1);
 
-	node.evaluateClick({ x: 70, y: 62, button: "right" });
+	node._raise("click", { offsetX: 70, offsetY: 62, which: 3 });
 
 	equal(eventName, "click");
 	equal(clickedChild._label, "grandchild");
 	ok(clickedChild === grandChildNode);
-	equal(clickedButton, "right");
+	equal(clickedButton, 3);
 });
 
 test("adding to a node notifies parent and parent updates bounds", function () {
@@ -344,7 +348,7 @@ test("detects and expands child on click", function () {
 	tree.add(child2);
 	child1.add(grandChild);
 	equal(child2.y(), 25);
-	tree.evaluateClick({ x: 10, y: 15 });
+	tree._raise("click", { offsetX: 10, offsetY: 15 });
 	ok(child1._expanded);
 	equal(child2.y(), 50);
 });
@@ -358,10 +362,10 @@ test("detects and raises event on child box click", function () {
 	tree.add(child2);
 	child1.add(grandChild);
 	var clickedChild;
-	tree.addListener({}, function (sender, event, child, button) {
-		clickedChild = child;
+	tree.on("click", {}, function (sender, event) {
+		clickedChild = event.child;
 	});
-	tree.evaluateClick({ x: 30, y: 15 });
+	tree._raise("click", { offsetX: 30, offsetY: 15 });
 	ok(clickedChild === child1);
 });
 

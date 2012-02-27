@@ -77,10 +77,10 @@ test("adjusts shape x and y when mouse is moved on canvas", function () {
 
 test("notifies listeners when shape is moved", function () {
 	var event, x, y;
-	dragView.addListener({}, function () {
-		event = arguments[1];
-		x = arguments[2].pageX;
-		y = arguments[2].pageY;
+	dragView.on("dragged.cc", {}, function (s, e) {
+		event = e.type;
+		x = e.pageX;
+		y = e.pageY;
 	});
 	dragView.startDrag(new canvascontrols.Shape(), 10, 10);
 	triggerMouseMove(100, 100);
@@ -95,19 +95,19 @@ test("stops dragging and hides when mouse released", function () {
 	updatePosition();
 	triggerMouseUp(canvasX + 50, canvasY + 60);
 	triggerMouseMove(canvasX + 100, canvasY + 100);
-	equal(dragView.css("display"), "none");
+	equal($("canvas").css("display"), "none");
 	equal(dragView.draggedShape, null);
 	equal(dragView._shapes.length, 0);
 	equal(shape.x(), 50);
 	equal(shape.y(), 60);
 });
 
-test("notifies listeners when drag stopped", function() {
+test("notifies listeners when drag stopped", function () {
 	var event, x, y;
-	dragView.addListener({}, function () {
-		event = arguments[1];
-		x = arguments[2].pageX;
-		y = arguments[2].pageY;
+	dragView.on("dragStopped.cc", {}, function (s, e) {
+		event = e.type;
+		x = e.pageX;
+		y = e.pageY;
 	});
 	dragView.startDrag(new canvascontrols.Shape(), 10, 10);
 	updatePosition();

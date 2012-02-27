@@ -2,12 +2,11 @@
 
 	cc.Image = cc.Shape.extend({
 		init: function (path) {
-			var _this = this;
 			this._super();
 			this._image = new Image();
 			this._image.src = path;
-			$(this._image).load(function () {
-				_this._onLoaded.apply(_this, arguments);
+			this._on($(this._image), "load", this, function () {
+				this._raise("loaded.cc");
 			});
 		},
 		paint: function (ctx) {
@@ -41,9 +40,6 @@
 		},
 		_loaded: function () {
 			return this._image.complete;
-		},
-		_onLoaded: function () {
-			this._notifyListeners("loaded");
 		}
 	});
 

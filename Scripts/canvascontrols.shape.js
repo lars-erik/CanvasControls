@@ -20,9 +20,6 @@
 		},
 		isInBounds: function () {
 			return false;
-		},
-		evaluateClick: function () {
-			return false;
 		}
 	});
 

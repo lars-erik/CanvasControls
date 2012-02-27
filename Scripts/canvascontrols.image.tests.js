@@ -65,8 +65,8 @@ test("can set width and/or height", function () {
 test("notifies listeners when image is loaded", function () {
 	var img = new canvascontrols.Image("path");
 	var event;
-	img.addListener({}, function (s, e) {
-		event = e;
+	img.on("loaded.cc", {}, function (s, e) {
+		event = e.type;
 	});
 	$(img._image).trigger("load");
 	equal(event, "loaded");

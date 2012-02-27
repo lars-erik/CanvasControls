@@ -7,11 +7,12 @@
 				children: []
 			}, options);
 			this._children = settings.children;
-			this._listeners = [];
+
+			this.on("click", this, this._evaluateClick);
 		},
 		add: function (node) {
 			node._y = this._getChildHeight();
-			node.addListener(this, this._childEvent);
+			node.on("toggled.cc nodeAdded.cc nodeRemoved.cc", this, this._childEvent);
 			this._children.push(node);
 			node._parent = this;
 			node._state = "new";
@@ -24,24 +25,20 @@
 			this._children = this._children.slice(0, index).concat(this._children.slice(index + 1));
 			this._hasChildren = this._children.length > 0;
 			this._updateBounds(index - 1);
-			this._notifyListeners("nodeRemoved", this);
+			this._raise("nodeRemoved.cc");
 		},
 		isInBounds: function (coords) {
 			return this._findChildAtCoords(coords) != null;
 		},
-		evaluateClick: function (data) {
+		_evaluateClick: function (sender, data) {
 			if (!data.originalX) {
-				data.originalX = data.x;
-				data.originalY = data.y;
+				data.originalX = data.offsetX;
+				data.originalY = data.offsetY;
 			}
 			var child = this._findChildAtCoords(data);
-			if (child != null)
-				child.evaluateClick($.extend(data, this._getChildOffset(data, child)));
-		},
-		clicked: function (node, data) {
-			if (!data.button)
-				data.button = "left";
-			this._notifyListeners("click", node, data);
+			if (child != null) {
+				child._evaluateClick(this, $.extend(data, this._getChildOffset(data, child)));
+			}
 		},
 		_paintChildren: function (context) {
 			for (var i = 0; i < this._children.length; i++) {
@@ -58,16 +55,9 @@
 			}
 			return height;
 		},
-		_childEvent: function (sender, event) {
-			var params = Array.prototype.slice.apply(arguments, [1, arguments.length]);
-			switch (event) {
-				case "toggle":
-				case "nodeAdded":
-				case "nodeRemoved":
-					this._childBoundsChanged(sender, event, arguments[2]);
-					break;
-			}
-			this._notifyListeners.apply(this, params);
+		_childEvent: function (sender, e) {
+			this._childBoundsChanged(sender, event);
+			this._raise(e.type + "." + e.namespace, e);
 		},
 		_childBoundsChanged: function (sender) {
 			var childIndex = this._findChild(sender);
@@ -94,13 +84,13 @@
 		},
 		_getChildOffset: function (coords, child) {
 			return {
-				x: coords.x - child.x(),
-				y: coords.y - child.y()
+				offsetX: coords.offsetX - child.x(),
+				offsetY: coords.offsetY - child.y()
 			};
 		},
 		_isInOwnOffset: function (coords) {
-			return coords.x >= 0 && coords.x <= this._width &&
-				coords.y >= 0 && coords.y <= this._height;
+			return coords.offsetX >= 0 && coords.offsetX <= this._width &&
+				coords.offsetY >= 0 && coords.offsetY <= this._height;
 		},
 		_findChildAtCoords: function (coords) {
 			for (var i = 0; i < this._children.length; i++) {
@@ -177,39 +167,39 @@
 		},
 		toggle: function () {
 			this._expanded = !this._expanded;
-			this._notifyListeners("toggle", this._expanded);
+			this._raise("toggled.cc", { expanded: this._expanded });
 		},
 		isInBounds: function (coords) {
 			if (this._isInOwnOffset(coords))
 				return true;
 			return this._super(coords);
 		},
-		evaluateClick: function (data) {
-			if (this._isInOwnOffset(data)) {
-				if (this._isTriangleClick(data)) {
+		_evaluateClick: function (sender, event) {
+			if (this._isInOwnOffset(event)) {
+				if (this._isTriangleClick(event)) {
 					this.toggle();
 				}
-				else if (this._isBoxClick(data)) {
-					this.clicked(this, data);
+				else if (this._isBoxClick(event)) {
+					event.child = this;
 				}
 			}
 			else {
-				this._super(data);
+				this._super(sender, event);
 			}
 		},
 		_isTriangleClick: function (coords) {
 			var centerY = this._height / 2;
-			return coords.x >= 5 && coords.x <= 15 &&
-				   coords.y >= centerY - 5 && coords.y <= centerY + 5;
+			return coords.offsetX >= 5 && coords.offsetX <= 15 &&
+				   coords.offsetY >= centerY - 5 && coords.offsetY <= centerY + 5;
 		},
 		_isBoxClick: function (coords) {
-			return coords.x >= this._boxX && coords.x < this._width &&
-				   coords.y >= 0 && coords.y <= this._height;
+			return coords.offsetX >= this._boxX && coords.offsetX < this._width &&
+				   coords.offsetY >= 0 && coords.offsetY <= this._height;
 		},
 		_getChildOffset: function (coords, child) {
 			return {
-				x: coords.x - child.x() - this._boxX,
-				y: coords.y - child.y() - this._height - 5
+				offsetX: coords.offsetX - child.x() - this._boxX,
+				offsetY: coords.offsetY - child.y() - this._height - 5
 			};
 		},
 		_drawExpandButton: function (context) {

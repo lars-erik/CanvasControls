@@ -5,8 +5,11 @@
 			var _this = this;
 			this._super(options);
 			this._jq.css("display", "none");
-			this._jq.mousemove(function (e) { _this.mouseMoved.apply(_this, [e]); });
-			this._jq.mouseup(function (e) { _this.mouseReleased.apply(_this, [e]); });
+			this.on("mousemove", this, this.mouseMoved);
+			this.on("mouseup", this, this.mouseReleased);
+			//			this._jq.mousemove(function (e) { _this.mouseMoved.apply(_this, [e]); });
+			//			this._jq.mouseup(function (e) { _this.mouseReleased.apply(_this, [e]); });
+
 		},
 		startDrag: function (shape, x, y) {
 			this.draggedShape = shape;
@@ -16,18 +19,18 @@
 			this._jq.css("display", "block");
 			this.paint();
 		},
-		mouseMoved: function (e) {
+		mouseMoved: function (s, e) {
 			if (this.draggedShape == null) return;
 			this._moveShape(e);
-			this._notifyListeners("dragged", { pageX: e.pageX, pageY: e.pageY });
+			this._raise("dragged.cc", { pageX: e.pageX, pageY: e.pageY });
 			this.paint();
 		},
-		mouseReleased: function (e) {
+		mouseReleased: function (s, e) {
 			if (this.draggedShape == null) return;
 			this._moveShape(e);
 			this.remove(this.draggedShape);
 			this.draggedShape = null;
-			this._notifyListeners("dragStopped", { pageX: e.pageX, pageY: e.pageY });
+			this._raise("dragStopped.cc", { pageX: e.pageX, pageY: e.pageY });
 			this.context.clearRect(0, 0, this.width(), this.height());
 			this._jq.css("display", "none");
 		},

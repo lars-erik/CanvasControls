@@ -215,6 +215,39 @@ test("does not apply events with . in name to canvas, but can raise", function (
 	equal(lastS, null);
 });
 
+test("fires own and passes mouse event with offset to controls", function () {
+	createCanvas();
+	var v = createView("canvas");
+	var shape1 = new MockShape({ x: 10, y: 20 });
+	var shape2 = new MockShape({ x: 30, y: 25 });
+	v.add(shape1);
+	v.add(shape2);
+	var canvasOffset = {
+		x: $("canvas").offset().left,
+		y: $("canvas").offset().top
+	};
+	var params = { pageX: canvasOffset.x + 12, pageY: canvasOffset.y + 23 };
+	var notified = [];
+	var notify = function (s, e) {
+		notified.push([s, e]);
+	};
+	shape1.on("mousedown", this, notify);
+	shape2.on("mousedown", this, notify);
+	v.on("mousedown", this, notify);
+	$("canvas").trigger($.Event("mousedown", params));
+	equal(notified.length, 2);
+	equal(notified[1][0], v);
+	equal(notified[0][0], shape1);
+	equal(notified[0][1].pageX, params.pageX);
+	equal(notified[0][1].pageY, params.pageY);
+	equal(notified[0][1].offsetX, 12);
+	equal(notified[0][1].offsetY, 23);
+	equal(notified[0][1].x, 2);
+	equal(notified[0][1].y, 3);
+	notEqual(notified[0][0], shape2);
+});
+
+
 /*
 	var shape1Clicked = false, shape2Clicked = false, offset;
 	shape1.evaluateClick = function (e) { offset = e; shape1Clicked = true; };

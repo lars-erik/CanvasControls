@@ -69,6 +69,8 @@
 			this._jq.attr("width", this._width = this._jq.width());
 			this._jq.attr("height", this._height = this._jq.height());
 
+			this.on("mousedown mouseup mousemove click", this, this._onMouseEvent);
+
 			//			this._jq.click(function (e) { self._canvasClicked.apply(self, [e]); });
 			//			this._jq.contextmenu(function (e) {
 			//				self._canvasClicked.apply(self, [e]);
@@ -102,12 +104,15 @@
 				y: coords.offsetY - shape.y()
 			};
 		},
-		_canvasClicked: function (e) {
+		_onMouseEvent: function (s, e) {
+			$.extend(e, {
+				offsetX: e.pageX - this._jq.offset().left,
+				offsetY: e.pageY - this._jq.offset().top
+			});
 			var shape = this.findShapeAt(e);
 			if (shape != null) {
 				var shapeOffset = this._getShapeOffset(shape, e);
-				shapeOffset.button = e.which == 1 ? "left" : e.which == 3 ? "right" : "middle"
-				shape.evaluateClick(shapeOffset);
+				shape._raise(e.type, $.extend(e, shapeOffset));
 			}
 		}
 	});
