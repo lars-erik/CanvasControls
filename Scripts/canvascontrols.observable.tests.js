@@ -16,7 +16,7 @@ module("observable base class", {
 
 test("notifies all listeners applying notify handler to observer", function () {
 	var observer = [];
-	var notify = function () {
+	var notify = function (s, e) {
 		observer.push(this);
 	};
 	var observers = [{ notify: notify }, { notify: notify}];
