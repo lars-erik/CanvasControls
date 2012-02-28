@@ -80,7 +80,9 @@
 					fraction /= 3.5;
 					alpha = 1 - fraction;
 				}
-				image.data[i + 3] = Math.round(alpha * 0xFF);
+				alpha = alpha + 0.5 > 1 ? 1 : alpha + 0.5;
+				if (image.data[i + 3] != 0)
+					image.data[i + 3] = Math.round(alpha * 0xFF);
 			}
 
 		}

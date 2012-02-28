@@ -241,8 +241,8 @@ test("detects click on triangles, calls expand and raises toggled.cc", function 
 });
 
 test("detects click on box and raises clicked event", function () {
-	var node = createParentNode({ label: "root" });
-	var childNode = new canvascontrols.TimelineTreeNode({ label: "child" });
+	var node = createParentNode({ label: "root", expanded: true });
+	var childNode = new canvascontrols.TimelineTreeNode({ label: "child", expanded: true });
 	var grandChildNode = new canvascontrols.TimelineTreeNode({ label: "grandchild" });
 	node.add(childNode);
 	childNode.add(grandChildNode);
@@ -327,7 +327,7 @@ module("canvascontrols.timeline.tree", {
 
 test("can create tree", function () {
 	var tree = new canvascontrols.TimelineTree();
-	notEqual(tree, null);
+	ok(tree != null);
 	ok(tree instanceof canvascontrols.TimelineTreeBase);
 });
 
@@ -355,9 +355,9 @@ test("detects and expands child on click", function () {
 
 test("detects and raises event on child box click", function () {
 	var tree = new canvascontrols.TimelineTree();
-	var child1 = new canvascontrols.TimelineTreeNode();
-	var child2 = new canvascontrols.TimelineTreeNode();
-	var grandChild = new canvascontrols.TimelineTreeNode();
+	var child1 = new canvascontrols.TimelineTreeNode({ label: "a" });
+	var child2 = new canvascontrols.TimelineTreeNode({ label: "b" });
+	var grandChild = new canvascontrols.TimelineTreeNode({ label: "a.a" });
 	tree.add(child1);
 	tree.add(child2);
 	child1.add(grandChild);
@@ -365,8 +365,9 @@ test("detects and raises event on child box click", function () {
 	tree.on("click", {}, function (sender, event) {
 		clickedChild = event.child;
 	});
-	tree._raise("click", { offsetX: 30, offsetY: 15 });
-	ok(clickedChild === child1);
+	tree._raise("click", { offsetX: 30, offsetY: 35 });
+	ok(clickedChild != null);
+	equal(clickedChild._label, child2._label);
 });
 
 test("calculates correct height after added node", function () {
@@ -385,6 +386,20 @@ test("calculates correct height after added node", function () {
 	equal(node.getHeight(), 120);
 	equal(node._children[2].y(), 75);
 	equal(tree._children[1].y(), 125);
+});
+
+test("can find position relative to tree", function () {
+	var tree = new canvascontrols.TimelineTree();
+	var node = new canvascontrols.TimelineTreeNode();
+	tree.add(node);
+	node.add(new canvascontrols.TimelineTreeNode());
+	node._children[0].add(new canvascontrols.TimelineTreeNode());
+	node._children[0].add(new canvascontrols.TimelineTreeNode());
+	node.toggle();
+	node._children[0].toggle();
+	equal(node._children[0]._children[0].globalX(), 40);
+	equal(node._children[0]._children[0].globalY(), 50);
+	equal(node._children[0]._children[1].globalY(), 75);
 });
 
 /*

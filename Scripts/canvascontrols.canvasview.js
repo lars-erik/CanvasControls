@@ -69,7 +69,7 @@
 			this._jq.attr("width", this._width = this._jq.width());
 			this._jq.attr("height", this._height = this._jq.height());
 
-			this.on("mousedown mouseup mousemove click", this, this._onMouseEvent);
+			this.on("mousedown mouseup mousemove click contextmenu", this, this._onMouseEvent);
 
 			//			this._jq.click(function (e) { self._canvasClicked.apply(self, [e]); });
 			//			this._jq.contextmenu(function (e) {

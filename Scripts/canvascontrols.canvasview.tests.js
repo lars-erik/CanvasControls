@@ -240,8 +240,8 @@ test("fires own and passes mouse event with offset to controls", function () {
 	equal(notified[0][0], shape1);
 	equal(notified[0][1].pageX, params.pageX);
 	equal(notified[0][1].pageY, params.pageY);
-	equal(notified[0][1].orignalX, 12);
-	equal(notified[0][1].orignalY, 23);
+	equal(notified[0][1].originalX, 12);
+	equal(notified[0][1].originalY, 23);
 	equal(notified[0][1].offsetX, 2);
 	equal(notified[0][1].offsetY, 3);
 	notEqual(notified[0][0], shape2);

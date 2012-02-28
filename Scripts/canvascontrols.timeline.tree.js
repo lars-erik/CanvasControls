@@ -8,7 +8,7 @@
 			}, options);
 			this._children = settings.children;
 
-			this.on("click", this, this._evaluateClick);
+			this.on("mousedown click contextmenu", this, this._evaluateClick);
 		},
 		add: function (node) {
 			node._y = this._getChildHeight();
@@ -131,14 +131,14 @@
 			this._hasChildren = settings.hasChildren;
 		},
 		globalX: function () {
-			if (this._parent != null) {
+			if (this._parent != null && !(this._parent instanceof cc.TimelineTree)) {
 				return this._parent.globalX() + this._parent._boxX + this._x;
 			} else {
 				return this._x;
 			}
 		},
 		globalY: function () {
-			if (this._parent != null) {
+			if (this._parent != null && !(this._parent instanceof cc.TimelineTree)) {
 				return this._parent.globalY() + this._parent._height + 5 + this._y;
 			} else {
 				return this._y;
@@ -153,6 +153,9 @@
 		},
 		paint: function (context) {
 			this._centerY = Math.round(this._height / 2);
+			context.fillStyle = "#FFFFFF";
+			context.fillRect(this._boxX, 0, this._width, this._height);
+			context.fillStyle = "#000000";
 			context.strokeRect(this._boxX, 0, this._width, this._height);
 			context.fillText(this._label, this._boxX + 5, this._centerY + 3);
 			if (this._hasChildren) {
@@ -176,7 +179,7 @@
 		},
 		_evaluateClick: function (sender, event) {
 			if (this._isInOwnOffset(event)) {
-				if (this._isTriangleClick(event)) {
+				if (event.type == "click" && this._isTriangleClick(event)) {
 					this.toggle();
 				}
 				else if (this._isBoxClick(event)) {
@@ -201,6 +204,10 @@
 				offsetX: coords.offsetX - child.x() - this._boxX,
 				offsetY: coords.offsetY - child.y() - this._height - 5
 			};
+		},
+		_findChildAtCoords: function (coords) {
+			if (!this._expanded) return null;
+			return this._super(coords);
 		},
 		_drawExpandButton: function (context) {
 			context.save();

@@ -9,6 +9,7 @@
 	<script src="Scripts/canvascontrols.observable.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.shape.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.canvasview.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.dragging.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.timeline.tree.js" type="text/javascript"></script>
 
 	<style type="text/css">
@@ -26,7 +27,8 @@
 </head>
 <body>
 	
-	<canvas style="width:100%;height:600px;"></canvas>
+	<canvas id="tree" style="position:absolute; width:100%;height:600px;"></canvas>
+	<canvas id="dragView" style="position:absolute; width:100%;height:600px;"></canvas>
 	
 	<div id="menu" class="menu">
 		<span id="add">add</span><br/>
@@ -35,7 +37,8 @@
 
 	<script type="text/javascript">
 
-		var canvasView = new canvascontrols.CanvasView("canvas");
+		var canvasView = new canvascontrols.CanvasView("#tree");
+		var dragView = new canvascontrols.DragView("#dragView");
 		var tree = new canvascontrols.TimelineTree();
 		var box1 = new canvascontrols.TimelineTreeNode({
 			label: "Boks 1"
@@ -74,16 +77,34 @@
 
 		var currentNode;
 
-		tree.on("contextmenu", { }, function(s, e) {
+		tree.on("contextmenu", {}, function (s, e) {
 			$("#menu").hide();
 			currentNode = e.child;
-			$("#menu").css("left", $("canvas").position().left + data.originalX);
-			$("#menu").css("top", $("canvas").position().top + data.originalY);
+			$("#menu").css("left", e.pageX);
+			$("#menu").css("top", e.pageY);
 			$("#menu").show();
+			e.preventDefault();
+		});
+
+		tree.on("toggled.cc nodeAdded.cc nodeRemoved.cc", {}, function () {
+			canvasView.paint();
 		});
 
 		tree.on("mousedown", {}, function (s, e) {
-			alert(e.child._label);
+			if (e.child != null) {
+				var height = e.child.getHeight();
+				var coords = {
+					x: e.child.globalX() + tree.x() + e.child._boxX,
+					y: e.child.globalY() + tree.y(),
+					w: e.child._width,
+					h: height > 50 ? 50 : height
+				};
+				var shape = canvascontrols.DragShape.create(
+					canvasView.context,
+					coords.x, coords.y, coords.w, coords.h
+				);
+				dragView.startDrag(shape, coords.x, coords.y);
+			}
 		});
 
 		$("#add").click(function () {
