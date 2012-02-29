@@ -2,6 +2,7 @@
 
     cc.MonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Des"];
     cc.QuarterNames = ["Q1", "Q2", "Q3", "Q4"];
+    cc.MouseButton = { "Left": 0, "Middle": 1, "Right": 3 };
 
     cc.TimelineBase = cc.Shape.extend({
         init: function (options) {
@@ -10,11 +11,17 @@
                 children: []
             }, options);
             this._children = settings.children;
-            this.on("click", this, this._evaluateClick);
+            this._isMouseDown = false;
+            this._currentX = 0;
+            this._previousX = 0;
+            this._offset = 0.5;
+            this.on("dblclick", this, this._evaluateDblClick);
             this.on("mousewheel", this, this._evaluateScroll);
+            this.on("mousedown", this, this._evalMouseDown);
+            this.on("mouseup mouseout", this, this._evalMouseUp);
+            this.on("mousemove", this, this._evalMouseMove);
         },
         add: function (node) {
-            node.on("toggled.cc nodeAdded.cc nodeRemoved.cc", this, this._childEvent);
             node._parent = this;
             this._children.push(node);
             this._raise("nodeAdded.cc", { parent: this, child: node });
@@ -29,7 +36,6 @@
             var x = 0;
             for (var i = 0; i < this._children.length; i++) {
                 var sw = context.canvas.width * this._children[i]._proportion;
-                //console.debug(this._children.length + " " + sw);
                 context.save();
                 context.translate(x, 0);
                 this._children[i]._width = sw;
@@ -39,30 +45,52 @@
                 x += sw;
             }
         },
-        _evaluateClick: function (sender, data) {
-
-            if (!data.originalX) {
-                data.originalX = data.offsetX;
-                data.originalY = data.offsetY;
+        _evalMouseDown: function (sender, data) {
+            if (data.button == cc.MouseButton.Left) {
+                this._isMouseDown = true;
+                this._currentX = data.pageX;
             }
-            var child = this._findChildAtCoords(data);
+        },
+        _evalMouseMove: function (sender, data) {
+            if (this._isMouseDown) {
+                var length = data.pageX - this._currentX;
+                this._currentX = data.pageX;
+
+                var child = this._getChild(data);
+                var steps = 0;
+
+                if (this._offset + length <= 0) {
+                    steps = parseInt(Math.abs(length) / child._width) + ((length % child._width) == 0 ? 0 : 1);
+                    this._offset += length + child._width * steps;
+                    this.getPeriod().shift(steps);
+                } else if (this._offset + length >= child._width) {
+                    steps = parseInt((this._offset + length) / child._width);
+                    this._offset = (this._offset + length) % child._width;
+                    this.getPeriod().shift(steps * -1);
+                } else {
+                    this._offset += length;
+                }
+                this._offset += length;
+            }
+        },
+        _evalMouseUp: function (sender, data) {
+            this._isMouseDown = false;
+        },
+        _evaluateClick: function (sender, data) {
+            var child = this._getChild(data);
 
             if (child != null) {
                 child._evaluateClick(this, $.extend(data, this._getChildOffset(data, child)));
             }
         },
+        _evaluateDblClick: function (sender, data) {
+            var child = this._getChild(data);
+            this.getPeriod().zoomTo(child._value);
+            this.clear();
+            this.createNodes();
+        },
         _evaluateScroll: function (sender, data) {
-            console.debug(data);
-            //console.debug(data.delta > 0 ? "zoomin" : "zoomout");
-            if (!data.originalX) {
-                data.originalX = data.offsetX;
-                data.originalY = data.offsetY;
-            }
-            var child = this._findChildAtCoords(data);
-
-            if (child != null) {
-                child._evaluateScroll(this, $.extend(data, this._getChildOffset(data, child)));
-            }
+            data.arg2 / Math.abs(data.arg2) > 0 ? this.getPeriod().zoomIn() : this.getPeriod().zoomOut();
         },
         _getChildOffset: function (coords, child) {
             return {
@@ -85,6 +113,13 @@
                     return child;
             };
             return null;
+        },
+        _getChild: function (data) {
+            if (!data.originalX) {
+                data.originalX = data.offsetX;
+                data.originalY = data.offsetY;
+            }
+            return this._findChildAtCoords(data);
         }
     });
 
@@ -94,19 +129,17 @@
             var settings = $.extend({
                 period: new cc.Period(new cc.Month())
             }, options);
-            //this.setPeriod(settings.period);
             this._period = settings.period;
         },
         paint: function (context) {
             this.clear();
-            this.setPeriod(this._period);
+            this.createNodes();
             this._paintChildren(context);
         },
         getPeriod: function () {
             return this._period;
         },
-        setPeriod: function (period) {
-            //this._period = period;
+        createNodes: function () {
             var view = this._period.getView();
             for (var i = 0; i < view.length; i++) {
                 this.add(new cc.TimelineNode(view[i]));
@@ -116,48 +149,70 @@
 
     cc.TimelineNode = cc.TimelineBase.extend({
         init: function (options) {
-            //console.debug(options);
             this._super(options);
             var settings = $.extend({
                 Active: false,
                 Header: null,
                 Label: "",
+                Value: null,
                 Subheader: false,
                 hasChildren: false,
                 Proportion: 0.1,
                 width: 100,
-                height: 20
+                height: 50
             }, options);
             this._active = settings.Active;
             this._header = settings.Header;
             this._label = settings.Label;
+            this._value = settings.Value;
             this._subheader = settings.Subheader;
             this._hasChildren = settings.hasChildren;
             this._proportion = settings.Proportion;
             this._width = settings.width;
             this._height = settings.height;
         },
-        paint: function (context) {
-            context.fillText(this._label, this._x + 40, this._y + 10);
+        _paintHeader: function (context) {
+            context.fillText(this._header, this._x + 5, this._y + 10);
+        },
+        _paintActive: function (context) {
+            context.fillStyle = "#CCCCFF";
+            context.fillRect(this._x, 20, this._width, 25);
+            context.fillStyle = "#000000";
+        },
+        _paintMeasuredLabel: function (context) {
+            var metric = context.measureText(this._label);
+            while (metric.width > this._width && this._label.length >= 0) {
+                this._label = this._label.substring(0, this._label.length - 1);
+                metric = context.measureText(this._label);
+            }
+            
+            context.fillText(this._label, (this._width - metric.width) / 2, this._y + 38);
+        },
+        _paintLine: function (context, x1, y1, x2, y2) {
             context.beginPath();
-            context.moveTo(this._x, 0);
-            context.lineTo(this._x, 20);
+            context.moveTo(x1, y1);
+            context.lineTo(x2, y2);
             context.stroke();
+        },
+        paint: function (context) {
+            if (this._header != null)
+                this._paintHeader(context);
+
+            if (this._active)
+                this._paintActive(context);
+
+            this._paintMeasuredLabel(context);
+
+            var height = this._header != null ? 45 : (this._subheader ? 35 : 25);
+            var y = this._header != null ? 0 : this._subheader ? 10 : 20;
+            this._paintLine(context, this._x, y, this._x, y + height);
         },
         isInBounds: function (coords) {
             if (this._isInOwnOffset(coords))
                 return true;
             return this._super(coords);
-        },
-        _evaluateClick: function (sender, data) {
-            console.debug(this._label + " " + this._width);
-            //this._parent.getPeriod().zoomIn();
-
-        },
-        _evaluateScroll: function (sender, data) {
-            
-            data.delta > 0 ? this._parent.getPeriod().zoomOut() : this._parent.getPeriod().zoomIn();
         }
+
     });
 
 

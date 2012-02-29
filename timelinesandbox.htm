@@ -28,7 +28,7 @@
 </head>
 <body>
 	
-    <canvas style="width:100%;height:100px;border:1px solid;"></canvas>
+    <canvas style="width:100%;height:45px;border-bottom:1px solid;"></canvas>
 	
     <div id="menu" class="menu">
         <span id="add">add</span><br/>
@@ -36,12 +36,22 @@
     </div>
     
     <script type="text/javascript">
+        if (console.debug == undefined)
+            console.debug = function (v) {
+                console.log(v);
+            };
         var canvasView = new canvascontrols.CanvasView("canvas");
         var timeline = new canvascontrols.Timeline();
         canvasView.add(timeline);
         canvasView.paint();
 
-        timeline.on("click mousewheel", {}, function () {
+        $(window).resize(function () {
+            console.debug("resize");
+            canvasView.paint();
+        });
+
+        timeline.on("dblclick mousewheel mousemove resize", {}, function () {
+           
             canvasView.paint();
         });
     </script>

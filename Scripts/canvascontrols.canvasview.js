@@ -69,7 +69,7 @@
             this._jq.attr("width", this._width = this._jq.width());
             this._jq.attr("height", this._height = this._jq.height());
 
-            this.on("mousewheel mousedown mouseup mousemove click contextmenu", this, this._onMouseEvent);
+            this.on("mousewheel mousedown mouseup mouseout mousemove click dblclick contextmenu", this, this._onMouseEvent);
 
             //			this._jq.click(function (e) { self._canvasClicked.apply(self, [e]); });
             //			this._jq.contextmenu(function (e) {
@@ -109,7 +109,10 @@
         _onMouseEvent: function (s, e) {
             $.extend(e, {
                 offsetX: e.pageX - this._jq.offset().left,
-                offsetY: e.pageY - this._jq.offset().top
+                offsetY: e.pageY - this._jq.offset().top,
+                arg2: arguments[2], 
+                arg3: arguments[3], 
+                arg4: arguments[4]
             });
             var shape = this.findShapeAt(e);
             if (shape != null) {
