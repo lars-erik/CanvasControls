@@ -20,12 +20,15 @@ test("can create shape", function () {
 	createShape({ x: 10, y: 10 });
 });
 
-test("initializes x and y to 0 if not set", function () {
+test("initializes x and y to 0 if not set", function() {
 	var s;
 	s = createShape();
 	equal(s.x(), 0);
 	equal(s.y(), 0);
-	s = createShape({ x: 10 });
+});
+
+test("initializes x and y from ctor args", function () {
+	var s = createShape({ x: 10 });
 	equal(s.x(), 10);
 	equal(s.y(), 0);
 	s = createShape({ y: 10 });
@@ -36,7 +39,45 @@ test("initializes x and y to 0 if not set", function () {
 	equal(s.y(), 10);
 });
 
-test("is in bounds defaults to false", function () {
+test("can set position using setPosition", function () {
 	var s = createShape();
-	equal(s.isInBounds({ x: 5, y: 5 }), false);
+	s.setPosition(15, 25);
+	equal(s.x(), 15);
+	equal(s.y(), 25);
 });
+
+test("initializes width and height to 0 if not set", function () {
+	var s = createShape();
+	equal(s.width(), 0);
+	equal(s.height(), 0);
+});
+
+test("initializes width and height from ctor args", function() {
+	s = createShape({ width: 35, height: 25 });
+	equal(s.width(), 35);
+	equal(s.height(), 25);
+});
+
+test("can set width and height using setSize", function() {
+	var s = createShape();
+	s.setSize(50, 30);
+	equal(s.width(), 50);
+	equal(s.height(), 30);
+});
+
+test("is in bounds if coords are larger than 0 and less that width/height respectively", function () {
+	var s = createShape({width:5, height:5});
+	equal(s.isInBounds({ offsetX: -1, offsetY: -1 }), false);
+	equal(s.isInBounds({ offsetX: 0, offsetY: 0 }), true);
+	equal(s.isInBounds({ offsetX: 3, offsetY: 3 }), true);
+	equal(s.isInBounds({ offsetX: 5, offsetY: 5 }), true);
+	equal(s.isInBounds({ offsetX: 6, offsetY: 6 }), false);
+});
+
+test("exposes _parent in parent()", function () {
+	var s = createShape();
+	var o = {};
+	equal(s.parent(), null);
+	s._parent = o;
+	equal(s.parent(), o);
+})

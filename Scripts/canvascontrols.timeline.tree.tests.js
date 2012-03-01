@@ -54,7 +54,7 @@ test("can add subnode and fires event", function () {
 	ok(child._parent === node);
 });
 
-test("can remove subnodes", function () {
+test("can remove subnodes and adjust other children's y", function () {
 	var node = new canvascontrols.TimelineTreeNode();
 	var child = new canvascontrols.TimelineTreeNode();
 	var child2 = new canvascontrols.TimelineTreeNode();
@@ -71,7 +71,7 @@ test("can remove subnodes", function () {
 	equal(node._children.length, 1);
 	ok(node._children[0] === child2);
 	equal(eventName, "nodeRemoved");
-	equal(node._children[0]._y, 0);
+	equal(node._children[0].y(), 25);
 	node.remove(child2);
 	equal(node._children.length, 0);
 	equal(node._hasChildren, false);
@@ -106,17 +106,21 @@ test("childless treenode only draws box and label", function () {
 		height: 25,
 		label: "Boks"
 	});
-	mock.logged = ["strokeRect","fillText"];
+	mock.logged = ["fillRect", "strokeRect","fillText"];
 	node.paint(mock);
-	equal(mock.logCalls, 2);
+	equal(mock.logCalls, 3);
 	notEqual(mock.calls.length, 0);
 	equal(mock.calls[0].args.x, 20);
 	equal(mock.calls[0].args.y, 0);
 	equal(mock.calls[0].args.w, 110);
 	equal(mock.calls[0].args.h, 25);
-	equal(mock.calls[1].args.text, "Boks");
-	equal(mock.calls[1].args.x, 25);
-	equal(mock.calls[1].args.y, 16);
+	equal(mock.calls[1].args.x, 20);
+	equal(mock.calls[1].args.y, 0);
+	equal(mock.calls[1].args.w, 110);
+	equal(mock.calls[1].args.h, 25);
+	equal(mock.calls[2].args.text, "Boks");
+	equal(mock.calls[2].args.x, 25);
+	equal(mock.calls[2].args.y, 16);
 });
 
 test("collapsed parent treenode draws triangle", function () {
@@ -124,7 +128,7 @@ test("collapsed parent treenode draws triangle", function () {
 	node._expanded = false;
 	mock.logged = ["save", "restore", "translate", "beginPath", "closePath", "stroke", "moveTo", "lineTo"];
 	node.paint(mock);
-	equal(mock.logCalls, 11);
+	equal(mock.logCalls, 12);
 	notEqual(mock.calls.length, 0);
 	equal(mock.calls[0].name, "save");
 	equal(mock.calls[1].name, "translate");
@@ -146,7 +150,7 @@ test("expanded parent treenode rotates before drawing triangle", function () {
 	var node = createParentNode();
 	mock.logged = ["translate", "rotate", "beginPath"];
 	node.paint(mock);
-	equal(mock.logCalls, 15);
+	equal(mock.logCalls, 16);
 	notEqual(mock.calls.length, 0);
 	equal(mock.calls[0].name, "translate");
 	equal(mock.calls[1].name, "rotate");
@@ -178,9 +182,9 @@ test("adjusts y of following children when one child is expanded", function () {
 	node.add(childNode);
 	node.add(childNode2);
 	childNode.add(grandChildNode);
-	equal(childNode2.y(), 25);
+	equal(childNode2.y(), 55);
 	childNode.toggle();
-	equal(childNode2.y(), 50);
+	equal(childNode2.y(), 80);
 });
 
 test("expanded parent treenode adjusts and draws children", function () {
@@ -193,17 +197,17 @@ test("expanded parent treenode adjusts and draws children", function () {
 	node.add(childNode2);
 	node.paint(mock);
 
-	equal(childNode.y(), 0);
-	equal(childNode2.y(), 25);
+	equal(childNode.y(), 25);
+	equal(childNode2.y(), 50);
 
 	equal(mock.calls.length, 12);
-	equal(mock.logCalls, 25);
+	equal(mock.logCalls, 28);
 
 	equal(mock.calls[3].name, "save");
 	equal(mock.calls[4].args.x, 20);
-	equal(mock.calls[4].args.y, 25);
+	equal(mock.calls[4].args.y, 0);
 	equal(mock.calls[9].args.x, 0);
-	equal(mock.calls[9].args.y, 25);
+	equal(mock.calls[9].args.y, 50);
 	equal(mock.calls[10].name, "restore");
 	equal(mock.calls[11].name, "restore");
 	equal(node.getHeight(), 70);
@@ -215,7 +219,7 @@ test("collapsed parent treenode does not draw children", function () {
 	var childNode = new canvascontrols.TimelineTreeNode();
 	node.add(childNode);
 	node.paint(mock);
-	equal(mock.logCalls, 11);
+	equal(mock.logCalls, 12);
 });
 
 test("childs triangle is in bounds", function () {
@@ -280,11 +284,13 @@ test("adding to a node notifies parent and parent updates bounds", function () {
 	var childNode2 = new canvascontrols.TimelineTreeNode();
 	node.add(childNode);
 	node.add(childNode2);
+	equal(childNode.y(), 30);
+	equal(childNode2.y(), 55);
 	childNode.toggle();
 	equal(childNode._expanded, true);
-	equal(childNode2.y(), 25);
+	equal(childNode2.y(), 55);
 	childNode.add(new canvascontrols.TimelineTreeNode());
-	equal(childNode2.y(), 50);
+	equal(childNode2.y(), 80);
 });
 
 test("can find position relative to root node", function () {
@@ -337,6 +343,12 @@ test("can add nodes to tree", function () {
 	ok(tree._hasChildren);
 	equal(tree._children.length, 1);
 	ok(tree._children[0]._parent === tree);
+	equal(tree._children[0].x(), 0);
+	equal(tree._children[0].y(), 0);
+	tree.add(new canvascontrols.TimelineTreeNode());
+	equal(tree._children.length, 2);
+	equal(tree._children[1].x(), 0);
+	equal(tree._children[1].y(), 25);
 });
 
 test("detects and expands child on click", function () {
@@ -384,7 +396,7 @@ test("calculates correct height after added node", function () {
 	equal(node.getHeight(), 95);
 	node.add(new canvascontrols.TimelineTreeNode());
 	equal(node.getHeight(), 120);
-	equal(node._children[2].y(), 75);
+	equal(node._children[2].y(), 100);
 	equal(tree._children[1].y(), 125);
 });
 
@@ -394,6 +406,7 @@ test("can find position relative to tree", function () {
 	tree.add(node);
 	node.add(new canvascontrols.TimelineTreeNode());
 	node._children[0].add(new canvascontrols.TimelineTreeNode());
+	node._children[0].children[0].add(new canvascontrols.TimelineTreeNode());
 	node._children[0].add(new canvascontrols.TimelineTreeNode());
 	node.toggle();
 	node._children[0].toggle();

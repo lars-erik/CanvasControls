@@ -2,14 +2,10 @@
 
 	cc.DragView = cc.CanvasView.extend({
 		init: function (options) {
-			var _this = this;
 			this._super(options);
 			this._jq.css("display", "none");
 			this.on("mousemove", this, this.mouseMoved);
 			this.on("mouseup", this, this.mouseReleased);
-			//			this._jq.mousemove(function (e) { _this.mouseMoved.apply(_this, [e]); });
-			//			this._jq.mouseup(function (e) { _this.mouseReleased.apply(_this, [e]); });
-
 		},
 		startDrag: function (shape, x, y) {
 			this.draggedShape = shape;
@@ -22,15 +18,15 @@
 		mouseMoved: function (s, e) {
 			if (this.draggedShape == null) return;
 			this._moveShape(e);
-			this._raise("dragged.cc", { pageX: e.pageX, pageY: e.pageY });
 			this.paint();
+			this._raise("dragged.cc", { pageX: e.pageX, pageY: e.pageY, offsetX: e.offsetX, offsetY: e.offsetY });
 		},
 		mouseReleased: function (s, e) {
 			if (this.draggedShape == null) return;
 			this._moveShape(e);
 			this.remove(this.draggedShape);
 			this.draggedShape = null;
-			this._raise("dragStopped.cc", { pageX: e.pageX, pageY: e.pageY });
+			this._raise("dragStopped.cc", { pageX: e.pageX, pageY: e.pageY, offsetX: e.offsetX, offsetY: e.offsetY });
 			this.context.clearRect(0, 0, this.width(), this.height());
 			this._jq.css("display", "none");
 		},

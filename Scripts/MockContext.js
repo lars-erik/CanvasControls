@@ -3,6 +3,7 @@
 	save: function () { this.log("save", arguments); },
 	restore: function () { this.log("restore", arguments); },
 	strokeRect: function (x, y, w, h) { this.log("strokeRect", arguments); },
+	fillRect: function (x, y, w, h) { this.log("fillRect", arguments); },
 	beginPath: function () { this.log("beginPath", arguments); },
 	closePath: function () { this.log("closePath", arguments); },
 	stroke: function () { this.log("stroke", arguments); },

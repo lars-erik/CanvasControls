@@ -52,3 +52,14 @@ test("can unsubscribe", function () {
 	subject._raise("evt.x");
 	equal(calls.length, 1);
 });
+
+test("on throws if handler is not a function", function () {
+	try {
+		subject.on("whatever", function() {
+			// forgot owner in the middle
+		});
+		ok(false);
+	} catch (e) {
+
+	}
+});

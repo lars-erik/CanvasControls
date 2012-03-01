@@ -5,8 +5,9 @@
 ///<reference path="MockContext.js"/>
 ///<reference path="canvascontrols.js"/>
 ///<reference path="canvascontrols.observable.js"/>
-///<reference path="canvascontrols.canvasview.js"/>
 ///<reference path="canvascontrols.shape.js"/>
+///<reference path="canvascontrols.compositeshape.js"/>
+///<reference path="canvascontrols.canvasview.js"/>
 
 var mock = new MockContext();
 
@@ -83,14 +84,6 @@ test("can add a shape", function () {
 	v.add(shape);
 	equal(v.getShapeCount(), 1);
 	equal(v.getShape(0), shape);
-});
-
-test("fails if adding an object not derived from shape", function() {
-	createCanvas();
-	var v = createView("canvas");
-	throwsError(function() {
-		v.add({ });
-	}, "did not throw error for added non-shape");
 });
 
 test("paint clears entire canvas and translates to 0.5,0.5", function () {

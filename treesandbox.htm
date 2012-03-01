@@ -107,6 +107,29 @@
 			}
 		});
 
+		var hoveredNode, lastE;
+		dragView.on("dragged.cc", {}, function (s, e) {
+			lastE = e;
+			hoveredNode = tree._findChildAtCoords(e);
+			if (hoveredNode == null) return;
+			while (hoveredNode != null && !hoveredNode._isInOwnOffset(e, true)) {
+				var child = hoveredNode._findChildAtCoords(e, true);
+				if (child != null) {
+					hoveredNode = child;
+				} else {
+					break;
+				}
+			}
+		});
+
+		dragView.onAfterPaint = function () {
+			dragView.context.fillStyle = "#000000";
+			dragView.context.fillText(
+				(hoveredNode != null ? hoveredNode._label : "-") + " " + 
+				(lastE ? lastE.offsetX + "," + lastE.offsetY : ""), 
+				$("#dragView").width() - 200, 20, 100);
+		};
+
 		$("#add").click(function () {
 			currentNode.add(new canvascontrols.TimelineTreeNode());
 			$("#menu").hide();

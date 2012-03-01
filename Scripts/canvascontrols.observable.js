@@ -10,7 +10,9 @@
 			this._off($(this), event, owner);
 		},
 		_on: function (subject, event, owner, handler) {
-			subject.on(event, owner, 
+			if (typeof (handler) != "function")
+				throw new Error("handler not supplied, did you forget owner?");
+			subject.on(event, owner,
 				$.proxy(function () {
 					handler.apply(owner, [this].concat(Array.prototype.slice.call(arguments)));
 				}, this)

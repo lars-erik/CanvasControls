@@ -11,7 +11,7 @@
 			this.on("mousedown click contextmenu", this, this._evaluateClick);
 		},
 		add: function (node) {
-			node._y = this._getChildHeight();
+			node._y = this._childYPadding() + this._getChildHeight();
 			node.on("toggled.cc nodeAdded.cc nodeRemoved.cc", this, this._childEvent);
 			this._children.push(node);
 			node._parent = this;
@@ -28,7 +28,9 @@
 			this._raise("nodeRemoved.cc");
 		},
 		isInBounds: function (coords) {
-			return this._findChildAtCoords(coords) != null;
+			return this._findChildAtCoords(coords) != null ||
+				coords.offsetX >= 0 && coords.offsetX <= this._width &&
+				coords.offsetY >= 0 && coords.offsetY <= this.getHeight();
 		},
 		_evaluateClick: function (sender, data) {
 			if (!data.originalX) {
@@ -73,7 +75,7 @@
 			return -1;
 		},
 		_updateBounds: function (startAt) {
-			var i, currentY = 0;
+			var i, currentY = this._childYPadding();
 			for (i = 0; i <= startAt; i++) {
 				currentY += this._children[i].getHeight() + 5;
 			}
@@ -100,6 +102,9 @@
 					return child;
 			};
 			return null;
+		},
+		_childYPadding: function () {
+			return 0;
 		}
 	});
 
@@ -139,7 +144,7 @@
 		},
 		globalY: function () {
 			if (this._parent != null && !(this._parent instanceof cc.TimelineTree)) {
-				return this._parent.globalY() + this._parent._height + 5 + this._y;
+				return this._parent.globalY() + this._y;
 			} else {
 				return this._y;
 			}
@@ -162,7 +167,7 @@
 				this._drawExpandButton(context);
 				if (this._expanded) {
 					context.save();
-					context.translate(this._boxX, this._height + 5);
+					context.translate(this._boxX, 0);
 					this._paintChildren(context);
 					context.restore();
 				}
@@ -202,7 +207,7 @@
 		_getChildOffset: function (coords, child) {
 			return {
 				offsetX: coords.offsetX - child.x() - this._boxX,
-				offsetY: coords.offsetY - child.y() - this._height - 5
+				offsetY: coords.offsetY - child.y()
 			};
 		},
 		_findChildAtCoords: function (coords) {
@@ -221,6 +226,9 @@
 			context.closePath();
 			context.stroke();
 			context.restore();
+		},
+		_childYPadding: function () {
+			return this._height + 5;
 		}
 	});
 
