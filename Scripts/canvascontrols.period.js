@@ -148,7 +148,7 @@
                 Label: date.getDate().toString(),
                 Value: date.getDate(),
                 Subheader: date.getDay() == 1,
-                Active: new Date().toDateString() == date.toDateString(),
+                Active: new Date().getDate() == date.getDate() && new Date().getMonth() == date.getMonth() && new Date().getFullYear() == date.getFullYear(), //new Date().toDateString() == date.toDateString(),
                 Proportion: 1 / this.getZoomLevel()
             };
         },
@@ -232,7 +232,7 @@
         zoomTo: function (quarter) {
             var date = this._cloneStart();
             date.setMonth(quarter * 3);
-            return new canvascontrols.Month({ start: date, zoom: 3 });
+            return new canvascontrols.Month({ start: date, zoom: 4 });
         },
         _setEnd: function (date) {
             date.setMonth(date.getMonth() + this.getZoomLevel() * 3);
@@ -256,7 +256,7 @@
                 Label: cc.QuarterNames[parseInt(date.getMonth() / 3)],
                 Value: parseInt(date.getMonth() / 3),
                 Subheader: false,
-                Active: new Date().toDateString() == date.toDateString(),
+                Active: parseInt(new Date().getMonth() / 3) == parseInt(date.getMonth() / 3) && new Date().getFullYear() == date.getFullYear(),
                 Proportion: daysInQuarter / daysInPeriod
             };
         },
@@ -266,7 +266,7 @@
             return date;
         },
         getInnerView: function () {
-            return new canvascontrols.Month({ start: this.getStart(), zoom: 3 });
+            return new canvascontrols.Month({ start: this.getStart(), zoom: 12 });
         },
         getOuterView: function () {
             var date = this._cloneStart();
@@ -307,7 +307,7 @@
                 Label: date.getFullYear().toString(),
                 Value: date.getFullYear(),
                 Subheader: false,
-                Active: new Date().toDateString() == date.toDateString(),
+                Active: new Date().getFullYear() == date.getFullYear(),//new Date().toDateString() == date.toDateString(),
                 Proportion: 1 / this.getZoomLevel()
             };
         },

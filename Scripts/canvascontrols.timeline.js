@@ -2,7 +2,7 @@
 
     cc.MonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Des"];
     cc.QuarterNames = ["Q1", "Q2", "Q3", "Q4"];
-    cc.MouseButton = { "Left": 0, "Middle": 1, "Right": 3 };
+    cc.MouseButton = { "Left": 0, "Middle": 1, "Right": 2 };
 
     cc.TimelineBase = cc.Shape.extend({
         init: function (options) {
@@ -15,11 +15,13 @@
             this._currentX = 0;
             this._previousX = 0;
             this._offset = 0.5;
+            this.on("click", this, this._onClick);
             this.on("dblclick", this, this._evaluateDblClick);
             this.on("mousewheel", this, this._evaluateScroll);
             this.on("mousedown", this, this._evalMouseDown);
             this.on("mouseup mouseout", this, this._evalMouseUp);
             this.on("mousemove", this, this._evalMouseMove);
+            this.on("periodChanged.cc", this, this._onPeriodChange);
         },
         add: function (node) {
             node._parent = this;
@@ -32,20 +34,29 @@
         isInBounds: function (coords) {
             return this._findChildAtCoords(coords) != null;
         },
+        _clearPaint: function () {
+            for (var i = 0; i < this._children.length; i++) {
+                var child = this._children[i];
+                child._selected = false;
+            }
+        },
         _paintChildren: function (context) {
             var x = 0;
             for (var i = 0; i < this._children.length; i++) {
-                var sw = context.canvas.width * this._children[i]._proportion;
+                var child = this._children[i];
+                var sw = context.canvas.width * child.getProportion();
                 context.save();
                 context.translate(x, 0);
-                this._children[i]._width = sw;
-                this._children[i].paint(context);
-                this._children[i]._x = x;
+                child._width = sw;
+                child._x = x;
+                child.paint(context);
+
                 context.restore();
                 x += sw;
             }
         },
         _evalMouseDown: function (sender, data) {
+
             if (data.button == cc.MouseButton.Left) {
                 this._isMouseDown = true;
                 this._currentX = data.pageX;
@@ -63,10 +74,12 @@
                     steps = parseInt(Math.abs(length) / child._width) + ((length % child._width) == 0 ? 0 : 1);
                     this._offset += length + child._width * steps;
                     this.getPeriod().shift(steps);
+                    this._raise("periodChanged.cc", { parent: this, child: sender });
                 } else if (this._offset + length >= child._width) {
                     steps = parseInt((this._offset + length) / child._width);
                     this._offset = (this._offset + length) % child._width;
                     this.getPeriod().shift(steps * -1);
+                    this._raise("periodChanged.cc", { parent: this, child: sender });
                 } else {
                     this._offset += length;
                 }
@@ -76,21 +89,29 @@
         _evalMouseUp: function (sender, data) {
             this._isMouseDown = false;
         },
-        _evaluateClick: function (sender, data) {
+        _onClick: function (sender, data) {
+
             var child = this._getChild(data);
 
             if (child != null) {
-                child._evaluateClick(this, $.extend(data, this._getChildOffset(data, child)));
+                child._onClick(this, $.extend(data, this._getChildOffset(data, child)));
+            }
+        },
+        _paintMe: function () {
+            if (this._parent != null) {
+                console.debug("i r the child");
             }
         },
         _evaluateDblClick: function (sender, data) {
             var child = this._getChild(data);
             this.getPeriod().zoomTo(child._value);
-            this.clear();
-            this.createNodes();
+            this._raise("periodChanged.cc", { parent: this, child: sender });
+            //this.clear();
+            //this.createNodes();
         },
         _evaluateScroll: function (sender, data) {
             data.arg2 / Math.abs(data.arg2) > 0 ? this.getPeriod().zoomIn() : this.getPeriod().zoomOut();
+            this._raise("periodChanged.cc", { parent: this, child: sender });
         },
         _getChildOffset: function (coords, child) {
             return {
@@ -109,8 +130,11 @@
             for (var i = 0; i < this._children.length; i++) {
                 var child = this._children[i];
                 var offset = this._getChildOffset(coords, child);
-                if (child.isInBounds(offset))
+                //console.debug("x:" + offset.offsetX + " y:" + offset.offsetY);
+                if (child.isInBounds(offset)) {
+                    //console.debug("in bounds x:" + offset.offsetX + " y:" + offset.offsetY);
                     return child;
+                }
             };
             return null;
         },
@@ -130,10 +154,11 @@
                 period: new cc.Period(new cc.Month())
             }, options);
             this._period = settings.period;
+            this.createNodes();
+            this._hasChildren = this._children.length > 0;
+
         },
         paint: function (context) {
-            this.clear();
-            this.createNodes();
             this._paintChildren(context);
         },
         getPeriod: function () {
@@ -142,8 +167,20 @@
         createNodes: function () {
             var view = this._period.getView();
             for (var i = 0; i < view.length; i++) {
-                this.add(new cc.TimelineNode(view[i]));
+                var n = new cc.TimelineNode(view[i]);
+                n.on("nodeClicked.cc", this, this._onNodeClick);
+                this.add(n);
             }
+        },
+        _onNodeClick: function (sender, data) {
+            this._clearPaint();
+            sender._selected = true;
+            this._raise("nodeClicked.cc", { parent: this, child: sender });
+        },
+        _onPeriodChange: function (sender, data) {
+            
+            this.clear();
+            this.createNodes();
         }
     });
 
@@ -170,14 +207,28 @@
             this._proportion = settings.Proportion;
             this._width = settings.width;
             this._height = settings.height;
+            this._context = null;
+            this._selected = false;
+
+        },
+        getProportion: function () {
+            return this._proportion;
         },
         _paintHeader: function (context) {
-            context.fillText(this._header, this._x + 5, this._y + 10);
+            context.fillText(this._header, 0 + 5, this._y + 10);
         },
         _paintActive: function (context) {
             context.fillStyle = "#CCCCFF";
-            context.fillRect(this._x, 20, this._width, 25);
+            context.fillRect(0, 20, this._width, 25);
             context.fillStyle = "#000000";
+        },
+        _paintCurrentSelection: function (context) {
+
+            if (context != null) {
+                context.fillStyle = "#EEEEEE";
+                context.fillRect(0, 20, this._width, 25);
+                context.fillStyle = "#000000";
+            }
         },
         _paintMeasuredLabel: function (context) {
             var metric = context.measureText(this._label);
@@ -185,21 +236,31 @@
                 this._label = this._label.substring(0, this._label.length - 1);
                 metric = context.measureText(this._label);
             }
-            
+
             context.fillText(this._label, (this._width - metric.width) / 2, this._y + 38);
         },
         _paintLine: function (context, x1, y1, x2, y2) {
             context.beginPath();
-            context.moveTo(x1, y1);
-            context.lineTo(x2, y2);
+            context.moveTo(0, y1);
+            context.lineTo(0, y2);
             context.stroke();
+
+           
+        },
+        _onClick: function (sender, data) {
+            
+            this._raise("nodeClicked.cc", { parent: this, child: null });
         },
         paint: function (context) {
+            this._context = context;
             if (this._header != null)
                 this._paintHeader(context);
 
             if (this._active)
                 this._paintActive(context);
+
+            if (this._selected)
+                this._paintCurrentSelection(context);
 
             this._paintMeasuredLabel(context);
 
@@ -211,6 +272,13 @@
             if (this._isInOwnOffset(coords))
                 return true;
             return this._super(coords);
+        },
+        _getChildOffset: function (coords, child) {
+            console.debug(child);
+            return {
+                offsetX: coords.offsetX - child.x() - this._width,
+                offsetY: coords.offsetY - child.y()
+            };
         }
 
     });

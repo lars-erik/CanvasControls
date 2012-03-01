@@ -49,11 +49,25 @@
             console.debug("resize");
             canvasView.paint();
         });
+        
+        timeline.on("nodeClicked.cc", {}, function (sender, data) {
 
-        timeline.on("dblclick mousewheel mousemove resize", {}, function () {
-           
+            console.debug("node clicked");
+            //console.debug(sender);
+            //console.debug(data);
             canvasView.paint();
         });
+        timeline.on("periodChanged.cc", {}, function (sender, data) {
+            canvasView.paint();
+
+            //console.debug(sender);
+            //console.debug(data);
+            //canvasView.paint();
+        });
+        /*timeline.on("resize", {}, function () {
+           
+            canvasView.paint();
+        });*/
     </script>
 </body>
 </html>
