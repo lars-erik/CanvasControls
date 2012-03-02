@@ -51,29 +51,29 @@
 			this._jq.attr("width", this._width = this._jq.width());
 			this._jq.attr("height", this._height = this._jq.height());
 
-//			this.on("mousedown mouseup mousemove click contextmenu", this, this._onMouseEvent);
+			//			this.on("mousedown mouseup mousemove click contextmenu", this, this._onMouseEvent);
 
 			this.context = this._canvas.getContext("2d");
 		} //,
-//		_getShapeOffset: function (shape, coords) {
-//			return {
-//				originalX: coords.offsetX,
-//				originalY: coords.offsetY,
-//				offsetX: coords.offsetX - shape.x(),
-//				offsetY: coords.offsetY - shape.y()
-//			};
+		//		_getShapeOffset: function (shape, coords) {
+		//			return {
+		//				originalX: coords.offsetX,
+		//				originalY: coords.offsetY,
+		//				offsetX: coords.offsetX - shape.x(),
+		//				offsetY: coords.offsetY - shape.y()
+		//			};
 		//		},
 		// todo: re-add onMouseEvent
-//		_onMouseEvent: function (s, e) {
-//			$.extend(e, {
-//				offsetX: e.pageX - this._jq.offset().left,
-//				offsetY: e.pageY - this._jq.offset().top
-//			});
-//			var shape = this.findShapeAt(e);
-//			if (shape != null) {
-//				var shapeOffset = this._getShapeOffset(shape, e);
-//				shape._raise(e.type, $.extend(e, shapeOffset));
-//			}
-//		}
+		//		_onMouseEvent: function (s, e) {
+		//			$.extend(e, {
+		//				offsetX: e.pageX - this._jq.offset().left,
+		//				offsetY: e.pageY - this._jq.offset().top
+		//			});
+		//			var shape = this.findShapeAt(e);
+		//			if (shape != null) {
+		//				var shapeOffset = this._getShapeOffset(shape, e);
+		//				shape._raise(e.type, $.extend(e, shapeOffset));
+		//			}
+		//		}
 	});
 })(canvascontrols);

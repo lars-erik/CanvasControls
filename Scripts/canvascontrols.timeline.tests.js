@@ -1,7 +1,85 @@
 ﻿/// <reference path="jquery-1.7.1.js" />
+/// <reference path="jquery-mousewheel-3.0.6/jquery.mousewheel.js" />
+/// <reference path="class.js"/>
+/// <reference path="qunit.extensions.js"/>
+/// <reference path="Mock.js"/>
+/// <reference path="MockContext.js"/>
 /// <reference path="canvascontrols.js"/>
+/// <reference path="canvascontrols.period.js"/>
+/// <reference path="canvascontrols.js"/>
+/// <reference path="canvascontrols.observable.js"/>
+/// <reference path="canvascontrols.canvasview.js"/>
+/// <reference path="canvascontrols.shape.js"/>
 /// <reference path="canvascontrols.timeline.js"/>
 
+var mock = new MockContext();
+
+module("canvascontrols.timeline", {
+    setup: function () {
+        mock.reset();
+    },
+    teardown: function () {
+    }
+});
+
+test("can create TimelineNode", function () {
+    var node = new canvascontrols.TimelineNode();
+    ok(node != null);
+    ok(node instanceof canvascontrols.Shape);
+    ok(node instanceof canvascontrols.TimelineNode);
+    equal(node._width, 100);
+    equal(node._height, 50);
+    equal(node._label, "");
+    equal(node._hasChildren, false);
+    equal(node._proportion, 0.1);
+});
+
+test("can create timeline", function () {
+    var timeline = new canvascontrols.Timeline();
+    ok(timeline != null);
+    ok(timeline instanceof canvascontrols.Shape);
+    ok(timeline instanceof canvascontrols.Timeline);
+});
+
+test("timeline has nodes", function () {
+    var timeline = new canvascontrols.Timeline();
+    equal(timeline._children.length, 13);
+});
+
+test("timeline has default period", function () {
+    var timeline = new canvascontrols.Timeline();
+    ok(timeline.getPeriod() instanceof canvascontrols.Period);
+});
+
+test("can add node and fires event", function () {
+    var timeline = new canvascontrols.Timeline();
+    var node = new canvascontrols.TimelineNode();
+    var firedEvent, eventName;
+    timeline.on("nodeAdded.cc", {}, function (sender, params) {
+        firedEvent = true;
+        eventName = params.type;
+        ok(timeline === sender);
+        ok(timeline === params.parent);
+        ok(node === params.child);
+    });
+    timeline.add(node);
+    ok(firedEvent);
+    equal(eventName, "nodeAdded");
+    ok(timeline._hasChildren);
+    equal(timeline._children.length, 14);
+    ok(timeline._children[13] === node);
+    ok(node._parent === timeline);
+});
+
+test("can clear nodes", function () {
+    var timeline = new canvascontrols.Timeline();
+    equal(timeline._children.length, 13);
+    timeline.clear();
+    equal(timeline._children.length, 0);
+    timeline.createNodes();
+    equal(timeline._children.length, 13);
+});
+/*
 var fakeView;
 
 module("canvascontrols.timeline", {
@@ -216,4 +294,4 @@ test("fires drawn event when drawn", function () {
 	equals(draws[0].period.getZoomLevel(), 12);
 	equals(draws[1].offset, 40.5);
 	equals(draws[2].offset, 30.5);
-});
+});*/
