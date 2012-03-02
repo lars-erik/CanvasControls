@@ -8,7 +8,8 @@
     <script src="Scripts/jquery-mousewheel-3.0.6/jquery.mousewheel.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.observable.js" type="text/javascript"></script>
-	<script src="Scripts/canvascontrols.shape.js" type="text/javascript"></script>
+    <script src="Scripts/canvascontrols.shape.js" type="text/javascript"></script>
+    <script src="Scripts/canvascontrols.compositeshape.js" type="text/javascript"></script>
     <script src="Scripts/canvascontrols.canvasview.js" type="text/javascript"></script>
     <script src="Scripts/canvascontrols.period.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.timeline.js" type="text/javascript"></script>
@@ -36,38 +37,30 @@
     </div>
     
     <script type="text/javascript">
-        if (console.debug == undefined)
-            console.debug = function (v) {
+        // For IE
+        if (console.debug == undefined) {
+            console.debug = function(v) {
                 console.log(v);
             };
+        }
+        
         var canvasView = new canvascontrols.CanvasView("canvas");
         var timeline = new canvascontrols.Timeline();
         canvasView.add(timeline);
         canvasView.paint();
 
         $(window).resize(function () {
-            console.debug("resize");
             canvasView.paint();
         });
         
         timeline.on("nodeClicked.cc", {}, function (sender, data) {
-
-            console.debug("node clicked");
-            //console.debug(sender);
-            //console.debug(data);
             canvasView.paint();
         });
         timeline.on("periodChanged.cc", {}, function (sender, data) {
+            //console.debug("Period changed");
             canvasView.paint();
-
-            //console.debug(sender);
-            //console.debug(data);
-            //canvasView.paint();
         });
-        /*timeline.on("resize", {}, function () {
-           
-            canvasView.paint();
-        });*/
+        
     </script>
 </body>
 </html>

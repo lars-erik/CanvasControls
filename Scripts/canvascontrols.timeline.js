@@ -56,7 +56,7 @@
             }
         },
         _evalMouseDown: function (sender, data) {
-
+            console.debug("Mouse down");
             if (data.button == cc.MouseButton.Left) {
                 this._isMouseDown = true;
                 this._currentX = data.pageX;
@@ -96,6 +96,25 @@
             if (child != null) {
                 child._onClick(this, $.extend(data, this._getChildOffset(data, child)));
             }
+            var out;
+            switch (this._period.getName()) {
+                case "Year":
+                    out = child._date.getFullYear();
+                    break;
+                case "Quarter":
+                    out = child._date.getFullYear() + " " + parseInt((child._date.getMonth() / 3) + 1);
+                    break;
+                case "Month":
+                    out = child._date.getFullYear() + " " + child._date.getMonth();
+                    break;
+                case "Day":
+                    out = child._date.getFullYear() + " " + child._date.getMonth() + " " + child._date.getDate();
+                    break;
+                default:
+                    out = "Wut?";
+                    break;
+            }
+            console.debug(out);
         },
         _paintMe: function () {
             if (this._parent != null) {
@@ -104,13 +123,14 @@
         },
         _evaluateDblClick: function (sender, data) {
             var child = this._getChild(data);
-            this.getPeriod().zoomTo(child._value);
+            console.debug(child);
+            this.getPeriod().zoomTo(child._date);
             this._raise("periodChanged.cc", { parent: this, child: sender });
-            //this.clear();
-            //this.createNodes();
         },
         _evaluateScroll: function (sender, data) {
-            data.arg2 / Math.abs(data.arg2) > 0 ? this.getPeriod().zoomIn() : this.getPeriod().zoomOut();
+            //console.debug(data);
+            //console.debug(data.deltaY / Math.abs(data.deltaY));
+            data.deltaY / Math.abs(data.deltaY) > 0 ? this.getPeriod().zoomIn() : this.getPeriod().zoomOut();
             this._raise("periodChanged.cc", { parent: this, child: sender });
         },
         _getChildOffset: function (coords, child) {
@@ -144,6 +164,11 @@
                 data.originalY = data.offsetY;
             }
             return this._findChildAtCoords(data);
+        },
+        _onPeriodChange: function (sender, data) {
+            //console.debug("plop");
+            this.clear();
+            this.createNodes();
         }
     });
 
@@ -178,7 +203,7 @@
             this._raise("nodeClicked.cc", { parent: this, child: sender });
         },
         _onPeriodChange: function (sender, data) {
-            
+
             this.clear();
             this.createNodes();
         }
@@ -196,8 +221,10 @@
                 hasChildren: false,
                 Proportion: 0.1,
                 width: 100,
-                height: 50
+                height: 50,
+                Date: null
             }, options);
+            this._date = settings.Date;
             this._active = settings.Active;
             this._header = settings.Header;
             this._label = settings.Label;
@@ -245,10 +272,10 @@
             context.lineTo(0, y2);
             context.stroke();
 
-           
+
         },
         _onClick: function (sender, data) {
-            
+
             this._raise("nodeClicked.cc", { parent: this, child: null });
         },
         paint: function (context) {

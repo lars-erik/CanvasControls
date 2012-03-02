@@ -125,7 +125,9 @@
         },
         zoomTo: function (to) {
             this._zoomLevel = 1;
-            this._startDate.setDate(to);
+            this._startDate.setFullYear(to.getFullYear());
+            this._startDate.setMonth(to.getMonth());
+            this._startDate.setDate(to.getDate() + 1);
             return this;
         },
         _setEnd: function (date) {
@@ -149,7 +151,8 @@
                 Value: date.getDate(),
                 Subheader: date.getDay() == 1,
                 Active: new Date().getDate() == date.getDate() && new Date().getMonth() == date.getMonth() && new Date().getFullYear() == date.getFullYear(), //new Date().toDateString() == date.toDateString(),
-                Proportion: 1 / this.getZoomLevel()
+                Proportion: 1 / this.getZoomLevel(),
+                Date: new Date(date.getFullYear(), date.getMonth(), date.getDate())
             };
         },
         getInnerView: function () {
@@ -178,7 +181,7 @@
             this._startDate.setMonth(this._startDate.getMonth() + amount);
         },
         zoomTo: function (to) {
-            return new cc.Day({ start: new Date(this.getStart().getFullYear(), to, 1), zoom: 30 });
+            return new cc.Day({ start: new Date(to.getFullYear(), to.getMonth(), 1), zoom: 30 });
         },
         _setEnd: function (date) {
             date.setMonth(date.getMonth() + this._zoomLevel);
@@ -199,7 +202,8 @@
                 Subheader: date.getMonth() % 3 == 0,
                 Active: new Date().toDateString() == date.toDateString(),
                 Proportion: daysInMonth / daysInPeriod,
-                DaysInMonth: daysInMonth
+                DaysInMonth: daysInMonth,
+                Date: new Date(date.getFullYear(), date.getMonth(), date.getDate())
             };
         },
         getViewStart: function () {
@@ -229,9 +233,10 @@
         shift: function (amount) {
             this._startDate.setMonth(this._startDate.getMonth() + amount * 3);
         },
-        zoomTo: function (quarter) {
+        zoomTo: function (to) {
             var date = this._cloneStart();
-            date.setMonth(quarter * 3);
+            date.setMonth(to.getMonth());
+            date.setFullYear(to.getFullYear());
             return new canvascontrols.Month({ start: date, zoom: 4 });
         },
         _setEnd: function (date) {
@@ -257,7 +262,8 @@
                 Value: parseInt(date.getMonth() / 3),
                 Subheader: false,
                 Active: parseInt(new Date().getMonth() / 3) == parseInt(date.getMonth() / 3) && new Date().getFullYear() == date.getFullYear(),
-                Proportion: daysInQuarter / daysInPeriod
+                Proportion: daysInQuarter / daysInPeriod,
+                Date: new Date(date.getFullYear(), date.getMonth(), date.getDate())
             };
         },
         getViewStart: function () {
@@ -307,8 +313,9 @@
                 Label: date.getFullYear().toString(),
                 Value: date.getFullYear(),
                 Subheader: false,
-                Active: new Date().getFullYear() == date.getFullYear(),//new Date().toDateString() == date.toDateString(),
-                Proportion: 1 / this.getZoomLevel()
+                Active: new Date().getFullYear() == date.getFullYear(), //new Date().toDateString() == date.toDateString(),
+                Proportion: 1 / this.getZoomLevel(),
+                Date: new Date(date.getFullYear(), date.getMonth(), date.getDate())
             };
         },
         getViewStart: function () {
