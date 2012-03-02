@@ -19,7 +19,7 @@ http://brandonaaron.net/code/mousewheel/docs
 ### Observable
 
 Base class for CanvasView and Shape.
-Standard observer pattern. (Uses listener instead of subscriber)
+Adapts the jQuery functions on and trigger.
 
 ### Shape
 
