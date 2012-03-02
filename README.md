@@ -21,15 +21,21 @@ http://brandonaaron.net/code/mousewheel/docs
 Base class for CanvasView and Shape.
 Standard observer pattern. (Uses listener instead of subscriber)
 
-### CanvasView
-
-Adapter for the canvas element. Contains shapes and controls "painting" and translation.
-
 ### Shape
 
 Base class for shapes and controls. Is called from canvasview or parent for painting.
 `Paint` receives the 2D canvas context translated to the shape's x and y coordinates,
 so the shape can draw itself from 0,0.
+
+### CompositeShape (new)
+
+Base class for shapes with child shapes. Contains all logic for transforming coordinates
+and pushing events to children.
+
+### CanvasView
+
+Adapter for the canvas element. Derives from compositeshape, but has some more logic
+for interacting with the canvas.
 
 ### DragView
 
@@ -153,6 +159,39 @@ This is the code from dragsandbox.htm
 		);
 		dragView.startDrag(dragShape, e.x, e.y);
 	}
+```
+
+A hoverable composite box
+
+```javascript
+
+		var CompositeBox = canvascontrols.CompositeShape.extend({
+			init: function (options) {
+				this._super(options);
+				this.l = options.l;
+				this.hovered = false;
+
+				this.on("mouseover", this, function () {
+					this.hovered = true;
+				});
+
+				this.on("mouseout", this, function () {
+					this.hovered = false;
+				});
+			},
+			paint: function (context) {
+				context.save();
+				context.fillStyle = "#FFFFFF";
+				context.strokeStyle = this.hovered ? "#0000FF" : "#000000";
+				context.fillRect(0, 0, this.width(), this.height());
+				context.strokeRect(0, 0, this.width(), this.height());
+				context.fillStyle = "#000000";
+				context.fillText(this.l, 0, this.height());
+				context.restore();
+				this._super(context);
+			}
+		});
+
 ```
 
 ## Current status / todos
