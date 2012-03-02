@@ -119,46 +119,48 @@ This is the code from animationsandbox.htm
 This is the code from dragsandbox.htm
 
 ```javascript
-	$("#root").height($(window).height());
+		$("#root").height($(window).height());
 
-	var rootView = new canvascontrols.CanvasView("#root");
-	var dragView = new canvascontrols.DragView("#drag");
+		var rootView = new canvascontrols.CanvasView("#root");
+		var dragView = new canvascontrols.DragView("#drag");
 
-	// this is the windows sample pictures koala.
-	// add the hacking folder and image to your project to see something. :)
-	var img = new canvascontrols.Image("hacking/koala.jpg");
-	rootView.add(img);
-	img.addListener({}, function (s, e) {
-		if (e == "loaded") {
+		// this is the windows sample pictures koala.
+		// add the hacking folder and image to your project to see something. :)
+		var img = new canvascontrols.Image("hacking/koala.jpg");
+		rootView.add(img);
+		img.on("loaded.cc", {}, function (s, e) {
 			imageLoaded();
-		}
-		else if (e == "clicked") {
-			startIt(arguments[2]);
-		}
-	});
+		});
 
-	dragView.addListener({}, function (s, e, pos) {
-		if (e == "dragStopped") {
-			img._x = pos.pageX - $("#root").offset().left;
-			img._y = pos.pageY - $("#root").offset().top;
+		img.on("mousedown", img, function (s, e) {
+			startIt(e);
+		});
+
+		dragView.on("dragStopped.cc", {}, function (s, e) {
+			img._x = e.pageX - $("#root").offset().left;
+			img._y = e.pageY - $("#root").offset().top;
+			rootView.paint();
+		});
+
+		function imageLoaded() {
+			var size = img.getSize();
+			img.setSize(300, 300 * size.height / size.width);
 			rootView.paint();
 		}
-	});
 
-	function imageLoaded() {
-		var size = img.getSize();
-		img.setSize(300, 300 * size.height / size.width);
-		rootView.paint();
-	}
+		function startIt(e) {
+			var ctx = $("#root")[0].getContext("2d");
+			var dragShape = canvascontrols.DragShape.create(
+				ctx,
+				img.x(), img.y(), 200, 150
+			);
+			dragView.startDrag(
+				dragShape,
+				$("#root").offset().left - e.pageX,
+				$("#root").offset().top - e.pageY
+			);
+		}
 
-	function startIt(e) {
-		var ctx = $("#root")[0].getContext("2d");
-		var dragShape = canvascontrols.DragShape.create(
-			ctx,
-			img.x(), img.y(), 200, 150
-		);
-		dragView.startDrag(dragShape, e.x, e.y);
-	}
 ```
 
 A hoverable composite box
