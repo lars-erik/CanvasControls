@@ -37,8 +37,7 @@ test("puts image data if image is loaded", function () {
 	var img = new canvascontrols.Image("path");
 	img._loaded = function () { return true; };
 	mock.logged = ["drawImage"];
-	img._x = 15;
-	img._y = 20;
+	img.setPosition(15, 20);
 	img.paint(mock);
 	equal(mock.calls.length, 1);
 	equal(mock.calls[0].name, "drawImage");

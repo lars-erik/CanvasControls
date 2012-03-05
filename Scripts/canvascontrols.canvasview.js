@@ -51,7 +51,6 @@
             this._jq.attr("width", this._width = this._jq.width());
             this._jq.attr("height", this._height = this._jq.height());
 
-            this.on("mousedown mouseup dblclick click contextmenu", this, this._onMouseEvent);
             this.on("mousewheel", this, this._onMouseWheel);
             this.context = this._canvas.getContext("2d");
         },
@@ -69,18 +68,6 @@
             }
             var shape = this.findShapeAt(e);
             shape._raise(e.type, e);
-        },
-        _onMouseEvent: function (s, e) {
-            $.extend(e, {
-                offsetX: e.pageX - this._jq.offset().left,
-                offsetY: e.pageY - this._jq.offset().top
-            });
-
-            var shape = this.findShapeAt(e);
-            if (shape != null) {
-                var shapeOffset = this._getChildCoords(e, shape);
-                shape._raise(e.type, $.extend(e, shapeOffset));
-            }
         }
     });
 })(canvascontrols);

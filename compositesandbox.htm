@@ -34,7 +34,7 @@
 			},
 			paint: function (context) {
 				context.save();
-				context.fillStyle = "#FFFFFF";
+				context.fillStyle = this.hovered ? "#CCCCCC" : "#FFFFFF";
 				context.strokeStyle = this.hovered ? "#0000FF" : "#000000";
 				context.fillRect(0, 0, this.width(), this.height());
 				context.strokeRect(0, 0, this.width(), this.height());

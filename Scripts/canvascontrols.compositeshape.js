@@ -5,7 +5,17 @@
 			this._super(options);
 			this._shapes = [];
 
+			this.on("mousedown mouseup dblclick click contextmenu", this, this._onMouseEvent);
 			this.on("mousemove", this, this._onMouseMove);
+			this.on("mouseout", this, this._onMouseOut);
+		},
+		globalX: function () {
+			if (this.parent() == null) return this.x();
+			return this.parent().globalX() + this.x();
+		},
+		globalY: function () {
+			if (this.parent() == null) return this.y();
+			return this.parent().globalY() + this.y();
 		},
 		add: function (shape) {
 			if (!(shape instanceof cc.Shape))
@@ -46,22 +56,17 @@
 			}
 		},
 		findShapeAt: function (coords) {
-			if (this.isInBounds(coords)) {
-				for (var i = 0; i < this._shapes.length; i++) {
-					var child = this._shapes[i];
-					var childCoords = this._getChildCoords(coords, child);
-					if (child.isInBounds(childCoords)) {
-						var candidate;
-						if (child instanceof cc.CompositeShape) {
-							candidate = child.findShapeAt(childCoords);
-						} else {
-							candidate = child;
-						}
-						if (candidate != null)
-							return candidate;
-					}
+			for (var i = 0; i < this._shapes.length; i++) {
+				var child = this._shapes[i];
+				var childCoords = this._getChildCoords(coords, child);
+				if (child.isInBounds(childCoords)) {
+					var candidate;
+					if (child instanceof cc.CompositeShape)
+						candidate = child.findShapeAt(childCoords);
+					if (candidate == null)
+						candidate = child;
+					return candidate;
 				}
-				return this;
 			}
 			return null;
 		},
@@ -80,12 +85,39 @@
 						child.__isHovered = true;
 						child._raise("mouseover", childCoords);
 					}
-					child._raise(e.type, $.extend(e, $.extend(e, childCoords)));
+					child._raise(e.type, $.extend(e, childCoords));
 				} else if (child.__isHovered) {
-					child.__isHovered = false;
-					child._raise("mouseout", childCoords);
+					this._raiseChildMouseOut(child, childCoords);
 				}
 			}
+		},
+		_onMouseOut: function (s, e) {
+			for (var i = 0; i < this._shapes.length; i++) {
+				var child = this._shapes[i];
+				if (child.__isHovered) {
+					var childCoords = this._getChildCoords(e, child);
+					this._raiseChildMouseOut(child, childCoords);
+				}
+			}
+		},
+		_raiseChildMouseOut: function (child, childCoords) {
+			child.__isHovered = false;
+			child._raise("mouseout", childCoords);
+		},
+		_onMouseEvent: function (s, e) {
+			if (e.handlers == undefined)
+				e.handlers = [];
+			for (var i = 0; i < this._shapes.length; i++) {
+				var child = this._shapes[i];
+				var childCoords = this._getChildCoords(e, child);
+				if (child.isInBounds(childCoords)) {
+					var originalOffset = { offsetX: e.offsetX, offsetY: e.offsetY };
+					$.extend(e, childCoords);
+					child._raise(e.type, e);
+					$.extend(e, originalOffset);
+				}
+			}
+			e.handlers.push(this);
 		}
 	});
 

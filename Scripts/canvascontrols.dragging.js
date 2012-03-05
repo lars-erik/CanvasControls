@@ -19,7 +19,12 @@
 			if (this.draggedShape == null) return;
 			this._moveShape(e);
 			this.paint();
-			this._raise("dragged.cc", { pageX: e.pageX, pageY: e.pageY, offsetX: e.offsetX, offsetY: e.offsetY });
+			this._raise("dragged.cc", {
+				pageX: e.pageX,
+				pageY: e.pageY,
+				offsetX: e.pageX - this._jq.offset().left, 
+				offsetY: e.pageY - this._jq.offset().top
+			});
 		},
 		mouseReleased: function (s, e) {
 			if (this.draggedShape == null) return;
@@ -47,11 +52,9 @@
 		init: function (options, imageData) {
 			this._super(options);
 			this._imageData = imageData;
-			this.width = options.width;
-			this.height = options.height;
 		},
 		paint: function (ctx) {
-			ctx.putImageData(this._imageData, this.x(), this.y(), 0, 0, this.width, this.height);
+			ctx.putImageData(this._imageData, this.x(), this.y(), 0, 0, this.width(), this.height());
 		}
 	});
 

@@ -8,6 +8,7 @@
 	<script src="Scripts/canvascontrols.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.observable.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.shape.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.compositeshape.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.canvasview.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.dragging.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.timeline.tree.js" type="text/javascript"></script>
@@ -70,16 +71,13 @@
 		tree.add(box2);
 		canvasView.add(tree);
 
-		var obj = new Object();
-//		tree.on("toggled.cc nodeRemoved.cc nodeAdded.cc", obj, repaint);
-
 		canvasView.paint();
 
 		var currentNode;
 
 		tree.on("contextmenu", {}, function (s, e) {
 			$("#menu").hide();
-			currentNode = e.child;
+			currentNode = e.handlers[0];
 			$("#menu").css("left", e.pageX);
 			$("#menu").css("top", e.pageY);
 			$("#menu").show();
@@ -91,12 +89,18 @@
 		});
 
 		tree.on("mousedown", {}, function (s, e) {
-			if (e.child != null) {
-				var height = e.child.getHeight();
+			var child = e.handlers[0];
+			if (child != null) {
+				if (!child._isBoxClick({
+					offsetX: e.offsetX - child.globalX(),
+					offsetY: e.offsetY - child.globalY()
+				}))
+					return;
+				var height = child.height();
 				var coords = {
-					x: e.child.globalX() + tree.x() + e.child._boxX,
-					y: e.child.globalY() + tree.y(),
-					w: e.child._width,
+					x: child.globalX() + child._boxX,
+					y: child.globalY(),
+					w: child.width(),
 					h: height > 50 ? 50 : height
 				};
 				var shape = canvascontrols.DragShape.create(
@@ -107,30 +111,37 @@
 			}
 		});
 
-		var hoveredNode, lastE;
+		var hoveredNode, lastE, originalBackground;
 		dragView.on("dragged.cc", {}, function (s, e) {
-			lastE = e;
-			hoveredNode = tree._findChildAtCoords(e);
-			if (hoveredNode == null) return;
-			while (hoveredNode != null && !hoveredNode._isInOwnOffset(e, true)) {
-				var child = hoveredNode._findChildAtCoords(e, true);
-				if (child != null) {
-					hoveredNode = child;
-				} else {
-					break;
-				}
-			}
-		});
+			if (hoveredNode != null)
+				hoveredNode._background = originalBackground;
 
-		dragView.onAfterPaint = function () {
+			lastE = e;
+			hoveredNode = tree.findShapeAt(e);
+			
+			if (hoveredNode == null) return;
+			
+			originalBackground = hoveredNode._background;
+			hoveredNode._background = "#F0F0FF";
+			canvasView.paint();
+			
 			dragView.context.fillStyle = "#000000";
 			dragView.context.fillText(
-				(hoveredNode != null ? hoveredNode._label : "-") + " " + 
-				(lastE ? lastE.offsetX + "," + lastE.offsetY : ""), 
+				(hoveredNode != null ? hoveredNode._label : "-") + " " +
+				(lastE ? lastE.offsetX + "," + lastE.offsetY : ""),
 				$("#dragView").width() - 200, 20, 100);
-		};
+		});
+
+		dragView.on("dragStopped.cc", {}, function(s, e) {
+			if (hoveredNode != null)
+				hoveredNode._background = originalBackground;
+			canvasView.paint();
+		});
 
 		$("#add").click(function () {
+			if (!currentNode._expanded)
+				currentNode.toggle();
+
 			currentNode.add(new canvascontrols.TimelineTreeNode());
 			$("#menu").hide();
 		});

@@ -12,31 +12,15 @@
 		paint: function (ctx) {
 			if (this._loaded())
 				ctx.drawImage(this._image, 0, 0,
-					this.width ? this.width : this._image.width,
-					this.height ? this.height : this._image.height
+					this.width(),
+					this.height()
 				);
 		},
-		getSize: function () {
-			return {
-				width: this.width ? this.width : this._image.width,
-				height: this.height ? this.height : this._image.height
-			};
+		width: function () {
+			return this._width ? this._width : this._image.width;
 		},
-		setSize: function (width, height) {
-			this.width = width;
-			this.height = height;
-		},
-		resetSize: function () {
-			this.width = null;
-			this.height = null;
-		},
-		isInBounds: function (offset) {
-			var size = this.getSize();
-			return offset.offsetX >= 0 && offset.offsetX <= size.width &&
-				   offset.offsetY >= 0 && offset.offsetY <= size.height;
-		},
-		evaluateClick: function (offset) {
-			this._notifyListeners("clicked", offset);
+		height: function () {
+			return this._height ? this._height : this._image.height;
 		},
 		_loaded: function () {
 			return this._image.complete;

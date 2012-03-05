@@ -1,25 +1,20 @@
 ﻿(function (cc) {
 
-	cc.TimelineTreeBase = cc.Shape.extend({
+	cc.TimelineTreeBase = cc.CompositeShape.extend({
 		init: function (options) {
 			this._super(options);
-			var settings = $.extend({
-				children: []
-			}, options);
-			this._children = settings.children;
-
-			this.on("mousedown click contextmenu", this, this._evaluateClick);
 		},
 		add: function (node) {
-			node._y = this._childYPadding() + this._getChildHeight();
+			node.setPosition(this._childXPadding(), this._childYPadding() + this._getChildHeight());
 			node.on("toggled.cc nodeAdded.cc nodeRemoved.cc", this, this._childEvent);
-			this._children.push(node);
 			node._parent = this;
 			node._state = "new";
 			this._hasChildren = true;
+			this._super(node);
 			this._raise("nodeAdded.cc", { parent: this, child: node });
 		},
 		remove: function (node) {
+			throw ("not working until remove implemented on compositeshape");
 			var index = this._findChild(node);
 			if (index == -1) return;
 			this._children = this._children.slice(0, index).concat(this._children.slice(index + 1));
@@ -27,33 +22,31 @@
 			this._updateBounds(index - 1);
 			this._raise("nodeRemoved.cc");
 		},
-		isInBounds: function (coords) {
-			return this._findChildAtCoords(coords) != null ||
-				coords.offsetX >= 0 && coords.offsetX <= this._width &&
-				coords.offsetY >= 0 && coords.offsetY <= this.getHeight();
-		},
-		_evaluateClick: function (sender, data) {
-			if (!data.originalX) {
-				data.originalX = data.offsetX;
-				data.originalY = data.offsetY;
-			}
-			var child = this._findChildAtCoords(data);
-			if (child != null) {
-				child._evaluateClick(this, $.extend(data, this._getChildOffset(data, child)));
-			}
-		},
+		//		isInBounds: function (coords) {
+		//			return this.findShapeAt(coords) != null || this._super(coords);
+		//		},
+		//		_evaluateClick: function (sender, coords) {
+		//			if (!coords.originalX) {
+		//				coords.originalX = coords.offsetX;
+		//				coords.originalY = coords.offsetY;
+		//			}
+		//			var child = this.findShapeAt(coords);
+		//			if (child != null) {
+		//				child._evaluateClick(this, $.extend(coords, this._getChildCoords(coords, child)));
+		//			}
+		//		},
 		_paintChildren: function (context) {
-			for (var i = 0; i < this._children.length; i++) {
+			for (var i = 0; i < this.getShapeCount(); i++) {
 				context.save();
-				context.translate(0, this._children[i].y());
-				this._children[i].paint(context);
+				context.translate(0, this.getShapes()[i].y());
+				this.getShapes()[i].paint(context);
 				context.restore();
 			}
 		},
 		_getChildHeight: function () {
 			var height = 0;
-			for (var i = 0; i < this._children.length; i++) {
-				height += this._children[i].getHeight() + 5;
+			for (var i = 0; i < this.getShapeCount(); i++) {
+				height += this.getShapes()[i].height();
 			}
 			return height;
 		},
@@ -67,8 +60,8 @@
 			this._updateBounds(childIndex);
 		},
 		_findChild: function (child) {
-			for (var i = 0; i < this._children.length; i++) {
-				if (this._children[i] === child) {
+			for (var i = 0; i < this.getShapeCount(); i++) {
+				if (this.getShapes()[i] === child) {
 					return i;
 				}
 			}
@@ -77,31 +70,24 @@
 		_updateBounds: function (startAt) {
 			var i, currentY = this._childYPadding();
 			for (i = 0; i <= startAt; i++) {
-				currentY += this._children[i].getHeight() + 5;
+				currentY += this.getShapes()[i].height();
 			}
-			for (; i < this._children.length; i++) {
-				this._children[i]._y = currentY;
-				currentY += this._children[i].getHeight() + 5;
+			for (; i < this.getShapeCount(); i++) {
+				this.getShapes()[i]._y = currentY;
+				currentY += this.getShapes()[i].height();
 			}
 		},
-		_getChildOffset: function (coords, child) {
-			return {
-				offsetX: coords.offsetX - child.x(),
-				offsetY: coords.offsetY - child.y()
-			};
-		},
-		_isInOwnOffset: function (coords) {
-			return coords.offsetX >= 0 && coords.offsetX <= this._width &&
-				coords.offsetY >= 0 && coords.offsetY <= this._height;
-		},
-		_findChildAtCoords: function (coords) {
-			for (var i = 0; i < this._children.length; i++) {
-				var child = this._children[i];
-				var offset = this._getChildOffset(coords, child);
-				if (child.isInBounds(offset))
-					return child;
-			};
-			return null;
+		//		_findChildAtCoords: function (coords) {
+		//			for (var i = 0; i < this._children.length; i++) {
+		//				var child = this._children[i];
+		//				var offset = this._getChildOffset(coords, child);
+		//				if (child.isInBounds(offset))
+		//					return child;
+		//			};
+		//			return null;
+		//		},
+		_childXPadding: function () {
+			return 0;
 		},
 		_childYPadding: function () {
 			return 0;
@@ -121,47 +107,59 @@
 		init: function (options) {
 			this._super(options);
 			var settings = $.extend({
-				width: 100,
-				height: 20,
 				boxX: 20,
+				boxWidth: 100,
+				boxHeight: 20,
+				yPad: 5,
 				label: "",
 				expanded: false,
 				hasChildren: false
 			}, options);
-			this._width = settings.width;
-			this._height = settings.height;
+			this._width = settings.boxX + settings.boxWidth;
+			this._height = settings.yPad + settings.boxHeight;
 			this._boxX = settings.boxX;
+			this._yPad = settings.yPad;
+			this._boxWidth = settings.boxWidth;
+			this._boxHeight = settings.boxHeight;
 			this._label = settings.label;
 			this._expanded = settings.expanded;
 			this._hasChildren = settings.hasChildren;
+			this._background = "#FFFFFF";
+
+			this.on("mousedown click contextmenu", this, this._mouseEvent);
 		},
-		globalX: function () {
-			if (this._parent != null && !(this._parent instanceof cc.TimelineTree)) {
-				return this._parent.globalX() + this._parent._boxX + this._x;
-			} else {
-				return this._x;
-			}
+		//		globalX: function () {
+		//			if (this._parent != null && !(this._parent instanceof cc.TimelineTree)) {
+		//				return this._parent.globalX() + this._parent._boxX + this._x;
+		//			} else {
+		//				return this._x;
+		//			}
+		//		},
+		//		globalY: function () {
+		//			if (this._parent != null && !(this._parent instanceof cc.TimelineTree)) {
+		//				return this._parent.globalY() + this._y;
+		//			} else {
+		//				return this._y;
+		//			}
+		//		},
+		height: function () {
+			if (this._expanded)
+				return this._super();
+			return this._height;
 		},
-		globalY: function () {
-			if (this._parent != null && !(this._parent instanceof cc.TimelineTree)) {
-				return this._parent.globalY() + this._y;
-			} else {
-				return this._y;
-			}
-		},
-		getHeight: function () {
-			var height = this._height;
-			if (this._hasChildren && this._expanded) {
-				height += this._getChildHeight();
-			}
-			return height;
-		},
+		//		getHeight: function () {
+		//			var height = this._boxHeight;
+		//			if (this._hasChildren && this._expanded) {
+		//				height += this._getChildHeight();
+		//			}
+		//			return height;
+		//		},
 		paint: function (context) {
-			this._centerY = Math.round(this._height / 2);
-			context.fillStyle = "#FFFFFF";
-			context.fillRect(this._boxX, 0, this._width, this._height);
+			this._centerY = Math.round(this._boxHeight / 2);
+			context.fillStyle = this._background;
+			context.fillRect(this._boxX, 0, this._boxWidth, this._boxHeight);
 			context.fillStyle = "#000000";
-			context.strokeRect(this._boxX, 0, this._width, this._height);
+			context.strokeRect(this._boxX, 0, this._boxWidth, this._boxHeight);
 			context.fillText(this._label, this._boxX + 5, this._centerY + 3);
 			if (this._hasChildren) {
 				this._drawExpandButton(context);
@@ -177,39 +175,43 @@
 			this._expanded = !this._expanded;
 			this._raise("toggled.cc", { expanded: this._expanded });
 		},
-		isInBounds: function (coords) {
-			if (this._isInOwnOffset(coords))
-				return true;
-			return this._super(coords);
+		//		isInBounds: function (coords) {
+		//			if (this._isInOwnOffset(coords))
+		//				return true;
+		//			return this._super(coords);
+		//		},
+		_isInOwnOffset: function (coords) {
+			return coords.offsetX >= 0 && coords.offsetX <= this._boxX + this._boxWidth &&
+				coords.offsetY >= 0 && coords.offsetY <= this._boxHeight;
 		},
-		_evaluateClick: function (sender, event) {
+		_mouseEvent: function (sender, event) {
 			if (this._isInOwnOffset(event)) {
 				if (event.type == "click" && this._isTriangleClick(event)) {
 					this.toggle();
 				}
-				else if (this._isBoxClick(event)) {
-					event.child = this;
-				}
+				//				event.child = this;
 			}
-			else {
-				this._super(sender, event);
-			}
+			//			if (this.parent() != null)
+			//				this.parent()._raise(event.type, event);
+			//			else {
+			//				this._super(sender, event);
+			//			}
 		},
 		_isTriangleClick: function (coords) {
-			var centerY = this._height / 2;
+			var centerY = this._boxHeight / 2;
 			return coords.offsetX >= 5 && coords.offsetX <= 15 &&
 				   coords.offsetY >= centerY - 5 && coords.offsetY <= centerY + 5;
 		},
 		_isBoxClick: function (coords) {
-			return coords.offsetX >= this._boxX && coords.offsetX < this._width &&
-				   coords.offsetY >= 0 && coords.offsetY <= this._height;
+			return coords.offsetX >= this._boxX && coords.offsetX < this._boxX + this._boxWidth &&
+				   coords.offsetY >= 0 && coords.offsetY <= this._boxHeight;
 		},
-		_getChildOffset: function (coords, child) {
-			return {
-				offsetX: coords.offsetX - child.x() - this._boxX,
-				offsetY: coords.offsetY - child.y()
-			};
-		},
+		//		_getChildOffset: function (coords, child) {
+		//			return {
+		//				offsetX: coords.offsetX - child.x() - this._boxX,
+		//				offsetY: coords.offsetY - child.y()
+		//			};
+		//		},
 		_findChildAtCoords: function (coords) {
 			if (!this._expanded) return null;
 			return this._super(coords);
@@ -227,8 +229,11 @@
 			context.stroke();
 			context.restore();
 		},
+		_childXPadding: function () {
+			return this._boxX;
+		},
 		_childYPadding: function () {
-			return this._height + 5;
+			return this._boxHeight + this._yPad;
 		}
 	});
 
