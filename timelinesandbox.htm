@@ -53,11 +53,8 @@
             canvasView.paint();
         });
         
-        timeline.on("nodeClicked.cc", {}, function (sender, data) {
-            canvasView.paint();
-        });
-        timeline.on("periodChanged.cc demandRedraw.cc", {}, function (sender, data) {
-            //console.debug("Period changed");
+        
+        timeline.on("periodChanged.cc demandRedraw.cc nodeClicked.cc", {}, function (sender, data) {
             canvasView.paint();
         });
         

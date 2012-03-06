@@ -16,11 +16,11 @@
             this._previousX = 0;
             this._offset = 0.5;
             this.on("click", this, this._onClick);
-            this.on("dblclick", this, this._evaluateDblClick);
-            this.on("mousewheel", this, this._evaluateScroll);
-            this.on("mousedown", this, this._evalMouseDown);
-            this.on("mouseup mouseout", this, this._evalMouseUp);
-            this.on("mousemove", this, this._evalMouseMove);
+            this.on("dblclick", this, this._onDblClick);
+            this.on("mousewheel", this, this._onScroll);
+            this.on("mousedown", this, this._onMouseDown);
+            this.on("mouseup mouseout", this, this._onMouseUp);
+            this.on("mousemove", this, this._onMouseMove);
             this.on("periodChanged.cc", this, this._onPeriodChange);
 
         },
@@ -47,8 +47,7 @@
             for (var i = 0; i < this._children.length; i++) {
                 var child = this._children[i];
                 var sw = context.canvas.width * child.getProportion();
-                //var x = this._offset - sw;
-                //x += sw;
+                
                 context.save();
                 context.translate(x, 0);
                 child._width = sw;
@@ -60,8 +59,7 @@
             }
 
         },
-        _evalMouseDown: function (sender, data) {
-            console.debug("Mouse down");
+        _onMouseDown: function (sender, data) {
             if (data.button == cc.MouseButton.Left) {
                 this._isMouseDown = true;
                 this._currentX = data.pageX;
@@ -85,7 +83,7 @@
                 this._offset += length;
             }
         },
-        _evalMouseMove: function (sender, data) {
+        _onMouseMove: function (sender, data) {
 
             if (this._isMouseDown) {
                 var length = data.pageX - this._currentX;
@@ -94,7 +92,7 @@
                 this._raise("demandRedraw.cc", { parent: this, child: null });
             }
         },
-        _evalMouseUp: function (sender, data) {
+        _onMouseUp: function (sender, data) {
             this._isMouseDown = false;
         },
         _onClick: function (sender, data) {
@@ -104,41 +102,17 @@
             if (child != null) {
                 child._onClick(this, $.extend(data, this._getChildOffset(data, child)));
             }
-            /*
-            var out;
-            switch (this._period.getName()) {
-            case "Year":
-            out = child._date.getFullYear();
-            break;
-            case "Quarter":
-            out = child._date.getFullYear() + " " + parseInt((child._date.getMonth() / 3) + 1);
-            break;
-            case "Month":
-            out = child._date.getFullYear() + " " + child._date.getMonth();
-            break;
-            case "Day":
-            out = child._date.getFullYear() + " " + child._date.getMonth() + " " + child._date.getDate();
-            break;
-            default:
-            out = "Wut?";
-            break;
-            }
-            console.debug(out);*/
+            
         },
-        _paintMe: function () {
-            if (this._parent != null) {
-                console.debug("i r the child");
-            }
-        },
-        _evaluateDblClick: function (sender, data) {
+        
+        _onDblClick: function (sender, data) {
             var child = this._getChild(data);
             console.debug(child);
             this.getPeriod().zoomTo(child._date);
             this._raise("periodChanged.cc", { parent: this, child: sender });
         },
-        _evaluateScroll: function (sender, data) {
-            //console.debug(data);
-            //console.debug(data.deltaY / Math.abs(data.deltaY));
+        _onScroll: function (sender, data) {
+            
             data.deltaY / Math.abs(data.deltaY) > 0 ? this.getPeriod().zoomIn() : this.getPeriod().zoomOut();
             this._raise("periodChanged.cc", { parent: this, child: sender });
         },
@@ -159,9 +133,8 @@
             for (var i = 0; i < this._children.length; i++) {
                 var child = this._children[i];
                 var offset = this._getChildOffset(coords, child);
-                //console.debug("x:" + offset.offsetX + " y:" + offset.offsetY);
+                
                 if (child.isInBounds(offset)) {
-                    //console.debug("in bounds x:" + offset.offsetX + " y:" + offset.offsetY);
                     return child;
                 }
             };
