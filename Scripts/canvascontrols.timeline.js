@@ -22,6 +22,7 @@
             this.on("mouseup mouseout", this, this._evalMouseUp);
             this.on("mousemove", this, this._evalMouseMove);
             this.on("periodChanged.cc", this, this._onPeriodChange);
+
         },
         add: function (node) {
             node._parent = this;
@@ -41,10 +42,13 @@
             }
         },
         _paintChildren: function (context) {
-            var x = 0;
+
+            var x = this._offset;
             for (var i = 0; i < this._children.length; i++) {
                 var child = this._children[i];
                 var sw = context.canvas.width * child.getProportion();
+                //var x = this._offset - sw;
+                //x += sw;
                 context.save();
                 context.translate(x, 0);
                 child._width = sw;
@@ -54,6 +58,7 @@
                 context.restore();
                 x += sw;
             }
+
         },
         _evalMouseDown: function (sender, data) {
             console.debug("Mouse down");
@@ -62,28 +67,31 @@
                 this._currentX = data.pageX;
             }
         },
+        _moveByDragLength: function (length, data) {
+            var child = this._getChild(data);
+            var steps = 0;
+
+            if (this._offset + length <= 0) {
+                steps = parseInt(Math.abs(length) / child._width) + ((length % child._width) == 0 ? 0 : 1);
+                this._offset += length + child._width * steps;
+                this.getPeriod().shift(steps);
+                this._raise("periodChanged.cc", { parent: this, child: null });
+            } else if (this._offset + length >= child._width) {
+                steps = parseInt((this._offset + length) / child._width);
+                this._offset = (this._offset + length) % child._width;
+                this.getPeriod().shift(steps * -1);
+                this._raise("periodChanged.cc", { parent: this, child: null });
+            } else {
+                this._offset += length;
+            }
+        },
         _evalMouseMove: function (sender, data) {
+
             if (this._isMouseDown) {
                 var length = data.pageX - this._currentX;
                 this._currentX = data.pageX;
-
-                var child = this._getChild(data);
-                var steps = 0;
-
-                if (this._offset + length <= 0) {
-                    steps = parseInt(Math.abs(length) / child._width) + ((length % child._width) == 0 ? 0 : 1);
-                    this._offset += length + child._width * steps;
-                    this.getPeriod().shift(steps);
-                    this._raise("periodChanged.cc", { parent: this, child: sender });
-                } else if (this._offset + length >= child._width) {
-                    steps = parseInt((this._offset + length) / child._width);
-                    this._offset = (this._offset + length) % child._width;
-                    this.getPeriod().shift(steps * -1);
-                    this._raise("periodChanged.cc", { parent: this, child: sender });
-                } else {
-                    this._offset += length;
-                }
-                this._offset += length;
+                this._moveByDragLength(length, data);
+                this._raise("demandRedraw.cc", { parent: this, child: null });
             }
         },
         _evalMouseUp: function (sender, data) {
@@ -96,25 +104,26 @@
             if (child != null) {
                 child._onClick(this, $.extend(data, this._getChildOffset(data, child)));
             }
+            /*
             var out;
             switch (this._period.getName()) {
-                case "Year":
-                    out = child._date.getFullYear();
-                    break;
-                case "Quarter":
-                    out = child._date.getFullYear() + " " + parseInt((child._date.getMonth() / 3) + 1);
-                    break;
-                case "Month":
-                    out = child._date.getFullYear() + " " + child._date.getMonth();
-                    break;
-                case "Day":
-                    out = child._date.getFullYear() + " " + child._date.getMonth() + " " + child._date.getDate();
-                    break;
-                default:
-                    out = "Wut?";
-                    break;
+            case "Year":
+            out = child._date.getFullYear();
+            break;
+            case "Quarter":
+            out = child._date.getFullYear() + " " + parseInt((child._date.getMonth() / 3) + 1);
+            break;
+            case "Month":
+            out = child._date.getFullYear() + " " + child._date.getMonth();
+            break;
+            case "Day":
+            out = child._date.getFullYear() + " " + child._date.getMonth() + " " + child._date.getDate();
+            break;
+            default:
+            out = "Wut?";
+            break;
             }
-            console.debug(out);
+            console.debug(out);*/
         },
         _paintMe: function () {
             if (this._parent != null) {

@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-	<title></title>
+	<title>Timeline sandbox</title>
 	
 	<script src="Scripts/class.js" type="text/javascript"></script>
     <script src="Scripts/jquery-1.7.1.min.js" type="text/javascript"></script>
@@ -56,7 +56,7 @@
         timeline.on("nodeClicked.cc", {}, function (sender, data) {
             canvasView.paint();
         });
-        timeline.on("periodChanged.cc", {}, function (sender, data) {
+        timeline.on("periodChanged.cc demandRedraw.cc", {}, function (sender, data) {
             //console.debug("Period changed");
             canvasView.paint();
         });
