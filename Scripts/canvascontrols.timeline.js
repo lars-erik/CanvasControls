@@ -13,15 +13,15 @@
             this._children = settings.children;
             this._isMouseDown = false;
             this._currentX = 0;
-            this._previousX = 0;
             this._offset = 0.5;
-            this.on("click", this, this._onClick);
+            this._wasDragged = false;
             this.on("dblclick", this, this._onDblClick);
             this.on("mousewheel", this, this._onScroll);
             this.on("mousedown", this, this._onMouseDown);
-            this.on("mouseup mouseout", this, this._onMouseUp);
+            this.on("mouseup", this, this._onMouseUp);
             this.on("mousemove", this, this._onMouseMove);
             this.on("periodChanged.cc", this, this._onPeriodChange);
+            this.on("keyup keydown", this, this._onKey);
 
         },
         add: function (node) {
@@ -43,11 +43,11 @@
         },
         _paintChildren: function (context) {
 
-            var x = this._offset;
+            var x = this._offset - (context.canvas.width * this._children[0].getProportion());
             for (var i = 0; i < this._children.length; i++) {
                 var child = this._children[i];
                 var sw = context.canvas.width * child.getProportion();
-                
+
                 context.save();
                 context.translate(x, 0);
                 child._width = sw;
@@ -56,13 +56,6 @@
 
                 context.restore();
                 x += sw;
-            }
-
-        },
-        _onMouseDown: function (sender, data) {
-            if (data.button == cc.MouseButton.Left) {
-                this._isMouseDown = true;
-                this._currentX = data.pageX;
             }
         },
         _moveByDragLength: function (length, data) {
@@ -83,28 +76,42 @@
                 this._offset += length;
             }
         },
+        _onKey: function (sender, data) {
+            console.debug(data);
+        },
         _onMouseMove: function (sender, data) {
 
             if (this._isMouseDown) {
                 var length = data.pageX - this._currentX;
+                if (Math.abs(length) > 0) {
+                    this._currentX = data.pageX;
+                    this._moveByDragLength(length, data);
+                    this._raise("demandRedraw.cc", { parent: this, child: null });
+                    this._wasDragged = true;
+                }
+            }
+        },
+        _onMouseDown: function (sender, data) {
+            this._wasDragged = false;
+            if (data.button == cc.MouseButton.Left) {
+                this._isMouseDown = true;
                 this._currentX = data.pageX;
-                this._moveByDragLength(length, data);
-                this._raise("demandRedraw.cc", { parent: this, child: null });
             }
         },
         _onMouseUp: function (sender, data) {
             this._isMouseDown = false;
+
+            if (!this._wasDragged) {
+                this._onClick(sender, data);
+            }
         },
         _onClick: function (sender, data) {
-
             var child = this._getChild(data);
 
             if (child != null) {
                 child._onClick(this, $.extend(data, this._getChildOffset(data, child)));
             }
-            
         },
-        
         _onDblClick: function (sender, data) {
             var child = this._getChild(data);
             console.debug(child);
@@ -112,7 +119,6 @@
             this._raise("periodChanged.cc", { parent: this, child: sender });
         },
         _onScroll: function (sender, data) {
-            
             data.deltaY / Math.abs(data.deltaY) > 0 ? this.getPeriod().zoomIn() : this.getPeriod().zoomOut();
             this._raise("periodChanged.cc", { parent: this, child: sender });
         },
@@ -133,7 +139,7 @@
             for (var i = 0; i < this._children.length; i++) {
                 var child = this._children[i];
                 var offset = this._getChildOffset(coords, child);
-                
+
                 if (child.isInBounds(offset)) {
                     return child;
                 }
@@ -148,7 +154,6 @@
             return this._findChildAtCoords(data);
         },
         _onPeriodChange: function (sender, data) {
-            //console.debug("plop");
             this.clear();
             this.createNodes();
         }
@@ -163,7 +168,7 @@
             this._period = settings.period;
             this.createNodes();
             this._hasChildren = this._children.length > 0;
-
+            this._currentSelectedDate = null;
         },
         paint: function (context) {
             this._paintChildren(context);
@@ -177,17 +182,23 @@
                 var n = new cc.TimelineNode(view[i]);
                 n.on("nodeClicked.cc", this, this._onNodeClick);
                 this.add(n);
+
+                if (this._currentSelectedDate != null) {
+                    if (n._date.toDateString() == this._currentSelectedDate.toDateString())
+                        n._selected = true;
+                }
             }
         },
         _onNodeClick: function (sender, data) {
             this._clearPaint();
-            sender._selected = true;
+            if (this._currentSelectedDate != null && sender._date.toDateString() == this._currentSelectedDate.toDateString()) {
+                this._currentSelectedDate = null;
+                sender._selected = false;
+            } else {
+                this._currentSelectedDate = sender._date;
+                sender._selected = true;
+            }
             this._raise("nodeClicked.cc", { parent: this, child: sender });
-        },
-        _onPeriodChange: function (sender, data) {
-
-            this.clear();
-            this.createNodes();
         }
     });
 
@@ -218,6 +229,9 @@
             this._height = settings.height;
             this._context = null;
             this._selected = false;
+            this._defaultFill = "#000000";
+            this._currentSelectionFill = "#F5DA81";
+            this._activeFill = "#CCCCFF";
 
         },
         getProportion: function () {
@@ -227,16 +241,15 @@
             context.fillText(this._header, 0 + 5, this._y + 10);
         },
         _paintActive: function (context) {
-            context.fillStyle = "#CCCCFF";
+            context.fillStyle = this._activeFill;
             context.fillRect(0, 20, this._width, 25);
-            context.fillStyle = "#000000";
+            context.fillStyle = this._defaultFill;
         },
         _paintCurrentSelection: function (context) {
-
             if (context != null) {
-                context.fillStyle = "#EEEEEE";
+                context.fillStyle = this._currentSelectionFill;
                 context.fillRect(0, 20, this._width, 25);
-                context.fillStyle = "#000000";
+                context.fillStyle = this._defaultFill;
             }
         },
         _paintMeasuredLabel: function (context) {
@@ -245,7 +258,6 @@
                 this._label = this._label.substring(0, this._label.length - 1);
                 metric = context.measureText(this._label);
             }
-
             context.fillText(this._label, (this._width - metric.width) / 2, this._y + 38);
         },
         _paintLine: function (context, x1, y1, x2, y2) {
@@ -253,11 +265,8 @@
             context.moveTo(0, y1);
             context.lineTo(0, y2);
             context.stroke();
-
-
         },
         _onClick: function (sender, data) {
-
             this._raise("nodeClicked.cc", { parent: this, child: null });
         },
         paint: function (context) {
@@ -289,7 +298,6 @@
                 offsetY: coords.offsetY - child.y()
             };
         }
-
     });
 
 

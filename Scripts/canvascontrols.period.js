@@ -200,7 +200,7 @@
                 Label: cc.MonthNames[date.getMonth()],
                 Value: date.getMonth(),
                 Subheader: date.getMonth() % 3 == 0,
-                Active: new Date().toDateString() == date.toDateString(),
+                Active: new Date().getMonth() == date.getMonth() && new Date().getFullYear() == date.getFullYear(),
                 Proportion: daysInMonth / daysInPeriod,
                 DaysInMonth: daysInMonth,
                 Date: new Date(date.getFullYear(), date.getMonth(), date.getDate())

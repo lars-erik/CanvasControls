@@ -30,7 +30,7 @@
         },
         paint: function () {
             this._setViewProportions();
-            
+
             this.context.clearRect(0, 0, this.width(), this.height());
             this.context.save();
             this.context.translate(0.5, 0.5);
@@ -51,7 +51,7 @@
                 throw new Error("Canvas not supported, or " + this.selector + " isn't a canvas");
 
             this._setViewProportions();
-
+            
             this.on("mousewheel", this, this._onMouseWheel);
             this.context = this._canvas.getContext("2d");
         },

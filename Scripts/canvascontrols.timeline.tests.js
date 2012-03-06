@@ -8,8 +8,9 @@
 /// <reference path="canvascontrols.period.js"/>
 /// <reference path="canvascontrols.js"/>
 /// <reference path="canvascontrols.observable.js"/>
-/// <reference path="canvascontrols.canvasview.js"/>
 /// <reference path="canvascontrols.shape.js"/>
+/// <reference path="canvascontrols.compositeshape.js"/>
+/// <reference path="canvascontrols.canvasview.js"/>
 /// <reference path="canvascontrols.timeline.js"/>
 
 var mock = new MockContext();
