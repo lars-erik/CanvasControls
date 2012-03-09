@@ -1,0 +1,203 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	
+	<script src="Scripts/class.js" type="text/javascript"></script>
+    <script src="Scripts/jquery-1.7.1.min.js" type="text/javascript"></script>
+    <script src="Scripts/jquery-mousewheel-3.0.6/jquery.mousewheel.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.observable.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.shape.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.compositeshape.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.canvasview.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.dragging.js" type="text/javascript"></script>
+    <script src="Scripts/canvascontrols.timeline.tree.js" type="text/javascript"></script>
+    <script src="Scripts/canvascontrols.period.js" type="text/javascript"></script>
+    <script src="Scripts/canvascontrols.timeline.js" type="text/javascript"></script>
+    <script src="Scripts/canvascontrols.timelineboard.js" type="text/javascript"></script>
+
+	<style type="text/css">
+			
+	.menu {
+		position: absolute;
+		width: 100px;
+		height: 100px;
+		border: 1px solid black;
+		background-color: #ECECEC;
+		display: none;
+	}
+	.wrapper {
+		position: relative;
+	}
+	.container 
+	{
+		position: absolute;
+		left: 10px;
+		top: 10px;
+		right: 10px;
+		height: 500px;
+		background-color: #EFEFEF;
+		border: 1px solid black;
+	}
+	
+	.timeline
+	{
+		position: absolute;
+		width: 100%;
+		height: 45px;
+	    left: 200px;
+	    border-bottom: 1px solid #000;
+	}
+	
+	.board
+	{
+		position: absolute;
+	    width: 100%;
+		left: 200px;
+		top: 0px;
+	}
+	
+	.tree {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 200px;
+	}
+	.spacer {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 200px;
+	}
+	.boardContainer {
+		position: absolute;
+		width: 100%;
+		left: 0px;
+		top: 45px;
+		height: 300px;
+		overflow-y: auto;
+		overflow-x: hidden;
+	}
+	.topContainer {
+		position: absolute;
+		width: 100%;
+		left: 0px;
+		top: 0px;
+		height: 300px;
+		overflow-y: auto;
+		overflow-x: hidden;
+	}
+	</style>
+</head>
+    <body>
+        
+            <div class="container">
+                <div id="topContainer" class="topContainer">
+                    <div class="spacer">Svensker er mennesker</div>
+                    <canvas id="timeline" class="timeline"></canvas>
+                
+                </div>
+                <div id="boardContainer" class="boardContainer">
+                    <canvas id="tree" class="tree" width="200"></canvas>
+                    <canvas id="board" class="board"></canvas>
+                </div>
+            </div>
+       
+    
+        <script type="text/javascript">
+            // For IE
+            if (console.debug == undefined) {
+                console.debug = function (v) {
+                    console.log(v);
+                };
+            }
+            
+            var timelineCanvasView = new canvascontrols.CanvasView("#timeline");
+            var timeline = new canvascontrols.Timeline();
+            timelineCanvasView.add(timeline);
+            
+
+            var treeCanvasView = new canvascontrols.CanvasView("#tree");
+            var tree = new canvascontrols.TimelineTree();
+            var box1 = new canvascontrols.TimelineTreeNode({
+                label: "Boks 1"
+            });
+            var box2 = new canvascontrols.TimelineTreeNode({
+                label: "Boks 2"
+            });
+            var childBox11 = new canvascontrols.TimelineTreeNode({
+                label: "Boks 1.1"
+            });
+            var childBox12 = new canvascontrols.TimelineTreeNode({
+                label: "Boks 1.2"
+            });
+            var childBox21 = new canvascontrols.TimelineTreeNode({
+                label: "Boks 2.1"
+            });
+            var grandChildBox111 = new canvascontrols.TimelineTreeNode({
+                label: "Boks 1.1.1"
+            });
+            var grandChildBox112 = new canvascontrols.TimelineTreeNode({
+                label: "Boks 1.1.2"
+            });
+            box1.add(childBox11);
+            box1.add(childBox12);
+            box2.add(childBox21);
+            childBox11.add(grandChildBox111);
+            childBox11.add(grandChildBox112);
+            tree.add(box1);
+            tree.add(box2);
+            treeCanvasView.add(tree);
+            
+
+            var boardCanvasView = new canvascontrols.CanvasView("#board");
+            var board = new canvascontrols.TimelineBoard();
+            //board.add(new canvascontrols.TimelineBoardNode());
+            //board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 0, 1), end: new Date(2012, 0, 31) }));
+            board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1), end: new Date(2012, 2, 20, 23, 59, 59) }));
+            board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 3, 5), end: new Date(2012, 3, 10) }));
+            board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 3, 11), end: new Date(2012, 3, 13) }));
+            board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 3, 20), end: new Date(2012, 3, 21) }));
+            board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 4, 10), end: new Date(2012, 4, 31) }));
+            board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 6, 5), end: new Date(2012, 6, 20) }));
+            board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 8, 1), end: new Date(2012, 10, 31) }));
+            boardCanvasView.add(board);
+            setWidths();
+            timelineCanvasView.paint();
+            treeCanvasView.paint();
+            boardCanvasView.paint();
+
+            $(window).resize(function () {
+                setWidths();
+                timelineCanvasView.paint();
+                treeCanvasView.paint();
+                boardCanvasView.paint();
+            });
+            tree.on("toggled.cc nodeAdded.cc nodeRemoved.cc", {}, function () {
+                treeCanvasView.paint();
+            });
+
+            timeline.on("periodChanged.cc", {}, function (sender, data) {
+                timelineCanvasView.paint();
+                board.setPeriod(data.period);
+                boardCanvasView.paint();
+            });
+            timeline.on("demandRedraw.cc nodeClicked.cc", {}, function (sender, data) {
+                timelineCanvasView.paint();
+                
+                boardCanvasView.paint();
+            });
+
+            timeline.on("drag.cc", {}, function (sender, data) {
+                board.setOffset(data.offset);
+                boardCanvasView.paint();
+            });
+
+            function setWidths() {
+                $("#timeline").css("width", $("#timeline").parent().width() - $("#timeline").position().left);
+                $("#board").css("width", $("#board").parent().width() - $("#board").position().left);
+            }
+        </script>
+    </body>
+</html>

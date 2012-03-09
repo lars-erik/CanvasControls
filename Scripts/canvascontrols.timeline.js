@@ -66,18 +66,19 @@
                 steps = parseInt(Math.abs(length) / child._width) + ((length % child._width) == 0 ? 0 : 1);
                 this._offset += length + child._width * steps;
                 this.getPeriod().shift(steps);
-                this._raise("periodChanged.cc", { parent: this, child: null });
+                this._raise("periodChanged.cc", { parent: this, child: null, period: this.getPeriod() });
             } else if (this._offset + length >= child._width) {
                 steps = parseInt((this._offset + length) / child._width);
                 this._offset = (this._offset + length) % child._width;
                 this.getPeriod().shift(steps * -1);
-                this._raise("periodChanged.cc", { parent: this, child: null });
+                this._raise("periodChanged.cc", { parent: this, child: null, period: this.getPeriod() });
             } else {
                 this._offset += length;
             }
+            this._raise("drag.cc", { parent: this, child: null, offset: this._offset });
         },
         _onKey: function (sender, data) {
-            console.debug(data);
+            //console.debug(data);
         },
         _onMouseMove: function (sender, data) {
 
@@ -86,6 +87,7 @@
                 if (Math.abs(length) > 0) {
                     this._currentX = data.pageX;
                     this._moveByDragLength(length, data);
+
                     this._raise("demandRedraw.cc", { parent: this, child: null });
                     this._wasDragged = true;
                 }
@@ -114,13 +116,13 @@
         },
         _onDblClick: function (sender, data) {
             var child = this._getChild(data);
-            console.debug(child);
+            
             this.getPeriod().zoomTo(child._date);
-            this._raise("periodChanged.cc", { parent: this, child: sender });
+            this._raise("periodChanged.cc", { parent: this, child: sender, period: this.getPeriod() });
         },
         _onScroll: function (sender, data) {
             data.deltaY / Math.abs(data.deltaY) > 0 ? this.getPeriod().zoomIn() : this.getPeriod().zoomOut();
-            this._raise("periodChanged.cc", { parent: this, child: sender });
+            this._raise("periodChanged.cc", { parent: this, child: sender, period: this.getPeriod() });
         },
         _getChildOffset: function (coords, child) {
             return {
@@ -215,7 +217,8 @@
                 Proportion: 0.1,
                 width: 100,
                 height: 50,
-                Date: null
+                Date: null,
+                Units: 11
             }, options);
             this._date = settings.Date;
             this._active = settings.Active;
@@ -227,6 +230,7 @@
             this._proportion = settings.Proportion;
             this._width = settings.width;
             this._height = settings.height;
+            this._units = settings.Units;
             this._context = null;
             this._selected = false;
             this._defaultFill = "#000000";
@@ -262,8 +266,8 @@
         },
         _paintLine: function (context, x1, y1, x2, y2) {
             context.beginPath();
-            context.moveTo(0, y1);
-            context.lineTo(0, y2);
+            context.moveTo(x1, y1);
+            context.lineTo(x2, y2);
             context.stroke();
         },
         _onClick: function (sender, data) {
@@ -284,7 +288,15 @@
 
             var height = this._header != null ? 45 : (this._subheader ? 35 : 25);
             var y = this._header != null ? 0 : this._subheader ? 10 : 20;
-            this._paintLine(context, this._x, y, this._x, y + height);
+            this._paintLine(context, 0, y, 0, y + height);
+
+            
+            var s = 0;
+            for (var i = 0; i < this._units; i++) {
+                this._paintLine(context, s, 43, s, 45);
+                s += (this._width / this._units);   
+            }
+            
         },
         isInBounds: function (coords) {
             if (this._isInOwnOffset(coords))
@@ -292,7 +304,6 @@
             return this._super(coords);
         },
         _getChildOffset: function (coords, child) {
-            console.debug(child);
             return {
                 offsetX: coords.offsetX - child.x() - this._width,
                 offsetY: coords.offsetY - child.y()

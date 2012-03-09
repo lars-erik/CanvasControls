@@ -51,7 +51,7 @@
                 throw new Error("Canvas not supported, or " + this.selector + " isn't a canvas");
 
             this._setViewProportions();
-            
+
             this.on("mousewheel", this, this._onMouseWheel);
             this.context = this._canvas.getContext("2d");
         },
@@ -61,8 +61,8 @@
         },
         _onMouseWheel: function (s, e) {
             $.extend(e, {
-                offsetX: e.pageX - this._jq.offset().left,
-                offsetY: e.pageY - this._jq.offset().top
+                offsetX: (e.pageX == undefined ? e.originalEvent.pageX : e.pageX) - this._jq.offset().left,
+                offsetY: (e.pageY == undefined ? e.originalEvent.pageY : e.pageY) - this._jq.offset().top
             });
             if (arguments.length == 5) {
                 $.extend(e, {
@@ -71,6 +71,7 @@
                     deltaY: arguments[4]
                 });
             }
+
             var shape = this.findShapeAt(e);
             shape._raise(e.type, e);
         }

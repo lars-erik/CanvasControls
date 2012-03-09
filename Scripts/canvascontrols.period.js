@@ -127,7 +127,7 @@
             this._zoomLevel = 1;
             this._startDate.setFullYear(to.getFullYear());
             this._startDate.setMonth(to.getMonth());
-            this._startDate.setDate(to.getDate() + 1);
+            this._startDate.setDate(to.getDate());
             return this;
         },
         _setEnd: function (date) {
@@ -152,7 +152,10 @@
                 Subheader: date.getDay() == 1,
                 Active: new Date().getDate() == date.getDate() && new Date().getMonth() == date.getMonth() && new Date().getFullYear() == date.getFullYear(), //new Date().toDateString() == date.toDateString(),
                 Proportion: 1 / this.getZoomLevel(),
-                Date: new Date(date.getFullYear(), date.getMonth(), date.getDate())
+                Date: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+                DateStart: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+                DateEnd: new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59),
+                Units : 24
             };
         },
         getInnerView: function () {
@@ -203,7 +206,10 @@
                 Active: new Date().getMonth() == date.getMonth() && new Date().getFullYear() == date.getFullYear(),
                 Proportion: daysInMonth / daysInPeriod,
                 DaysInMonth: daysInMonth,
-                Date: new Date(date.getFullYear(), date.getMonth(), date.getDate())
+                Date: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+                DateStart: new Date(date.getFullYear(), date.getMonth(), 1),
+                DateEnd: new Date(date.getFullYear(), date.getMonth() + 1, 0),
+                Units : daysInMonth
             };
         },
         getViewStart: function () {
@@ -235,9 +241,13 @@
         },
         zoomTo: function (to) {
             var date = this._cloneStart();
-            date.setMonth(to.getMonth());
-            date.setFullYear(to.getFullYear());
-            return new canvascontrols.Month({ start: date, zoom: 4 });
+            if (to instanceof Date) {
+                date.setMonth(to.getMonth());
+                date.setFullYear(to.getFullYear());
+            } else {
+                date.setMonth(to * 3);
+            }
+            return new canvascontrols.Month({ start: date, zoom: 3 });
         },
         _setEnd: function (date) {
             date.setMonth(date.getMonth() + this.getZoomLevel() * 3);
@@ -263,7 +273,10 @@
                 Subheader: false,
                 Active: parseInt(new Date().getMonth() / 3) == parseInt(date.getMonth() / 3) && new Date().getFullYear() == date.getFullYear(),
                 Proportion: daysInQuarter / daysInPeriod,
-                Date: new Date(date.getFullYear(), date.getMonth(), date.getDate())
+                Date: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+                DateStart: new Date(date.getFullYear(), date.getMonth(), 1),
+                DateEnd: new Date(date.getFullYear(), date.getMonth() + 4, 0),
+                Units: 4
             };
         },
         getViewStart: function () {
@@ -296,7 +309,13 @@
             this._startDate.setFullYear(this._startDate.getFullYear() + amount);
         },
         zoomTo: function (to) {
-            return new canvascontrols.Quarter({ start: new Date(to, 0, 1), zoom: 4 });
+            var q;
+            if (to instanceof Date) {
+                q = new canvascontrols.Quarter({ start: new Date(to.getFullYear(), 0, 1), zoom: 4 });
+            } else {
+                q = new canvascontrols.Quarter({ start: new Date(to, 0, 1), zoom: 4 });
+            }
+            return q;
         },
         _setEnd: function (date) {
             date.setFullYear(date.getFullYear() + this.getZoomLevel());
@@ -315,7 +334,10 @@
                 Subheader: false,
                 Active: new Date().getFullYear() == date.getFullYear(), //new Date().toDateString() == date.toDateString(),
                 Proportion: 1 / this.getZoomLevel(),
-                Date: new Date(date.getFullYear(), date.getMonth(), date.getDate())
+                Date: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+                DateStart: new Date(date.getFullYear(), date.getMonth(), 1),
+                DateEnd : new Date(date.getFullYear(), 11, 31),
+                Units : 12
             };
         },
         getViewStart: function () {

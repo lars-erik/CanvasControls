@@ -161,7 +161,7 @@ test("zoom out day from 30 changes to month", function () {
 
 test("day zoomTo zooms to selected day", function () {
 	period = new canvascontrols.Period(new canvascontrols.Day({start: new Date(2012, 0, 1)}));
-	period.zoomTo(3);
+	period.zoomTo(new Date(2012, 0, 3));
 	equal(period.getName(), "Day");
 	equal(period.getZoomLevel(), 1);
 	equal(period.getStart().getDate(), 3);
@@ -248,7 +248,7 @@ test("zooming out month from 12 changes to quarter view at lvl 4 from same quart
 
 test("month zoomTo returns day view for selected month", function () {
 	period = new canvascontrols.Period(new canvascontrols.Month({ start: new Date(2012, 0, 1) }));
-	period.zoomTo(2);
+	period.zoomTo(new Date(2012, 2, 1));
 	equal(period.getName(), "Day");
 	equal(period.getZoomLevel(), 30);
 	equal(period.getView().StartHeader, "Mar 2012");
@@ -393,7 +393,7 @@ test("zooming out year from 5 changes to 6", function () {
 
 test("year zoomTo zooms to quarter view for selected year", function () {
 	period = new canvascontrols.Period(new canvascontrols.Year({ start: new Date(2012, 0, 1), zoom: 4 }));
-	period.zoomTo(1);
+	period.zoomTo(2013);
 	equal(period.getName(), "Quarter");
 	equal(period.getView().StartHeader, "2013");
 	equal(period.getZoomLevel(), 4);
