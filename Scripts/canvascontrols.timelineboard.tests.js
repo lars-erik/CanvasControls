@@ -1,32 +1,104 @@
 ﻿/// <reference path="jquery-1.7.1.js" />
+/// <reference path="jquery-mousewheel-3.0.6/jquery.mousewheel.js" />
+/// <reference path="class.js"/>
+/// <reference path="qunit.extensions.js"/>
+/// <reference path="Mock.js"/>
+/// <reference path="MockContext.js"/>
 /// <reference path="canvascontrols.js"/>
+/// <reference path="canvascontrols.period.js"/>
+/// <reference path="canvascontrols.js"/>
+/// <reference path="canvascontrols.observable.js"/>
+/// <reference path="canvascontrols.shape.js"/>
+/// <reference path="canvascontrols.compositeshape.js"/>
+/// <reference path="canvascontrols.canvasview.js"/>
 /// <reference path="canvascontrols.timeline.js"/>
 /// <reference path="canvascontrols.timelineboard.js"/>
 
-var fakeView;
+var mock = new MockContext();
 
 module("canvascontrols.timelineboard", {
-	setup: function () {
-		fakeView = new (function () {
-			this.cleared = false;
-			this.drawSteps = [];
-			this.drawnBoxes = [];
-			this.clear = function () {
-				this.cleared = true;
-				this.drawSteps = [];
-				this.drawnBoxes = [];
-			};
-			this.drawLine = function (x1, y1, x2, y2) { this.drawSteps.push({ x1: x1, y1: y1, x2: x2, y2: y2 }); };
-			this.drawBox = function(x, y, width, height, text) { this.drawnBoxes.push({ x: x, y: y, width: width, height: height, text: text }) };
-			this.getWidth = function () { return 600; };
-			this.getHeight = function () { return 500; };
-		})();
-	},
-	teardown: function () {
-		fakeView = null;
-	}
+    setup: function () {
+        mock.reset();
+    },
+    teardown: function () {
+    }
 });
 
+test("can create timelineboard", function () {
+    var board = new canvascontrols.TimelineBoard();
+    ok(board != null);
+    ok(board instanceof canvascontrols.Shape);
+    ok(board instanceof canvascontrols.TimelineBoard);
+});
+
+test("can create TimelineBoardNode", function () {
+    var node = new canvascontrols.TimelineBoardNode();
+    ok(node != null);
+    ok(node instanceof canvascontrols.Shape);
+    ok(node instanceof canvascontrols.TimelineBoardNode);
+});
+
+test("can add a node to timelineboard", function () {
+    var board = new canvascontrols.TimelineBoard();
+    var node = new canvascontrols.TimelineBoardNode();
+    board.add(node);
+    ok(board != null);
+    ok(node != null);
+    equal(board.getShapeCount(), 1);
+    equal(board.getShapes()[0], node);
+    ok(board.getShapes()[0] instanceof canvascontrols.TimelineBoardNode);
+});
+
+test("TimelineBoard getPeriod returns period", function() {
+    var board = new canvascontrols.TimelineBoard();
+    ok(board.getPeriod() != null);
+    ok(board.getPeriod() instanceof canvascontrols.Period);
+});
+
+test("Adding node to TimelineBoard raises nodeAdded", function () {
+    var board = new canvascontrols.TimelineBoard();
+    var raised = false;
+    board.on("nodeAdded.cc", {}, function () {
+        raised = true;
+    });
+    var node = new canvascontrols.TimelineBoardNode();
+    board.add(node);
+    ok(raised == true);
+
+});
+
+test("Mousedown on node raises nodeClicked", function () {
+    var board = new canvascontrols.TimelineBoard();
+    var node = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1, 0, 0, 0), end: new Date(2012, 2, 31, 23, 59, 59) });
+    board.add(node);
+    var toggled = false;
+    node.on("nodeClicked.cc", {}, function (s, e) {
+        toggled = true;
+    });
+    node._raise("mousedown", { offsetX: 10, offsetY: 10 });
+    
+    ok(toggled);
+});
+
+test("Mousedown on board raises nodeClicked", function () {
+    var board = new canvascontrols.TimelineBoard();
+    var node = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1, 0, 0, 0), end: new Date(2012, 2, 31, 23, 59, 59) });
+    board.add(node);
+    var toggled = false;
+    board.on("nodeClicked.cc", {}, function (s, e) {
+        toggled = true;
+        console.debug(s);
+        console.debug(e);
+        ok(s instanceof canvascontrols.TimelineBoard);
+        equal(s, board);
+        equal(e.parent, board);
+    });
+    board._raise("mousedown", { offsetX: 10, offsetY: 10 });
+
+    ok(toggled);
+    
+});
+/*
 test("can hold instance", function () {
 	var controller = new canvascontrols.TimelineBoardController(fakeView);
 	notEqual(controller, null);
@@ -78,3 +150,4 @@ test("draws box if item spans more than view", function () {
 	equals(fakeView.drawnBoxes[0].x, -39.5);
 	equals(fakeView.drawnBoxes[0].width, 650);
 });
+*/

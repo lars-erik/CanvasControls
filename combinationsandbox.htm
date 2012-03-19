@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-	<title></title>
+	<title>CombinationSandbox</title>
 	
 	<script src="Scripts/class.js" type="text/javascript"></script>
     <script src="Scripts/jquery-1.7.1.min.js" type="text/javascript"></script>
@@ -14,6 +14,7 @@
 	<script src="Scripts/canvascontrols.dragging.js" type="text/javascript"></script>
     <script src="Scripts/canvascontrols.timeline.tree.js" type="text/javascript"></script>
     <script src="Scripts/canvascontrols.period.js" type="text/javascript"></script>
+    <script src="Scripts/canvascontrols.markers.js" type="text/javascript"></script>
     <script src="Scripts/canvascontrols.timeline.js" type="text/javascript"></script>
     <script src="Scripts/canvascontrols.timelineboard.js" type="text/javascript"></script>
 
@@ -48,6 +49,15 @@
 		height: 45px;
 	    left: 200px;
 	    border-bottom: 1px solid #000;
+	    border-left: 1px solid #000;
+	}
+	.timelineMarkers
+	{
+		position: absolute;
+		width: 100%;
+		height: 45px;
+	    left: 200px;
+	    
 	}
 	
 	.board
@@ -56,6 +66,8 @@
 	    width: 100%;
 		left: 200px;
 		top: 0px;
+	    border-bottom: 1px solid #000;
+	    border-left: 1px solid #000;
 	}
 	
 	.tree {
@@ -75,7 +87,7 @@
 		width: 100%;
 		left: 0px;
 		top: 45px;
-		height: 300px;
+		height: 400px;
 		overflow-y: auto;
 		overflow-x: hidden;
 	}
@@ -96,11 +108,13 @@
                 <div id="topContainer" class="topContainer">
                     <div class="spacer">Svensker er mennesker</div>
                     <canvas id="timeline" class="timeline"></canvas>
+                    
                 
                 </div>
                 <div id="boardContainer" class="boardContainer">
                     <canvas id="tree" class="tree" width="200"></canvas>
                     <canvas id="board" class="board"></canvas>
+                    <canvas id="dragView" style="position:absolute; width:100%;height:600px;"></canvas>
                 </div>
             </div>
        
@@ -112,15 +126,17 @@
                     console.log(v);
                 };
             }
+            var model = createModel();
             
             var timelineCanvasView = new canvascontrols.CanvasView("#timeline");
             var timeline = new canvascontrols.Timeline();
             timelineCanvasView.add(timeline);
-            
 
+            var dragView = new canvascontrols.DragView("#dragView");
+            
             var treeCanvasView = new canvascontrols.CanvasView("#tree");
             var tree = new canvascontrols.TimelineTree();
-            var box1 = new canvascontrols.TimelineTreeNode({
+            /*var box1 = new canvascontrols.TimelineTreeNode({
                 label: "Boks 1"
             });
             var box2 = new canvascontrols.TimelineTreeNode({
@@ -145,23 +161,26 @@
             box1.add(childBox12);
             box2.add(childBox21);
             childBox11.add(grandChildBox111);
-            childBox11.add(grandChildBox112);
-            tree.add(box1);
-            tree.add(box2);
+            childBox11.add(grandChildBox112);*/
+
             treeCanvasView.add(tree);
-            
 
             var boardCanvasView = new canvascontrols.CanvasView("#board");
             var board = new canvascontrols.TimelineBoard();
             //board.add(new canvascontrols.TimelineBoardNode());
             //board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 0, 1), end: new Date(2012, 0, 31) }));
-            board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1), end: new Date(2012, 2, 20, 23, 59, 59) }));
-            board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 3, 5), end: new Date(2012, 3, 10) }));
-            board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 3, 11), end: new Date(2012, 3, 13) }));
-            board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 3, 20), end: new Date(2012, 3, 21) }));
-            board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 4, 10), end: new Date(2012, 4, 31) }));
-            board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 6, 5), end: new Date(2012, 6, 20) }));
-            board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 8, 1), end: new Date(2012, 10, 31) }));
+            //board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1), end: new Date(2012, 2, 20, 23, 59, 59) }));
+            //board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 3, 5), end: new Date(2012, 3, 10, 12, 0, 0) }));
+            //board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 3, 11, 10, 30, 0), end: new Date(2012, 3, 13, 16, 0,0) }));
+            //board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 3, 20), end: new Date(2012, 3, 21) }));
+            //board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 4, 10), end: new Date(2012, 4, 31) }));
+            //board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 6, 5), end: new Date(2012, 6, 20) }));
+            //board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 8, 1), end: new Date(2012, 10, 31) }));
+            //board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2013, 0, 1), end: new Date(2013, 11, 31, 23, 59, 59) }));
+
+            //for (var i = 1; i < 500; i++ ) {
+            //    board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2000 + i, 6, 5), end: new Date(2000 +i, 6, 20) }));
+            //}
             boardCanvasView.add(board);
             setWidths();
             timelineCanvasView.paint();
@@ -174,9 +193,93 @@
                 treeCanvasView.paint();
                 boardCanvasView.paint();
             });
+            tree.on("nodeRemoved.cc", {}, function (sender, data) {
+                console.debug("removed");
+            });
+
+            tree.on("nodeAdded.cc", {}, function (sender, data) {
+                board.clear();
+                for (var i = 0; i < sender._shapes.length; i++) {
+                    var treeNode = sender._shapes[i];
+                    var l = treeNode._label;
+
+                    for (var j = 0; j < model.length; j++) {
+                        var entry = model[j];
+                        var g;
+                        if (entry.name == l) {
+                            for (var k = 0; k < entry.goals.length; k++) {
+                                g = entry.goals[k];
+                                board.add(new canvascontrols.TimelineBoardNode({ start: g.start, end: g.end, y: treeNode._y }));
+                            }
+                        }
+                        
+                    }
+                }
+                //board.add(new canvascontrols.TimelineBoardNode({ start: new Date(2012, 8, 1), end: new Date(2012, 10, 31) }));
+                //console.debug("tree");
+                console.debug(sender);
+                //console.debug(data);
+                boardCanvasView.paint();
+            });
+            tree.on("toggled.cc", {}, function (sender, data) {
+                console.debug(sender);
+                board.clear();
+                for (var i = 0; i < sender._shapes.length; i++) {
+                    var treeNode = sender._shapes[i];
+                    var label = treeNode._label;
+
+                    var entry = getEntry(label);
+                    if (treeNode._expanded && entryHasChildren(entry)) {
+                        console.debug("expanded " + treeNode._shapes.length);
+                        for (var j = 0; j < treeNode._shapes.length; j++) {
+                            var treeNodeChild = treeNode._shapes[j];
+                            console.debug(treeNodeChild._y);
+                            for (var k = 0; k < entry.children.length; k++) {
+                                var entryChild = entry.children[k];
+                                if (entryChild.name == treeNodeChild._label) {
+                                    console.debug("matchj " + entryChild.goals.length);
+                                    for (var y = 0; y < entryChild.goals.length; y++) {
+                                        var ggg = entryChild.goals[y];
+                                        console.debug(ggg);
+                                        board.add(new canvascontrols.TimelineBoardNode({ start: new Date(ggg.start.getTime()), end: new Date(ggg.end.getTime()), y: treeNodeChild._y + treeNode._y }));
+                                    }
+
+                                }
+                            }
+
+                        }
+
+                    }
+                    for (var l = 0; l < entry.goals.length; l++) {
+                        var gg = entry.goals[l];
+                        board.add(new canvascontrols.TimelineBoardNode({ start: new Date(gg.start.getTime()), end: new Date(gg.end.getTime()), y: treeNode._y, height: treeNode._height }));
+                    }
+                }
+
+                boardCanvasView.paint();
+            });
             tree.on("toggled.cc nodeAdded.cc nodeRemoved.cc", {}, function () {
                 treeCanvasView.paint();
+
             });
+            function flatten() {
+                
+            }
+            //tree.add(box1);
+            //tree.add(box2);
+            for (var i = 0; i < model.length; i++ ) {
+                var entry = model[i];
+                var treeNode = new canvascontrols.TimelineTreeNode({ label: entry.name });
+                
+                if (entry.children != undefined && entry.children != null && entry.children.length > 0) {
+                    for (var j = 0; j < entry.children.length; j++) {
+                        var childEntry = entry.children[j];
+                        treeNode.add(new canvascontrols.TimelineTreeNode({ label: childEntry.name }));
+                    }
+                }
+                tree.add(treeNode);
+            }
+
 
             timeline.on("periodChanged.cc", {}, function (sender, data) {
                 timelineCanvasView.paint();
@@ -188,12 +291,139 @@
                 
                 boardCanvasView.paint();
             });
-
+            board.on("mousemove", {}, function (sender, data) {
+                timeline._raise("mousemove", data);
+            });
+            board.on("demandRedraw.cc", {}, function (sender, data) {
+                boardCanvasView.paint();
+            });
             timeline.on("drag.cc", {}, function (sender, data) {
                 board.setOffset(data.offset);
                 boardCanvasView.paint();
             });
+            board.on("nodeClicked.cc", {}, function (sender, data) {
+                //console.debug(sender);
+                //console.debug(data);
+            });
+            
 
+            function getEntry(label) {
+                for (var i = 0; i < model.length; i++) {
+                    var e = model[i];
+                    if (e.name == label)
+                        return e;
+                }
+                return null;
+            }
+            function entryHasChildren(e) {
+                return e.children != undefined && e.children != null && e.children.length > 0;
+            }
+            
+            function createModel() {
+                return [
+                    {
+                        id: 1, 
+                        name : "test",
+                        goals: [
+                            {
+                                id : 1,
+                                start: new Date(2012, 3, 1),
+                                end: new Date(2012, 3, 30, 23, 59, 59)
+                            }
+                        ],
+                            children: [
+                               {
+                                   id: 100,
+                                   name: "child",
+                                   goals: [
+                                        {
+                                            id: 2,
+                                            start: new Date(2012, 6, 1),
+                                            end: new Date(2012, 7, 20, 23, 59, 59)
+                                        }
+                                   ]
+                               }
+                           ]
+                    },
+                    {
+                       id : 2,
+                       name : "test2",
+                       goals: [
+                           {
+                               id : 2,
+                               start: new Date(2012, 2, 1),
+                               end: new Date(2012, 2, 20, 23, 59, 59)
+                           },   
+                           {
+                               id: 3,
+                               start: new Date(2012, 4, 1),
+                               end: new Date(2012, 5, 20, 23, 59, 59)
+                           },
+                           {
+                               id: 4,
+                               start: new Date(2012, 8, 1),
+                               end: new Date(2012, 9, 20, 23, 59, 59)
+                           }
+                       ],
+                           children: [
+                               {
+                                   id : 100,
+                                   name : "child",
+                                   goals: [
+                                        {
+                                            id: 2,
+                                            start: new Date(2012, 6, 1),
+                                            end: new Date(2012, 7, 20, 23, 59, 59)
+                                        }
+                                   ]
+                               }
+                           ]
+                       },
+                    {
+                        id: 3,
+                        name: "test3",
+                        goals: [
+                           {
+                               id: 5,
+                               start: new Date(2012, 11, 1),
+                               end: new Date(2012, 11, 20, 23, 59, 59)
+                           },
+                           {
+                               id: 6,
+                               start: new Date(2012, 4, 3),
+                               end: new Date(2012, 5, 10, 23, 59, 59)
+                           },
+                           {
+                               id:7,
+                               start: new Date(2012, 8, 5),
+                               end: new Date(2012, 9, 15, 23, 59, 59)
+                           }
+                       ]
+                       },
+                    {
+                        id: 4,
+                        name: "test4",
+                        goals: [
+                           {
+                               id: 8,
+                               start: new Date(2012, 2, 1),
+                               end: new Date(2012, 2, 20, 23, 59, 59)
+                           },
+                           {
+                               id: 9,
+                               start: new Date(2012, 4, 1),
+                               end: new Date(2012, 5, 20, 23, 59, 59)
+                           },
+                           {
+                               id: 10,
+                               start: new Date(2012, 8, 1),
+                               end: new Date(2012, 9, 20, 23, 59, 59)
+                           }
+                       ]
+                    }
+                    
+                ];
+            }
             function setWidths() {
                 $("#timeline").css("width", $("#timeline").parent().width() - $("#timeline").position().left);
                 $("#board").css("width", $("#board").parent().width() - $("#board").position().left);

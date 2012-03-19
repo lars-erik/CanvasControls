@@ -15,6 +15,7 @@
             this._currentX = 0;
             this._offset = 0.5;
             this._wasDragged = false;
+
             this.on("dblclick", this, this._onDblClick);
             this.on("mousewheel", this, this._onScroll);
             this.on("mousedown", this, this._onMouseDown);
@@ -35,6 +36,7 @@
         isInBounds: function (coords) {
             return this._findChildAtCoords(coords) != null;
         },
+
         _clearPaint: function () {
             for (var i = 0; i < this._children.length; i++) {
                 var child = this._children[i];
@@ -57,6 +59,7 @@
                 context.restore();
                 x += sw;
             }
+            this._timeMarker.paint(context);
         },
         _moveByDragLength: function (length, data) {
             var child = this._getChild(data);
@@ -82,16 +85,18 @@
         },
         _onMouseMove: function (sender, data) {
 
+
             if (this._isMouseDown) {
                 var length = data.pageX - this._currentX;
                 if (Math.abs(length) > 0) {
                     this._currentX = data.pageX;
                     this._moveByDragLength(length, data);
 
-                    this._raise("demandRedraw.cc", { parent: this, child: null });
+
                     this._wasDragged = true;
                 }
             }
+            this._raise("demandRedraw.cc", { parent: this, child: null });
         },
         _onMouseDown: function (sender, data) {
             this._wasDragged = false;
@@ -116,7 +121,7 @@
         },
         _onDblClick: function (sender, data) {
             var child = this._getChild(data);
-            
+
             this.getPeriod().zoomTo(child._date);
             this._raise("periodChanged.cc", { parent: this, child: sender, period: this.getPeriod() });
         },
@@ -171,9 +176,14 @@
             this.createNodes();
             this._hasChildren = this._children.length > 0;
             this._currentSelectedDate = null;
+            this._timeMarker = new cc.TimeMarker();
+            this._timeMarker.setVisible(true);
+            this.on("mousemove", this, this._onMouseMove);
         },
         paint: function (context) {
+            this._width = context.canvas.width;
             this._paintChildren(context);
+            this._timeMarker.paint(context);
         },
         getPeriod: function () {
             return this._period;
@@ -191,6 +201,27 @@
                 }
             }
         },
+        findDateAtCoord: function (x) {
+            var views = this._period.getView();
+            var currentX = this._offset - (this._width * views[0].Proportion);
+            for (var i = 0; i < views.length; i++) {
+                var view = views[i];
+                var span = view.DateEnd.getTime() - view.DateStart.getTime();
+                var sw = this._width * view.Proportion;
+                var frac = sw / span;
+                if (x >= currentX && x <= currentX + sw) {
+                    return new Date((x - currentX) / frac + view.DateStart.getTime());
+                }
+                currentX += sw;
+            }
+            return null;
+        },
+        _onMouseMove: function (sender, data) {
+            this._timeMarker.setX(data.offsetX);
+            this._timeMarker.setY(30);
+            this._timeMarker.setStr(this._formatDateTime(this.findDateAtCoord(data.offsetX)));
+            this._super(sender, data);
+        },
         _onNodeClick: function (sender, data) {
             this._clearPaint();
             if (this._currentSelectedDate != null && sender._date.toDateString() == this._currentSelectedDate.toDateString()) {
@@ -201,6 +232,24 @@
                 sender._selected = true;
             }
             this._raise("nodeClicked.cc", { parent: this, child: sender });
+        },
+        _formatDateTime: function (d) {
+            var out;
+            switch (this._period.getName().toLowerCase()) {
+                case "day":
+                    out = d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes();
+                    break;
+                case "month":
+                case "quarter":
+                case "year":
+                    out = d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear();
+                    break;
+                default:
+                    out = "Err";
+                    break;
+            }
+            return out;
+
         }
     });
 
@@ -290,13 +339,13 @@
             var y = this._header != null ? 0 : this._subheader ? 10 : 20;
             this._paintLine(context, 0, y, 0, y + height);
 
-            
+
             var s = 0;
             for (var i = 0; i < this._units; i++) {
                 this._paintLine(context, s, 43, s, 45);
-                s += (this._width / this._units);   
+                s += (this._width / this._units);
             }
-            
+
         },
         isInBounds: function (coords) {
             if (this._isInOwnOffset(coords))

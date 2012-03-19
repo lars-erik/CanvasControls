@@ -108,7 +108,7 @@
         }
 
     });
-
+    
     cc.Day = cc.PeriodState.extend({
         init: function (options) {
             options = $.extend({
@@ -129,6 +129,7 @@
             this._startDate.setMonth(to.getMonth());
             this._startDate.setDate(to.getDate());
             return this;
+            
         },
         _setEnd: function (date) {
             date.setDate(date.getDate() + this._zoomLevel);
@@ -159,6 +160,7 @@
             };
         },
         getInnerView: function () {
+            
             return this;
         },
         getOuterView: function () {
@@ -208,7 +210,7 @@
                 DaysInMonth: daysInMonth,
                 Date: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
                 DateStart: new Date(date.getFullYear(), date.getMonth(), 1),
-                DateEnd: new Date(date.getFullYear(), date.getMonth() + 1, 0),
+                DateEnd: new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59),
                 Units : daysInMonth
             };
         },
@@ -275,8 +277,8 @@
                 Proportion: daysInQuarter / daysInPeriod,
                 Date: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
                 DateStart: new Date(date.getFullYear(), date.getMonth(), 1),
-                DateEnd: new Date(date.getFullYear(), date.getMonth() + 4, 0),
-                Units: 4
+                DateEnd: new Date(date.getFullYear(), date.getMonth() + 3, 0, 23 ,59 ,59),
+                Units: 3
             };
         },
         getViewStart: function () {
@@ -336,7 +338,7 @@
                 Proportion: 1 / this.getZoomLevel(),
                 Date: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
                 DateStart: new Date(date.getFullYear(), date.getMonth(), 1),
-                DateEnd : new Date(date.getFullYear(), 11, 31),
+                DateEnd : new Date(date.getFullYear(), 11, 31, 23 ,59, 59),
                 Units : 12
             };
         },

@@ -11,6 +11,7 @@
 /// <reference path="canvascontrols.shape.js"/>
 /// <reference path="canvascontrols.compositeshape.js"/>
 /// <reference path="canvascontrols.canvasview.js"/>
+/// <reference path="canvascontrols.markers.js"/>
 /// <reference path="canvascontrols.timeline.js"/>
 
 var mock = new MockContext();
