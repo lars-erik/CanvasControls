@@ -207,9 +207,10 @@ This is the main focus of the project I am going to use the API in, so this will
 
 - Extend TimelineTree to have n generic columns to the right side of the tree
 
-- Fix timeline month view to size months according to days in months
 - Integrate with jQuery mobile to allow swiping the timeline
 - Research mobile device pinch support for timeline
+
+- Support for "invalidate" of individual shapes
 
 ## Notes about pull requests / contributions
 
