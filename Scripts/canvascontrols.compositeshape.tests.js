@@ -39,7 +39,7 @@ test("can create composite shape", function () {
 
 test("can add shape to composite", function () {
 	equal(root.getShapes().length, 2);
-	equal(root.getShapes()[0], child);
+	ok(root.getShapes()[0] === child);
 });
 
 test("fails if adding an object not derived from shape", function () {
@@ -49,7 +49,7 @@ test("fails if adding an object not derived from shape", function () {
 });
 
 test("sets self as parent when children are added", function () {
-	equal(child.parent(), root);
+	ok(child.parent() === root);
 });
 
 test("paint translates and restores recursively", function () {
@@ -79,8 +79,8 @@ test("findShapeAt returns null if no child at coords", function () {
 });
 
 test("can find shapes at coords recursively", function () {
-	equal(root.findShapeAt({ offsetX: 30, offsetY: 50 }), grandChild);
-	equal(root.findShapeAt({ offsetX: 10, offsetY: 20 }), simpleChild);
+	ok(root.findShapeAt({ offsetX: 30, offsetY: 50 }) === grandChild);
+	ok(root.findShapeAt({ offsetX: 10, offsetY: 20 }) === simpleChild);
 });
 
 test("detects mousemove and forwards event with adjusted offset to children", function () {

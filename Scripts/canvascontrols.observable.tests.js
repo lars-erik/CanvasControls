@@ -41,6 +41,7 @@ test("passes self, event and arguments to notify handler", function () {
 });
 
 test("can unsubscribe", function () {
+	ok(false, "Haven't got this to work yet. :(");
 	var observers = [{}, {}];
 	var calls = [];
 	function notify() {

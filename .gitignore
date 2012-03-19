@@ -1,1 +1,1 @@
-﻿*.user *.csproj *.sln *.suo *.config properties/* bin/* obj/* packages/* 
+﻿*.user *.csproj *.sln *.suo *.config *.nuspec *.nupkg *.bat properties/* bin/* obj/* packages/*

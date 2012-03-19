@@ -83,7 +83,7 @@ test("can add a shape", function () {
 	var shape = new canvascontrols.Shape();
 	v.add(shape);
 	equal(v.getShapeCount(), 1);
-	equal(v.getShape(0), shape);
+	ok(v.getShape(0) === shape);
 });
 
 test("paint clears entire canvas and translates to 0.5,0.5", function () {
@@ -117,8 +117,8 @@ test("paint calls paint on each shape", function () {
 	v.add(shape2);
 	v.paint();
 
-	equal(shape1.lastArgs[0], mock);
-	equal(shape1.lastArgs[0], mock);
+	ok(shape1.lastArgs[0] === mock);
+	ok(shape1.lastArgs[0] === mock);
 });
 
 test("paint saves, translates to shape x,y then restores for each shape", function () {
@@ -150,8 +150,8 @@ test("can find shape at canvas coordinates", function () {
 	v.add(shape1);
 	v.add(shape2);
 
-	equal(v.findShapeAt({ offsetX: 15, offsetY: 25 }), shape1);
-	equal(v.findShapeAt({ offsetX: 37, offsetY: 35 }), shape2);
+	ok(v.findShapeAt({ offsetX: 15, offsetY: 25 }) === shape1);
+	ok(v.findShapeAt({ offsetX: 37, offsetY: 35 }) === shape2);
 });
 
 test("raises mouse events", function () {
@@ -169,8 +169,8 @@ test("raises mouse events", function () {
 	v.on("mousedown mousemove mouseup click", owner, handler);
 
 	$("canvas").trigger($.Event("mousedown", extraParams));
-	equal(lastThis, owner);
-	equal(lastS, v);
+	ok(lastThis === owner);
+	ok(lastS === v);
 	equal(lastE.type, "mousedown");
 	equal(lastE.pageX, extraParams.pageX);
 	equal(lastE.pageY, extraParams.pageY);
@@ -200,12 +200,12 @@ test("does not apply events with . in name to canvas, but can raise", function (
 		lastE = e;
 	});
 	v._raise("event.mine");
-	equal(lastS, v);
+	ok(lastS === v);
 	equal(lastE.type, "event");
 	equal(lastE.namespace, "mine");
 	lastS = null;
 	$("canvas").trigger("event.mine");
-	equal(lastS, null);
+	ok(lastS === null);
 });
 
 test("fires own and passes mouse event with offset to controls", function () {
@@ -215,11 +215,7 @@ test("fires own and passes mouse event with offset to controls", function () {
 	var shape2 = new MockShape({ x: 30, y: 25 });
 	v.add(shape1);
 	v.add(shape2);
-	var canvasOffset = {
-		x: $("canvas").offset().left,
-		y: $("canvas").offset().top
-	};
-	var params = { pageX: canvasOffset.x + 12, pageY: canvasOffset.y + 23 };
+	var params = { offsetX: 12, offsetY: 23 };
 	var notified = [];
 	var notify = function (s, e) {
 		notified.push([s, e]);
@@ -229,15 +225,10 @@ test("fires own and passes mouse event with offset to controls", function () {
 	v.on("mousedown", this, notify);
 	$("canvas").trigger($.Event("mousedown", params));
 	equal(notified.length, 2);
-	equal(notified[1][0], v);
-	equal(notified[0][0], shape1);
-	equal(notified[0][1].pageX, params.pageX);
-	equal(notified[0][1].pageY, params.pageY);
-	equal(notified[0][1].originalX, 12);
-	equal(notified[0][1].originalY, 23);
+	ok(notified[1][0] === v);
+	ok(notified[0][0] === shape1);
 	equal(notified[0][1].offsetX, 2);
 	equal(notified[0][1].offsetY, 3);
-	notEqual(notified[0][0], shape2);
 });
 
 

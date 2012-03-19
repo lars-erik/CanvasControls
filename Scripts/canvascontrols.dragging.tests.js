@@ -6,6 +6,7 @@
 /// <reference path="canvascontrols.js"/>
 /// <reference path="canvascontrols.observable.js"/>
 /// <reference path="canvascontrols.shape.js"/>
+/// <reference path="canvascontrols.compositeshape.js"/>
 /// <reference path="canvascontrols.canvasview.js"/>
 /// <reference path="canvascontrols.dragging.js"/>
 
@@ -59,8 +60,8 @@ test("sets state when startDrag is called, then displays canvas", function () {
 	equal(dragView.draggedShape, undefined);
 	var shape = new canvascontrols.Shape();
 	dragView.startDrag(shape, 10, 10);
-	equal(dragView.draggedShape, shape);
-	equal(dragView._shapes[0], shape);
+	ok(dragView.draggedShape === shape);
+	ok(dragView._shapes[0] === shape);
 	equal(shape.x(), 10);
 	equal(shape.y(), 10);
 	equal($("canvas").css("display"), "block");
@@ -140,16 +141,16 @@ test("dragshape imagedata is faded", function () {
 	var shape = canvascontrols.DragShape.create(ctx, 0, 0, 5, 5);
 	var data = shape._imageData.data;
 
-	equal(data[data.length - 1], 0x00);
-	equal(data[ 5 * 4 - 1], 0x61);
-	equal(data[10 * 4 - 1], 0x43);
-	equal(data[15 * 4 - 1], 0x0E);
-	equal(data[20 * 4 - 1], 0x00);
-	equal(data[21 * 4 - 1], 0x69);
-	equal(data[22 * 4 - 1], 0x4A);
-	equal(data[23 * 4 - 1], 0x13);
-	equal(data[24 * 4 - 1], 0x00);
-	equal(data[25 * 4 - 1], 0x00);
+	equal(data[data.length - 1], 128);
+	equal(data[ 5 * 4 - 1], 225);
+	equal(data[10 * 4 - 1], 195);
+	equal(data[15 * 4 - 1], 141);
+	equal(data[20 * 4 - 1], 128);
+	equal(data[21 * 4 - 1], 232);
+	equal(data[22 * 4 - 1], 202);
+	equal(data[23 * 4 - 1], 147);
+	equal(data[24 * 4 - 1], 128);
+	equal(data[25 * 4 - 1], 128);
 });
 
 test("dragshape paint puts imagedata on coords", function () {

@@ -6,7 +6,6 @@
 /// <reference path="MockContext.js"/>
 /// <reference path="canvascontrols.js"/>
 /// <reference path="canvascontrols.period.js"/>
-/// <reference path="canvascontrols.js"/>
 /// <reference path="canvascontrols.observable.js"/>
 /// <reference path="canvascontrols.shape.js"/>
 /// <reference path="canvascontrols.compositeshape.js"/>
@@ -37,7 +36,7 @@ test("can create TimelineNode", function () {
 });
 
 test("can create timeline", function () {
-    var timeline = new canvascontrols.Timeline();
+	var timeline = new canvascontrols.Timeline();
     ok(timeline != null);
     ok(timeline instanceof canvascontrols.Shape);
     ok(timeline instanceof canvascontrols.Timeline);
