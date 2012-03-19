@@ -84,7 +84,7 @@
             //console.debug(data);
         },
         _onMouseMove: function (sender, data) {
-
+            
 
             if (this._isMouseDown) {
                 var length = data.pageX - this._currentX;
@@ -126,7 +126,11 @@
             this._raise("periodChanged.cc", { parent: this, child: sender, period: this.getPeriod() });
         },
         _onScroll: function (sender, data) {
+            var length = this._currentX - data.pageX;
+            console.log(length);
+            //this._moveByDragLength(length, data);
             data.deltaY / Math.abs(data.deltaY) > 0 ? this.getPeriod().zoomIn() : this.getPeriod().zoomOut();
+
             this._raise("periodChanged.cc", { parent: this, child: sender, period: this.getPeriod() });
         },
         _getChildOffset: function (coords, child) {

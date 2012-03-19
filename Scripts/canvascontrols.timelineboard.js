@@ -84,7 +84,8 @@
                     }
                 }
                 if (this._selectedChild == null) {
-                    child._onMouseOver(sender, data);
+                    //child._onMouseOver(sender, data);
+                    child._raise("mouseover", data);
                     child._isHovered = true;
                     this._selectedChild = child;
                 }
@@ -101,15 +102,12 @@
             }
         },
         _onMouseOver: function (sender, data) {
-            console.debug("base");
             var child = this._getChild(data);
-            console.debug(child);
             if (child != null)
                 child._onMouseOver(sender, data);
             this._isHovered = true;
         },
         _onMouseOut: function (sender, data) {
-            console.debug("out");
             this._expandMarker.setVisible(false);
             this._moveMarker.setVisible(false);
             this._isHovered = false;
@@ -235,7 +233,6 @@
             this._super(s, e);
         },
         _onMouseOver: function (s, e) {
-            console.debug("onMouseOver board");
             this._super(s, e);
         },
         _onMouseOut: function (s, e) {
@@ -273,7 +270,7 @@
             this._hasChildren = this._children.length > 0;
             this._y = settings.y;
             this._isHovered = false;
-            //this.on("mouseover", this, this._onMouseOver);
+            this.on("mouseover", this, this._onMouseOver);
 
         },
         paint: function (context) {
@@ -282,7 +279,7 @@
             var x = 0, width = 0, y = 2;
             var offset = 0 - canvasWidth * views[0].Proportion;
             var stupidHack = [];
-            
+
             for (var i = 0; i < views.length; i++) {
                 var view = views[i];
                 var viewWidth = canvasWidth * view.Proportion;
@@ -334,12 +331,11 @@
             }
         },
         _isBoxClick: function (coords) {
-            
+
             return coords.offsetX >= this._boxX && coords.offsetX < this._boxX + this._boxWidth &&
 				   coords.offsetY >= 0 && coords.offsetY <= this._height;
         },
         _onMouseOver: function (sender, data) {
-            console.debug("onMouseOver node");
             this._super(sender, data);
         }
     });

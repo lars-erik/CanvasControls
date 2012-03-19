@@ -80,6 +80,37 @@ test("can clear nodes", function () {
     timeline.createNodes();
     equal(timeline._children.length, 13);
 });
+
+test("findDateAtCoord returns correct time", function () {
+    var timeline = new canvascontrols.Timeline();
+    timeline.paint(mock);
+    
+    for (var i = 0; i < timeline._children.length; i++) {
+        var child = timeline._children[i];
+        equal(child._date.getMonth(), timeline.findDateAtCoord(child._x + (child._width / 2)).getMonth());
+    }
+});
+
+test("dragging timeline raises", function () {
+    var timeline = new canvascontrols.Timeline();
+    timeline.paint(mock);
+
+    var dragged = false;
+    var periodChanged = false;
+
+    timeline.on("periodChanged.cc", {}, function (sender, data) {
+        periodChanged = true;
+    });
+    timeline.on("drag.cc", {}, function (sender, data) {
+        dragged = true;
+    });
+
+    timeline._moveByDragLength(200, {offsetX : 10, offsetY: 10});
+    ok(periodChanged);
+    ok(dragged);
+});
+
+
 /*
 var fakeView;
 

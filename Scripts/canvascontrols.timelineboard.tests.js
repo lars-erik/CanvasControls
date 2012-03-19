@@ -87,8 +87,7 @@ test("Mousedown on board raises nodeClicked", function () {
     var toggled = false;
     board.on("nodeClicked.cc", {}, function (s, e) {
         toggled = true;
-        console.debug(s);
-        console.debug(e);
+        
         ok(s instanceof canvascontrols.TimelineBoard);
         equal(s, board);
         equal(e.parent, board);
@@ -96,8 +95,22 @@ test("Mousedown on board raises nodeClicked", function () {
     board._raise("mousedown", { offsetX: 10, offsetY: 10 });
 
     ok(toggled);
-    
+
 });
+/*
+test("Mousemove on board on a node raises mouseover on node", function () {
+    var board = new canvascontrols.TimelineBoard();
+    var node = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1, 0, 0, 0), end: new Date(2012, 2, 31, 23, 59, 59), y: 10 });
+    board.add(node);
+    var mouseOver = false;
+
+    node.on("mouseover", {}, function (s, e) {
+        mouseOver = true;
+    });
+
+    board._raise("mousemove", { offsetX: 10, offsetY: 10 });
+    ok(mouseOver);
+});*/
 /*
 test("can hold instance", function () {
 	var controller = new canvascontrols.TimelineBoardController(fakeView);

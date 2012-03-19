@@ -100,10 +100,10 @@
                 context.lineTo(this._x + (px / 8), this._y - 5);
                 context.lineTo(this._x + (px / 2) + this._padding, this._y - 5);
                 context.lineTo(this._x + (px / 2) + this._padding, this._y - 20);
-                context.lineTo(this._x, this._y - 20)
+                context.lineTo(this._x, this._y - 20);
                 context.fill();
                 context.stroke();
-                //context.fillRect(this._x, this._y, context.measureText(this._str).width + 20, 16);
+                
                 context.fillStyle = '#000';
                 if (this._font != null)
                     context.font = this._font;
