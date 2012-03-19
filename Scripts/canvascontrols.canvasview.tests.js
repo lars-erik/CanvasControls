@@ -231,22 +231,3 @@ test("fires own and passes mouse event with offset to controls", function () {
 	equal(notified[0][1].offsetY, 3);
 });
 
-
-/*
-	var shape1Clicked = false, shape2Clicked = false, offset;
-	shape1.evaluateClick = function (e) { offset = e; shape1Clicked = true; };
-	shape2.evaluateClick = function (e) { offset = e; shape2Clicked = true; };
-	v._canvasClicked({ offsetX: 15, offsetY: 25 });
-	equal(shape1Clicked, true);
-	equal(shape2Clicked, false);
-	equal(offset.x, 5);
-	equal(offset.y, 5);
-
-	shape1Clicked = false;
-	shape2Clicked = false;
-	v._canvasClicked({ offsetX: 33, offsetY: 32 });
-	equal(shape1Clicked, false);
-	equal(shape2Clicked, true);
-	equal(offset.x, 3);
-	equal(offset.y, 7);
-*/

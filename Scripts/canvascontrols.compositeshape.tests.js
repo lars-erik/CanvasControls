@@ -42,6 +42,19 @@ test("can add shape to composite", function () {
 	ok(root.getShapes()[0] === child);
 });
 
+test("can remove shape", function () {
+	var newShape = new canvascontrols.Shape();
+	root.add(newShape);
+	ok(root.getShapes().length, 3);
+	root.remove(child);
+	ok(root.getShapes().length, 2);
+	ok(root.getShapes()[0] === simpleChild);
+	ok(root.getShapes()[1] === newShape);
+	root.remove(newShape);
+	ok(root.getShapes().length, 1);
+	ok(root.getShapes()[0] === simpleChild);
+});
+
 test("fails if adding an object not derived from shape", function () {
 	throwsError(function () {
 		root.add({});

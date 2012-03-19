@@ -69,12 +69,12 @@ test("can remove subnodes and adjust other children's y", function () {
 	});
 
 	node.remove(child);
-	equal(node._children.length, 1);
-	ok(node._children[0] === child2);
+	equal(node.getShapes().length, 1);
+	ok(node.getShapes()[0] === child2);
 	equal(eventName, "nodeRemoved");
-	equal(node._children[0].y(), 25);
+	equal(node.getShapes()[0].y(), 25);
 	node.remove(child2);
-	equal(node._children.length, 0);
+	equal(node.getShapes().length, 0);
 	equal(node._hasChildren, false);
 });
 
@@ -244,43 +244,6 @@ test("detects click on triangles, calls expand and raises toggled.cc, also adds 
 	ok(toggled);
 });
 
-
-
-// todo: this isn't necessary for now, canvasview fires event on right target
-//test("detects click on box and raises clicked event", function () {
-//	var node = createParentNode({ label: "root", expanded: true });
-//	var childNode = new canvascontrols.TimelineTreeNode({ label: "child", expanded: true });
-//	var grandChildNode = new canvascontrols.TimelineTreeNode({ label: "grandchild" });
-//	node.add(childNode);
-//	childNode.add(grandChildNode);
-
-//	var clickedChild, eventName, clickedButton, sentData;
-//	node.on("click", {}, function (sender, event) {
-//		eventName = event.type;
-//		clickedChild = event.child;
-//		clickedButton = event.which;
-//		sentData = event;
-//	});
-
-//	node._raise("click", { offsetX: 50, offsetY: 27, which: 1 });
-
-//	equal(sentData.offsetX, 30);
-//	equal(sentData.offsetY, 2);
-//	equal(sentData.originalX, 50);
-//	equal(sentData.originalY, 27);
-//	equal(eventName, "click");
-//	ok(clickedChild === childNode);
-//	equal(clickedChild._label, "child");
-//	equal(clickedButton, 1);
-
-//	node._raise("click", { offsetX: 70, offsetY: 52, which: 3 });
-
-//	equal(eventName, "click");
-//	ok(clickedChild === grandChildNode);
-//	equal(clickedChild._label, "grandchild");
-//	equal(clickedButton, 3);
-//});
-
 test("adding to a node notifies parent and parent updates bounds", function () {
 	var node = createParentNode();
 	var childNode = new canvascontrols.TimelineTreeNode();
@@ -296,25 +259,26 @@ test("adding to a node notifies parent and parent updates bounds", function () {
 	equal(childNode2.y(), 75);
 });
 
-// todo: do we need this for anything?
-//test("can find position relative to root node", function () {
-//	var node = new canvascontrols.TimelineTreeNode();
-//	node.add(new canvascontrols.TimelineTreeNode());
-//	node._children[0].add(new canvascontrols.TimelineTreeNode());
-//	node._children[0].add(new canvascontrols.TimelineTreeNode());
-//	node.toggle();
-//	node._children[0].toggle();
-//	equal(node._children[0]._children[0].globalX(), 40);
-//	equal(node._children[0]._children[0].globalY(), 50);
-//	equal(node._children[0]._children[1].globalY(), 75);
-//});
-
-// todo: do we need this for anything?
-//test("added node gets new state", function () {
-//	var node = createParentNode();
-//	node.add(new canvascontrols.TimelineTreeNode());
-//	equal(node._children[0]._state, "new");
-//});
+test("node.edit shows textbox on document", function () {
+	var node = createParentNode();
+	var child = new canvascontrols.TimelineTreeNode();
+	var grandChild = new canvascontrols.TimelineTreeNode();
+	node.add(child);
+	child.add(grandChild);
+	node.toggle();
+	child.toggle();
+	var textSelector = "input[type=\"text\"]";
+	equal($(textSelector).length, 0);
+	grandChild.edit();
+	equal($(textSelector).length, 1);
+	equal($(textSelector).css("left"), (grandChild.globalX() + 1) + "px");
+	equal($(textSelector).css("top"), (grandChild.globalY() + 1) + "px");
+	equal($(textSelector).val(), grandChild._label);
+	$(textSelector).val("test");
+	$(textSelector).blur();
+	equal(grandChild._label, "test");
+	equal($(textSelector).length, 0);
+});
 
 function createParentNode() {
 	return new canvascontrols.TimelineTreeNode({
@@ -356,38 +320,6 @@ test("can add nodes to tree", function () {
 	equal(tree.getShapes()[1].y(), 25);
 });
 
-// todo: canvas handles this
-//test("detects and expands child on click", function () {
-//	var tree = new canvascontrols.TimelineTree();
-//	var child1 = new canvascontrols.TimelineTreeNode();
-//	var child2 = new canvascontrols.TimelineTreeNode();
-//	var grandChild = new canvascontrols.TimelineTreeNode();
-//	tree.add(child1);
-//	tree.add(child2);
-//	child1.add(grandChild);
-//	equal(child2.y(), 25);
-//	tree._raise("click", { offsetX: 10, offsetY: 15 });
-//	ok(child1._expanded);
-//	equal(child2.y(), 50);
-//});
-
-//test("detects and raises event on child box click", function () {
-//	var tree = new canvascontrols.TimelineTree();
-//	var child1 = new canvascontrols.TimelineTreeNode({ label: "a" });
-//	var child2 = new canvascontrols.TimelineTreeNode({ label: "b" });
-//	var grandChild = new canvascontrols.TimelineTreeNode({ label: "a.a" });
-//	tree.add(child1);
-//	tree.add(child2);
-//	child1.add(grandChild);
-//	var clickedChild;
-//	tree.on("click", {}, function (sender, event) {
-//		clickedChild = event.child;
-//	});
-//	tree._raise("click", { offsetX: 30, offsetY: 35 });
-//	ok(clickedChild != null);
-//	equal(clickedChild._label, child2._label);
-//});
-
 test("calculates correct height after added node", function () {
 	var tree = new canvascontrols.TimelineTree();
 	var node = new canvascontrols.TimelineTreeNode();
@@ -406,44 +338,3 @@ test("calculates correct height after added node", function () {
 	equal(tree.getShapes()[1].y(), 125);
 });
 
-// todo: do we need this?
-//test("can find position relative to tree", function () {
-//	var tree = new canvascontrols.TimelineTree();
-//	var node = new canvascontrols.TimelineTreeNode();
-//	tree.add(node);
-//	node.add(new canvascontrols.TimelineTreeNode());
-//	node._children[0].add(new canvascontrols.TimelineTreeNode());
-//	node._children[0].children[0].add(new canvascontrols.TimelineTreeNode());
-//	node._children[0].add(new canvascontrols.TimelineTreeNode());
-//	node.toggle();
-//	node._children[0].toggle();
-//	equal(node._children[0]._children[0].globalX(), 40);
-//	equal(node._children[0]._children[0].globalY(), 50);
-//	equal(node._children[0]._children[1].globalY(), 75);
-//});
-
-/*
-test("can start dragging element", function () {
-	var controller = new canvascontrols.TimelineTreeController(fakeView);
-	var model = [
-		{ id: "1", label: "mål 1", hasChildren: true, expanded: true, parents: [] },
-		{ id: "4", label: "mål 1.1", hasChildren: true, expanded: false, parents: ["1"] },
-		{ id: "2", label: "mål 2", hasChildren: false, expanded: false, parents: [] },
-		{ id: "3", label: "mål 3", hasChildren: true, expanded: false, parents: [] }
-	];
-	controller.setModel(model);
-
-	var draggedElement;
-	fakeView.dragStarted = function (element) {
-		draggedElement = element;
-	};
-	fakeView.mouseDown({ x: 25, y: 35 });
-
-	equals(draggedElement.label, "mål 2");
-	equals(draggedElement.width, 175);
-	equals(draggedElement.height, 20);
-	equals(draggedElement.offsetX, -4.5);
-	equals(draggedElement.offsetY, -4.5);
-});
-
-*/

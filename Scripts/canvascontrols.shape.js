@@ -21,6 +21,14 @@
         y: function () {
             return this._y;
         },
+        globalX: function () {
+			if (this.parent() == null) return this.x();
+			return this.parent().globalX() + this.x();
+        },
+        globalY: function () {
+			if (this.parent() == null) return this.y();
+			return this.parent().globalY() + this.y();
+        },
         width: function () {
             return this._width;
         },

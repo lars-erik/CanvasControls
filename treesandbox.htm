@@ -15,13 +15,24 @@
 
 	<style type="text/css">
 			
-	.menu {
+	.menu 
+	{
+		font-family: Segoe UI;
 		position: absolute;
 		width: 100px;
 		height: 100px;
 		border: 1px solid black;
 		background-color: #ECECEC;
 		display: none;
+	}
+
+	.menu span {
+		display: block;
+		cursor: pointer;
+	}
+
+	.menu span:hover {
+		background-color: #E0E0E0;
 	}
 		
 	</style>
@@ -32,8 +43,9 @@
 	<canvas id="dragView" style="position:absolute; width:100%;height:600px;"></canvas>
 	
 	<div id="menu" class="menu">
-		<span id="add">add</span><br/>
-		<span id="remove">remove</span><br/>
+		<span id="add">add</span>
+		<span id="remove">remove</span>
+		<span id="rename">rename</span>
 	</div>
 
 	<script type="text/javascript">
@@ -75,13 +87,21 @@
 
 		var currentNode;
 
-		tree.on("contextmenu", {}, function (s, e) {
+		canvasView.on("contextmenu", {}, function (s, e) {
 			$("#menu").hide();
-			currentNode = e.handlers[0];
+			if (e.handlers[0] instanceof canvascontrols.CanvasView)
+				currentNode = tree;
+			else
+				currentNode = e.handlers[0];
 			$("#menu").css("left", e.pageX);
 			$("#menu").css("top", e.pageY);
 			$("#menu").show();
 			e.preventDefault();
+		});
+
+		$(document.body).click(function (e) {
+			if (e.srcElement != $("#menu")[0])
+				$("#menu").hide();
 		});
 
 		tree.on("toggled.cc nodeAdded.cc nodeRemoved.cc", {}, function () {
@@ -108,6 +128,18 @@
 					coords.x, coords.y, coords.w, coords.h
 				);
 				dragView.startDrag(shape, coords.x, coords.y);
+			}
+		});
+
+		tree.on("click", {}, function (s, e) {
+			var child = e.handlers[0];
+			if (child != null) {
+				if (!child._isBoxClick({
+					offsetX: e.offsetX - child.globalX(),
+					offsetY: e.offsetY - child.globalY()
+				}))
+					return;
+				child.edit();
 			}
 		});
 
@@ -139,16 +171,25 @@
 		});
 
 		$("#add").click(function () {
-			if (!currentNode._expanded)
+			if (currentNode instanceof canvascontrols.TimelineTreeNode && !currentNode._expanded)
 				currentNode.toggle();
-
-			currentNode.add(new canvascontrols.TimelineTreeNode());
+			var newNode = new canvascontrols.TimelineTreeNode();
+			currentNode.add(newNode);
+			newNode.edit();
 			$("#menu").hide();
 		});
 
 		$("#remove").click(function () {
-			currentNode._parent.remove(currentNode);
-			$("#menu").hide();
+			if (currentNode instanceof canvascontrols.TimelineTreeNode) {
+				currentNode._parent.remove(currentNode);
+				$("#menu").hide();
+			}
+		});
+
+		$("#rename").click(function() {
+			if (currentNode instanceof canvascontrols.TimelineTreeNode) {
+				currentNode.edit();
+			}
 		});
 
 	</script>
