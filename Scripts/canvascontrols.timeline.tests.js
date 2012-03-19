@@ -110,7 +110,15 @@ test("dragging timeline raises", function () {
     ok(dragged);
 });
 
+test("Timeline period view sizes are correct", function () {
+    var timeline = new canvascontrols.Timeline();
+    timeline.paint(mock);
 
+    for (var i = 0; i < timeline._children.length; i++) {
+        var child = timeline._children[i];
+        equal(child._width, timeline._width * child._proportion);
+    }
+});
 /*
 var fakeView;
 
