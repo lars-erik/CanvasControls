@@ -267,6 +267,10 @@ test("node.edit shows textbox on document", function () {
 	child.add(grandChild);
 	node.toggle();
 	child.toggle();
+	var eventArg;
+	node.on("renamed.cc", {}, function (s, e) {
+		eventArg = e;
+	});
 	var textSelector = "input[type=\"text\"]";
 	equal($(textSelector).length, 0);
 	grandChild.edit();
@@ -278,6 +282,7 @@ test("node.edit shows textbox on document", function () {
 	$(textSelector).blur();
 	equal(grandChild._label, "test");
 	equal($(textSelector).length, 0);
+	ok(eventArg.child === grandChild);
 });
 
 function createParentNode() {

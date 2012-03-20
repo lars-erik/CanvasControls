@@ -4,6 +4,7 @@
 		init: function (options) {
 			this._super(options);
 		},
+
 		add: function (node) {
 			node.setPosition(this._childXPadding(), this._childYPadding() + this._getChildHeight());
 			node.on("toggled.cc nodeAdded.cc nodeRemoved.cc", this, this._childEvent);
@@ -148,8 +149,11 @@
 			while (!(parentRoot instanceof cc.CanvasView) && parentRoot != null) {
 				parentRoot = parentRoot.parent();
 			}
-			var canvasOffsetX = parentRoot._jq.offset().left;
-			var canvasOffsetY = parentRoot._jq.offset().top;
+			var canvasOffsetX = 0, canvasOffsetY = 0;
+			if (parentRoot != null && parentRoot._jq != undefined) {
+				canvasOffsetX = parentRoot._jq.offset().left;
+				canvasOffsetY = parentRoot._jq.offset().top;
+			}
 
 			var textBox = $("<input type=\"text\"></input>");
 			$(document.body).append(textBox);
@@ -163,6 +167,7 @@
 				self._label = textBox.val();
 				textBox.remove();
 				parentRoot.paint();
+				self._raise("renamed.cc", { child: self });
 			};
 			textBox.blur(update);
 			textBox.keyup(function (e) {
