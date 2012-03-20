@@ -14,6 +14,7 @@
 				throw new Error("Cannot add instances not derived from canvascontrols.Shape");
 			this._shapes.push(shape);
 			shape._parent = this;
+			shape.on("invalidated.cc", this, this._childInvalidated);
 		},
 		remove: function (shape) {
 			var shapeIndex = -1;
@@ -24,21 +25,19 @@
 				}
 			}
 			if (shapeIndex > -1) {
-				this._shapes = 
+				this._shapes =
 					this._shapes.slice(0, shapeIndex).concat(
 					this._shapes.slice(shapeIndex + 1, this._shapes.length)
 					);
 			}
 		},
 		width: function () {
-			//return this._super();
 			var child, candidate, max = this._width;
 			for (var i = 0; i < this._shapes.length; i++) {
 				child = this._shapes[i];
 				candidate = child.x() + child.width();
 				max = Math.max(max, candidate);
 			}
-			//console.debug(max);
 			return isNaN(max) ? this._super() : max;
 		},
 		height: function () {
@@ -120,9 +119,7 @@
 				var child = this._shapes[i];
 
 				var childCoords = this._getChildCoords(e, child);
-				//console.debug(childCoords.offsetX);
 				if (child.isInBounds(childCoords)) {
-					//console.debug(child);
 					var originalOffset = { offsetX: e.offsetX, offsetY: e.offsetY };
 					$.extend(e, childCoords);
 					child._raise(e.type, e);
@@ -130,6 +127,12 @@
 				}
 			}
 			e.handlers.push(this);
+		},
+		_childInvalidated: function (s, e) {
+			this._raise("invalidated.cc", {
+				affectsParents: e.affectsParents,
+				original: e
+			});
 		}
 	});
 

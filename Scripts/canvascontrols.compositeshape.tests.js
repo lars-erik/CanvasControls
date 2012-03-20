@@ -169,3 +169,14 @@ test("can find global x and y", function () {
 	equal(grandChild.globalX(), 35);
 	equal(grandChild.globalY(), 60);
 });
+
+test("when child is invalidated, bubbles event", function () {
+	var sender, eventArg;
+	root.on("invalidated.cc", {}, function (s, e) {
+		sender = s;
+		eventArg = e;
+	});
+	grandChild.invalidate();
+	ok(sender === root);
+	ok(eventArg.original.original.target === grandChild);
+});

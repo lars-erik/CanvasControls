@@ -231,3 +231,49 @@ test("fires own and passes mouse event with offset to controls", function () {
 	equal(notified[0][1].offsetY, 3);
 });
 
+test("when composite child is invalidated alone, redraws only that child", function () {
+
+	createCanvas();
+	var v = createView("canvas");
+	var outer = new canvascontrols.CompositeShape({ x: 10, y: 10, width: 50, height: 50 });
+	var inner = new canvascontrols.Shape({ x: 10, y: 15, width: 10, height: 15 });
+	outer.add(inner);
+	v.add(outer);
+	mock.logged = ["clearRect", "translate"];
+	v.mockContext(mock);
+	inner.invalidate();
+	equal(mock.calls.length, 3);
+	equal(mock.calls[0].name, "clearRect");
+	equal(mock.calls[0].args.x, 20);
+	equal(mock.calls[0].args.y, 25);
+	equal(mock.calls[0].args.w, 10);
+	equal(mock.calls[0].args.h, 15);
+	equal(mock.calls[2].name, "translate");
+	equal(mock.calls[2].args.x, 20);
+	equal(mock.calls[2].args.y, 25);
+});
+
+test("when composite child is invalidated with affectsParents, redraws highest parent", function () {
+
+	createCanvas();
+	var v = createView("canvas");
+	var outer = new canvascontrols.CompositeShape({ x: 10, y: 10, width: 50, height: 50 });
+	var inner = new canvascontrols.Shape({ x: 10, y: 15, width: 10, height: 15 });
+	outer.add(inner);
+	v.add(outer);
+	mock.logged = ["clearRect", "translate"];
+	v.mockContext(mock);
+	inner.invalidate(true);
+	equal(mock.calls.length, 4);
+	equal(mock.calls[0].name, "clearRect");
+	equal(mock.calls[0].args.x, 10);
+	equal(mock.calls[0].args.y, 10);
+	equal(mock.calls[0].args.w, 50);
+	equal(mock.calls[0].args.h, 50);
+	equal(mock.calls[2].name, "translate");
+	equal(mock.calls[2].args.x, 10);
+	equal(mock.calls[2].args.y, 10);
+	equal(mock.calls[3].name, "translate");
+	equal(mock.calls[3].args.x, 10);
+	equal(mock.calls[3].args.y, 15);
+});

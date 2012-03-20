@@ -19,22 +19,23 @@
 		height: function () {
 			return this._height;
 		},
-		// todo: add test for remove, move it to compositeshape
-		remove: function (shape) {
-			for (var i = 0; i < this._shapes.length && this._shapes[i] != shape; i++) { }
-			if (i < this._shapes.length)
-				this._shapes.splice(i, 1);
-		},
 		getShape: function (index) {
 			return this._shapes[index];
 		},
 		paint: function () {
 			this._setViewProportions();
-
 			this.context.clearRect(0, 0, this.width(), this.height());
 			this.context.save();
 			this.context.translate(0.5, 0.5);
 			this._super(this.context);
+			this.context.restore();
+		},
+		_paintShape: function (shape) {
+			this.context.clearRect(shape.globalX(), shape.globalY(), shape.width(), shape.height());
+			this.context.save();
+			this.context.translate(0.5, 0.5);
+			this.context.translate(shape.globalX(), shape.globalY());
+			shape.paint(this.context);
 			this.context.restore();
 		},
 		on: function (event, owner, handler) {
@@ -84,6 +85,18 @@
 			var shape = this.findShapeAt(e);
 			if (shape != null)
 				shape._raise(e.type, e);
+		},
+		_childInvalidated: function (s, e) {
+			this._super(s, e);
+			if (e.affectsParents) {
+				this._paintShape(e.target);
+			} else {
+				while (e.original != null) {
+					e = e.original;
+				}
+				var child = e.target;
+				this._paintShape(child);
+			}
 		}
 	});
 })(canvascontrols);

@@ -74,10 +74,25 @@ test("is in bounds if coords are larger than 0 and less that width/height respec
 	equal(s.isInBounds({ offsetX: 6, offsetY: 6 }), false);
 });
 
-test("exposes _parent in parent()", function () {
+test("exposes _parent in parent()", function() {
 	var s = createShape();
-	var o = {};
+	var o = { };
 	equal(s.parent(), null);
 	s._parent = o;
 	equal(s.parent(), o);
-})
+});
+
+test("invalidate raises invalidated event with affectsParents bit", function () {
+	var shape = createShape();
+	var sender, eventArg;
+	shape.on("invalidated.cc", {}, function (s, e) {
+		sender = s;
+		eventArg = e;
+	});
+	shape.invalidate();
+	ok(sender === shape);
+	equal(eventArg.type, "invalidated");
+	equal(eventArg.affectsParents, false);
+	shape.invalidate(true);
+	equal(eventArg.affectsParents, true);
+});
