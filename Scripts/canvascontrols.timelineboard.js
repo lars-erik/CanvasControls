@@ -184,22 +184,19 @@
 
             for (var i = 0; i < this._period.getView().length; i++) {
                 var view = views[i];
-
                 var span = parseFloat(view.DateEnd.getTime() - view.DateStart.getTime());
+                var stepWidth = parseFloat(this._width * view.Proportion);
+                var frac = stepWidth / span;
 
-                var sw = parseFloat(this._width * view.Proportion);
-                var frac = sw / span;
-                if (x >= currentX && x <= currentX + sw) {
+                if (x >= currentX && x <= currentX + stepWidth) {
                     return new Date((x - currentX) / frac + view.DateStart.getTime());
-
                 }
-                currentX += sw;
+                currentX += stepWidth;
             }
             return null;
         },
         paint: function (context) {
             this._width = context.canvas.width;
-
             this._paintChildren(context);
             var views = this._period.getView();
             var x = this._offset - (context.canvas.width * views[0].Proportion);
@@ -209,7 +206,6 @@
                 this._paintLine(context, x, 0, x, this._height);
                 x += sw;
             }
-
         },
         add: function (node) {
             node._parent = this;
@@ -237,21 +233,8 @@
         },
         _onMouseOut: function (s, e) {
             this._super(s, e);
-        },
-        _drawTip: function (ctx) {
-            var d = this.findDateAtCoord(this._mouseCoords.x);
-            var str = d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear();
-
-            this._marker.setX(this._mouseCoords.x);
-            this._marker.setY(this._mouseCoords.y);
-            this._marker.setStr(str);
-            this._marker.paint(ctx);
         }
-
     });
-
-
-
 
     cc.TimelineBoardNode = cc.TimelineBoardBase.extend({
         init: function (options) {
@@ -261,7 +244,11 @@
                 end: new Date(2012, 6, 31, 23, 59, 59),
                 boxX: 0,
                 boxWidth: 100,
-                y: 0
+                y: 0,
+                normalColor: "#8ED6FF",
+                invalidFillColor: "#FF0000",
+                strokeColor: "#000",
+                valid: true
             }, options);
             this._start = settings.start;
             this._end = settings.end;
@@ -270,16 +257,22 @@
             this._hasChildren = this._children.length > 0;
             this._y = settings.y;
             this._isHovered = false;
+            this._normalFillColor = settings.normalColor;
+            this._invalidFillColor = settings.invalidFillColor;
+            this._strokeColor = settings.strokeColor;
+            this._valid = settings.valid;
             this.on("mouseover", this, this._onMouseOver);
 
+        },
+        setValid: function (b) {
+            this._valid = b;
         },
         paint: function (context) {
             var views = this._parent.getPeriod().getView();
             var canvasWidth = context.canvas.width;
             var x = 0, width = 0, y = 2;
             var offset = 0 - canvasWidth * views[0].Proportion;
-            var stupidHack = [];
-
+            
             for (var i = 0; i < views.length; i++) {
                 var view = views[i];
                 var viewWidth = canvasWidth * view.Proportion;
@@ -304,29 +297,28 @@
                     context.restore();
 
                     width += pieceWidth;
-
-                    stupidHack.push(pieceX + offset - viewWidth);
-
+                    x = x == 0 ? pieceX + offset - viewWidth : x;
                 }
             }
 
-            this._boxX = stupidHack.shift() + this._parent._offset;
+            this._boxX = x + this._parent._offset;
             this._x = this._boxX;
             this._height = 20;
             this._width = width;
             this._boxWidth = width;
-
-
+        },
+        _getFillColor: function () {
+            return this._valid ? this._normalFillColor : this._invalidFillColor;
         },
         _paintRect: function (context, x, y, width, height) {
 
             context.beginPath();
             context.rect(x + this._parent._offset, y, width, height);
-            context.fillStyle = "#8ED6FF";
+            context.fillStyle = this._getFillColor();
             context.fill();
 
             if (this._isHovered) {
-                context.strokeStyle = "black";
+                context.strokeStyle = this._strokeColor;
                 context.stroke();
             }
         },

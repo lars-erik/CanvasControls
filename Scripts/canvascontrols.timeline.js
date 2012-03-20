@@ -10,6 +10,7 @@
             var settings = $.extend({
                 children: []
             }, options);
+
             this._children = settings.children;
             this._isMouseDown = false;
             this._currentX = 0;
@@ -36,28 +37,26 @@
         isInBounds: function (coords) {
             return this._findChildAtCoords(coords) != null;
         },
-
-        _clearPaint: function () {
+        _clearSelected: function () {
             for (var i = 0; i < this._children.length; i++) {
                 var child = this._children[i];
                 child._selected = false;
             }
         },
         _paintChildren: function (context) {
-
             var x = this._offset - (context.canvas.width * this._children[0].getProportion());
             for (var i = 0; i < this._children.length; i++) {
                 var child = this._children[i];
-                var sw = context.canvas.width * child.getProportion();
+                var stepWidth = context.canvas.width * child.getProportion();
 
                 context.save();
                 context.translate(x, 0);
-                child._width = sw;
+                child._width = stepWidth;
                 child._x = x;
                 child.paint(context);
 
                 context.restore();
-                x += sw;
+                x += stepWidth;
             }
             this._timeMarker.paint(context);
         },
@@ -81,18 +80,14 @@
             this._raise("drag.cc", { parent: this, child: null, offset: this._offset });
         },
         _onKey: function (sender, data) {
-            //console.debug(data);
+
         },
         _onMouseMove: function (sender, data) {
-            
-
             if (this._isMouseDown) {
                 var length = data.pageX - this._currentX;
                 if (Math.abs(length) > 0) {
                     this._currentX = data.pageX;
                     this._moveByDragLength(length, data);
-
-
                     this._wasDragged = true;
                 }
             }
@@ -121,16 +116,13 @@
         },
         _onDblClick: function (sender, data) {
             var child = this._getChild(data);
-
-            this.getPeriod().zoomTo(child._date);
-            this._raise("periodChanged.cc", { parent: this, child: sender, period: this.getPeriod() });
+            if (child != null) {
+                this.getPeriod().zoomTo(child._date);
+                this._raise("periodChanged.cc", { parent: this, child: sender, period: this.getPeriod() });
+            }
         },
         _onScroll: function (sender, data) {
-            var length = this._currentX - data.pageX;
-            console.log(length);
-            //this._moveByDragLength(length, data);
             data.deltaY / Math.abs(data.deltaY) > 0 ? this.getPeriod().zoomIn() : this.getPeriod().zoomOut();
-
             this._raise("periodChanged.cc", { parent: this, child: sender, period: this.getPeriod() });
         },
         _getChildOffset: function (coords, child) {
@@ -176,12 +168,14 @@
             var settings = $.extend({
                 period: new cc.Period(new cc.Month())
             }, options);
+            
             this._period = settings.period;
             this.createNodes();
             this._hasChildren = this._children.length > 0;
             this._currentSelectedDate = null;
             this._timeMarker = new cc.TimeMarker();
             this._timeMarker.setVisible(true);
+           
             this.on("mousemove", this, this._onMouseMove);
         },
         paint: function (context) {
@@ -211,23 +205,22 @@
             for (var i = 0; i < views.length; i++) {
                 var view = views[i];
                 var span = view.DateEnd.getTime() - view.DateStart.getTime();
-                var sw = this._width * view.Proportion;
-                var frac = sw / span;
-                if (x >= currentX && x <= currentX + sw) {
+                var stepWidth = this._width * view.Proportion;
+                var frac = stepWidth / span;
+                if (x >= currentX && x <= currentX + stepWidth) {
                     return new Date((x - currentX) / frac + view.DateStart.getTime());
                 }
-                currentX += sw;
+                currentX += stepWidth;
             }
             return null;
         },
         _onMouseMove: function (sender, data) {
-            this._timeMarker.setX(data.offsetX);
-            this._timeMarker.setY(30);
+            this._timeMarker.setCoords(data.offsetX, 30);
             this._timeMarker.setStr(this._formatDateTime(this.findDateAtCoord(data.offsetX)));
             this._super(sender, data);
         },
         _onNodeClick: function (sender, data) {
-            this._clearPaint();
+            this._clearSelected();
             if (this._currentSelectedDate != null && sender._date.toDateString() == this._currentSelectedDate.toDateString()) {
                 this._currentSelectedDate = null;
                 sender._selected = false;
@@ -289,25 +282,47 @@
             this._defaultFill = "#000000";
             this._currentSelectionFill = "#F5DA81";
             this._activeFill = "#CCCCFF";
-
         },
         getProportion: function () {
             return this._proportion;
         },
+        paint: function (context) {
+            this._context = context;
+            if (this._header != null)
+                this._paintHeader(context);
+
+            if (this._active)
+                this._paintRect(context, this._activeFill);
+
+            if (this._selected)
+                this._paintRect(context, this._currentSelectionFill);
+
+            this._paintMeasuredLabel(context);
+
+            var height = this._header != null ? 45 : (this._subheader ? 35 : 25);
+            var y = this._header != null ? 0 : this._subheader ? 10 : 20;
+            this._paintLine(context, 0, y, 0, y + height);
+            this._paintSmallDingseBomser(context);
+        },
+        isInBounds: function (coords) {
+            if (this._isInOwnOffset(coords))
+                return true;
+            return this._super(coords);
+        },
+        _paintSmallDingseBomser: function (context) {
+            var s = 0;
+            for (var i = 0; i < this._units; i++) {
+                this._paintLine(context, s, 43, s, 45);
+                s += (this._width / this._units);
+            }
+        },
         _paintHeader: function (context) {
             context.fillText(this._header, 0 + 5, this._y + 10);
         },
-        _paintActive: function (context) {
-            context.fillStyle = this._activeFill;
+        _paintRect : function (context, fillColor) {
+            context.fillStyle = fillColor;
             context.fillRect(0, 20, this._width, 25);
             context.fillStyle = this._defaultFill;
-        },
-        _paintCurrentSelection: function (context) {
-            if (context != null) {
-                context.fillStyle = this._currentSelectionFill;
-                context.fillRect(0, 20, this._width, 25);
-                context.fillStyle = this._defaultFill;
-            }
         },
         _paintMeasuredLabel: function (context) {
             var metric = context.measureText(this._label);
@@ -325,36 +340,6 @@
         },
         _onClick: function (sender, data) {
             this._raise("nodeClicked.cc", { parent: this, child: null });
-        },
-        paint: function (context) {
-            this._context = context;
-            if (this._header != null)
-                this._paintHeader(context);
-
-            if (this._active)
-                this._paintActive(context);
-
-            if (this._selected)
-                this._paintCurrentSelection(context);
-
-            this._paintMeasuredLabel(context);
-
-            var height = this._header != null ? 45 : (this._subheader ? 35 : 25);
-            var y = this._header != null ? 0 : this._subheader ? 10 : 20;
-            this._paintLine(context, 0, y, 0, y + height);
-
-
-            var s = 0;
-            for (var i = 0; i < this._units; i++) {
-                this._paintLine(context, s, 43, s, 45);
-                s += (this._width / this._units);
-            }
-
-        },
-        isInBounds: function (coords) {
-            if (this._isInOwnOffset(coords))
-                return true;
-            return this._super(coords);
         },
         _getChildOffset: function (coords, child) {
             return {

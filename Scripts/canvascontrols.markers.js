@@ -20,6 +20,10 @@
         },
         setY: function (y) {
             this._y = y;
+        },
+        setCoords: function (x, y) {
+            this._x = x;
+            this._y = y;
         }
     });
     cc.ExpandWidthMarker = cc.Marker.extend({
@@ -103,7 +107,7 @@
                 context.lineTo(this._x, this._y - 20);
                 context.fill();
                 context.stroke();
-                
+
                 context.fillStyle = '#000';
                 if (this._font != null)
                     context.font = this._font;

@@ -119,6 +119,18 @@ test("Timeline period view sizes are correct", function () {
         equal(child._width, timeline._width * child._proportion);
     }
 });
+
+test("Timeline draws lines on correct locations", function () {
+    var timeline = new canvascontrols.Timeline(new canvascontrols.Period(new canvascontrols.Month({ start: new Date(2012, 0, 1), zoom: 12 })));
+    mock.logged = ["translate"];
+    timeline.paint(mock);
+    equal(mock.calls.length, 13);
+    equal(parseInt(mock.calls[0].args.x), -79);
+    equal(parseInt(mock.calls[1].args.x), 0);
+    equal(parseInt(mock.calls[12].args.x), 924);
+});
+
+
 /*
 var fakeView;
 

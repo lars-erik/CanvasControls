@@ -171,7 +171,7 @@
                         if (entry.name == l) {
                             for (var k = 0; k < entry.goals.length; k++) {
                                 g = entry.goals[k];
-                                board.add(new canvascontrols.TimelineBoardNode({ start: g.start, end: g.end, y: treeNode._y }));
+                                board.add(new canvascontrols.TimelineBoardNode({ start: g.start, end: g.end, y: treeNode._y, valid : g.valid }));
                             }
                         }
                         
@@ -200,7 +200,7 @@
                                     for (var y = 0; y < entryChild.goals.length; y++) {
                                         var ggg = entryChild.goals[y];
 
-                                        board.add(new canvascontrols.TimelineBoardNode({ start: new Date(ggg.start.getTime()), end: new Date(ggg.end.getTime()), y: treeNodeChild._y + treeNode._y }));
+                                        board.add(new canvascontrols.TimelineBoardNode({ start: new Date(ggg.start.getTime()), end: new Date(ggg.end.getTime()), y: treeNodeChild._y + treeNode._y, valid : ggg.valid }));
                                     }
 
                                 }
@@ -211,7 +211,7 @@
                     }
                     for (var l = 0; l < entry.goals.length; l++) {
                         var gg = entry.goals[l];
-                        board.add(new canvascontrols.TimelineBoardNode({ start: new Date(gg.start.getTime()), end: new Date(gg.end.getTime()), y: treeNode._y, height: treeNode._height }));
+                        board.add(new canvascontrols.TimelineBoardNode({ start: new Date(gg.start.getTime()), end: new Date(gg.end.getTime()), y: treeNode._y, height: treeNode._height, valid: gg.valid }));
                     }
                 }
 
@@ -284,7 +284,8 @@
                             {
                                 id : 1,
                                 start: new Date(2012, 3, 1),
-                                end: new Date(2012, 3, 30, 23, 59, 59)
+                                end: new Date(2012, 3, 30, 23, 59, 59),
+                                valid : true
                             }
                         ],
                             children: [
@@ -295,7 +296,8 @@
                                         {
                                             id: 2,
                                             start: new Date(2012, 6, 1),
-                                            end: new Date(2012, 7, 20, 23, 59, 59)
+                                            end: new Date(2012, 7, 20, 23, 59, 59),
+                                            valid : false
                                         }
                                    ]
                                }
@@ -308,17 +310,20 @@
                            {
                                id : 2,
                                start: new Date(2012, 2, 1),
-                               end: new Date(2012, 2, 20, 23, 59, 59)
+                               end: new Date(2012, 2, 20, 23, 59, 59),
+                               valid : true
                            },   
                            {
                                id: 3,
                                start: new Date(2012, 4, 1),
-                               end: new Date(2012, 5, 20, 23, 59, 59)
+                               end: new Date(2012, 5, 20, 23, 59, 59),
+                               valid : true
                            },
                            {
                                id: 4,
                                start: new Date(2012, 8, 1),
-                               end: new Date(2012, 9, 20, 23, 59, 59)
+                               end: new Date(2012, 9, 20, 23, 59, 59),
+                               valid : false
                            }
                        ],
                            children: [
@@ -329,7 +334,8 @@
                                         {
                                             id: 2,
                                             start: new Date(2012, 6, 1),
-                                            end: new Date(2012, 7, 20, 23, 59, 59)
+                                            end: new Date(2012, 7, 20, 23, 59, 59),
+                                            valid : true
                                         }
                                    ]
                                }
