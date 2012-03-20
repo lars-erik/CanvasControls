@@ -26,10 +26,12 @@
 
 				this.on("mouseover", this, function () {
 					this.hovered = true;
+					this.invalidate();
 				});
 
 				this.on("mouseout", this, function () {
 					this.hovered = false;
+					this.invalidate();
 				});
 			},
 			paint: function (context) {
@@ -69,10 +71,6 @@
 		canvasView.add(root2);
 
 		canvasView.paint();
-
-		canvasView.on("mousemove", {}, function () {
-			canvasView.paint();
-		});
 
 	</script>
 

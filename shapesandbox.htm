@@ -25,13 +25,15 @@
 
 				this.on("mouseover", this, function () {
 					this.hovered = true;
+					this.invalidate();
 				});
 
 				this.on("mouseout", this, function () {
 					this.hovered = false;
+					this.invalidate();
 				});
 
-				this.on("click", this, function() {
+				this.on("click", this, function () {
 					alert(this.l);
 				});
 			},
@@ -56,10 +58,6 @@
 		canvasView.add(box2);
 
 		canvasView.paint();
-
-		canvasView.on("mousemove", {}, function () {
-			canvasView.paint();
-		});
 
 	</script>
 
