@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Composite sandbox</title>
+	<script type="text/javascript" src="https://raw.github.com/lars-erik/CanvasControls/master/Scripts/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="https://raw.github.com/lars-erik/CanvasControls/master/Scripts/class.js"></script>
+	<script type="text/javascript" src="https://raw.github.com/lars-erik/CanvasControls/master/Scripts/canvascontrols.js"></script>
+	<script type="text/javascript" src="https://raw.github.com/lars-erik/CanvasControls/master/Scripts/canvascontrols.observable.js"></script>
+	<script type="text/javascript" src="https://raw.github.com/lars-erik/CanvasControls/master/Scripts/canvascontrols.shape.js"></script>
+	<script type="text/javascript" src="https://raw.github.com/lars-erik/CanvasControls/master/Scripts/canvascontrols.compositeshape.js"></script>
+	<script type="text/javascript" src="https://raw.github.com/lars-erik/CanvasControls/master/Scripts/canvascontrols.canvasview.js"></script>
+	<script type="text/javascript" src="https://raw.github.com/lars-erik/CanvasControls/master/Scripts/canvascontrols.dragging.js"></script>
+</head>
+<body>
+	
+	<canvas id="canvas" style="position:absolute;width:100%;height:100%;left:0px;top:0px;"></canvas>
+	<canvas id="drag" style="position:absolute;width:100%;height:100%;left:0px;top:0px;"></canvas>
+	
+	<script type="text/javascript">
+
+		var CompositeBox = canvascontrols.CompositeShape.extend({
+			init: function (options) {
+				this._super(options);
+				this.l = options.l;
+				this.hovered = false;
+
+				this.on("mouseover", this, function () {
+					this.hovered = true;
+					this.invalidate();
+				});
+
+				this.on("mouseout", this, function () {
+					this.hovered = false;
+					this.invalidate();
+				});
+			},
+			paint: function (context) {
+				context.save();
+				context.fillStyle = this.hovered ? "#CCCCCC" : "#FFFFFF";
+				context.strokeStyle = this.hovered ? "#0000FF" : "#000000";
+				context.fillRect(0, 0, this.width(), this.height());
+				context.strokeRect(0, 0, this.width(), this.height());
+				context.fillStyle = "#000000";
+				context.fillText(this.l, 0, this.height());
+				context.restore();
+				this._super(context);
+			}
+		});
+
+		var canvasView = new canvascontrols.CanvasView("#canvas");
+		var dragView = new canvascontrols.DragView("#drag");
+
+		var root1 = new CompositeBox({ x: 25, y: 35, l:"1" });
+		var root2 = new CompositeBox({ x: 150, y: 45, l:"2" });
+
+		var child11 = new CompositeBox({ x: 5, y: 10, width: 40, height: 45, l:"11" });
+		var child12 = new CompositeBox({ x: 10, y: 60, width: 45, height: 40, l: "12" });
+
+		var grandChild111 = new CompositeBox({ width: 20, height: 20, l: "111" });
+
+		var child21 = new CompositeBox({ x: 10, y: 15, width: 50, height: 60, l: "21" });
+
+		child11.add(grandChild111);
+		
+		root1.add(child11);
+		root1.add(child12);
+
+		root2.add(child21);
+
+		canvasView.add(root1);
+		canvasView.add(root2);
+
+		canvasView.paint();
+
+	</script>
+
+</body>
+</html>
