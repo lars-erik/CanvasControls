@@ -33,6 +33,10 @@
 					this.hovered = false;
 					this.invalidate();
 				});
+
+				this.on("click", this, function() {
+					alert("You clicked shape " + this.l);
+				});
 			},
 			paint: function (context) {
 				context.save();
