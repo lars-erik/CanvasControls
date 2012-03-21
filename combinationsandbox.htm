@@ -169,8 +169,8 @@
                         var entry = model[j];
                         var g;
                         if (entry.name == l) {
-                            for (var k = 0; k < entry.goals.length; k++) {
-                                g = entry.goals[k];
+                            for (var k = 0; k < entry.nodes.length; k++) {
+                                g = entry.nodes[k];
                                 board.add(new canvascontrols.TimelineBoardNode({ start: g.start, end: g.end, y: treeNode._y, valid : g.valid }));
                             }
                         }
@@ -197,8 +197,8 @@
                                 var entryChild = entry.children[k];
                                 if (entryChild.name == treeNodeChild._label) {
 
-                                    for (var y = 0; y < entryChild.goals.length; y++) {
-                                        var ggg = entryChild.goals[y];
+                                    for (var y = 0; y < entryChild.nodes.length; y++) {
+                                        var ggg = entryChild.nodes[y];
 
                                         board.add(new canvascontrols.TimelineBoardNode({ start: new Date(ggg.start.getTime()), end: new Date(ggg.end.getTime()), y: treeNodeChild._y + treeNode._y, valid : ggg.valid }));
                                     }
@@ -209,8 +209,8 @@
                         }
 
                     }
-                    for (var l = 0; l < entry.goals.length; l++) {
-                        var gg = entry.goals[l];
+                    for (var l = 0; l < entry.nodes.length; l++) {
+                        var gg = entry.nodes[l];
                         board.add(new canvascontrols.TimelineBoardNode({ start: new Date(gg.start.getTime()), end: new Date(gg.end.getTime()), y: treeNode._y, height: treeNode._height, valid: gg.valid }));
                     }
                 }
@@ -280,7 +280,7 @@
                     {
                         id: 1, 
                         name : "test",
-                        goals: [
+                        nodes: [
                             {
                                 id : 1,
                                 start: new Date(2012, 3, 1),
@@ -292,7 +292,7 @@
                                {
                                    id: 100,
                                    name: "child",
-                                   goals: [
+                                   nodes: [
                                         {
                                             id: 2,
                                             start: new Date(2012, 6, 1),
@@ -306,7 +306,7 @@
                     {
                        id : 2,
                        name : "test2",
-                       goals: [
+                       nodes: [
                            {
                                id : 2,
                                start: new Date(2012, 2, 1),
@@ -330,7 +330,7 @@
                                {
                                    id : 100,
                                    name : "child",
-                                   goals: [
+                                   nodes: [
                                         {
                                             id: 2,
                                             start: new Date(2012, 6, 1),
@@ -344,7 +344,7 @@
                     {
                         id: 3,
                         name: "test3",
-                        goals: [
+                        nodes: [
                            {
                                id: 5,
                                start: new Date(2012, 11, 1),
@@ -365,7 +365,7 @@
                     {
                         id: 4,
                         name: "test4",
-                        goals: [
+                        nodes: [
                            {
                                id: 8,
                                start: new Date(2012, 2, 1),

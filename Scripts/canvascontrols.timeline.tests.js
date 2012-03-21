@@ -105,9 +105,20 @@ test("dragging timeline raises", function () {
         dragged = true;
     });
 
-    timeline._moveByDragLength(200, {offsetX : 10, offsetY: 10});
-    ok(periodChanged);
+    timeline._moveByDragLength(50, { offsetX: 10, offsetY: 10 });
+    ok(!periodChanged);
     ok(dragged);
+    
+    timeline._moveByDragLength(150, { offsetX: 10, offsetY: 10 });
+    ok(periodChanged);
+});
+
+test("Dragging steps are calculated correctly", function() {
+    var timeline = new canvascontrols.Timeline();
+    timeline.paint(mock);
+
+    var steps = timeline._moveByDragLength(200, { offsetX: 10, offsetY: 10 });
+    equal(2, steps);
 });
 
 test("Timeline period view sizes are correct", function () {
@@ -125,11 +136,16 @@ test("Timeline draws lines on correct locations", function () {
     mock.logged = ["translate"];
     timeline.paint(mock);
     equal(mock.calls.length, 13);
+    
+    // Todo: Calculate the correct values for check
     equal(parseInt(mock.calls[0].args.x), -79);
     equal(parseInt(mock.calls[1].args.x), 0);
-    equal(parseInt(mock.calls[12].args.x), 924);
+    
 });
 
+test("TimelineNode color is set correctly", function () {
+    ok(false);
+});
 
 /*
 var fakeView;

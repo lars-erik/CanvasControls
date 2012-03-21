@@ -78,6 +78,8 @@
                 this._offset += length;
             }
             this._raise("drag.cc", { parent: this, child: null, offset: this._offset });
+
+            return steps;
         },
         _onKey: function (sender, data) {
 
@@ -168,14 +170,14 @@
             var settings = $.extend({
                 period: new cc.Period(new cc.Month())
             }, options);
-            
+
             this._period = settings.period;
             this.createNodes();
             this._hasChildren = this._children.length > 0;
             this._currentSelectedDate = null;
             this._timeMarker = new cc.TimeMarker();
             this._timeMarker.setVisible(true);
-           
+
             this.on("mousemove", this, this._onMouseMove);
         },
         paint: function (context) {
@@ -319,7 +321,7 @@
         _paintHeader: function (context) {
             context.fillText(this._header, 0 + 5, this._y + 10);
         },
-        _paintRect : function (context, fillColor) {
+        _paintRect: function (context, fillColor) {
             context.fillStyle = fillColor;
             context.fillRect(0, 20, this._width, 25);
             context.fillStyle = this._defaultFill;
