@@ -15,6 +15,7 @@
 			this._shapes.push(shape);
 			shape._parent = this;
 			shape.on("invalidated.cc", this, this._childInvalidated);
+			return shape;
 		},
 		remove: function (shape) {
 			var shapeIndex = -1;
