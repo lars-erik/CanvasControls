@@ -114,7 +114,7 @@ var CompositeBox = canvascontrols.CompositeShape.extend({
 
 		this.on("click", this, function () {
 			$("output").text(
-				"You clicked " + this.l + "<br />" + $("output").text()
+				"You clicked " + this.l + "&lt;br /&gt;" + $("output").text()
 			);
 		});
 	},
@@ -133,18 +133,17 @@ var CompositeBox = canvascontrols.CompositeShape.extend({
 
 var canvasView = new canvascontrols.CanvasView("#canvas");
 
-var root1 = canvasView.add(new CompositeBox({ x: 25, y: 35, l: "1" }));
-var root2 = canvasView.add(new CompositeBox({ x: 150, y: 45, l: "2" }));
+var root1 = canvasView.add(new CompositeBox({ x: 10, y: 10, l: "1" }));
+var root2 = canvasView.add(new CompositeBox({ x: 175, y: 10, l: "2" }));
 
-var child11 = root1.add(new CompositeBox({ x: 5, y: 10, width: 40, height: 45, l: "11" }));
-var child12 = root1.add(new CompositeBox({ x: 10, y: 60, width: 45, height: 40, l: "12" }));
+var child11 = root1.add(new CompositeBox({ x: 5, y: 10, width: 70, height: 100, l: "11" }));
+var child12 = root1.add(new CompositeBox({ x: 55, y: 120, width: 45, height: 40, l: "12" }));
 
 var grandChild111 = child11.add(new CompositeBox({ width: 20, height: 20, l: "111" }));
 
-var child21 = root2.add(new CompositeBox({ x: 10, y: 15, width: 50, height: 60, l: "21" }));
+var child21 = root2.add(new CompositeBox({ x: 30, y: 15, width: 130, height: 60, l: "21" }));
 
 canvasView.paint();
-
 		</pre>
 		</div>
 	</div>
@@ -187,15 +186,15 @@ canvasView.paint();
 
 		var canvasView = new canvascontrols.CanvasView("#canvas");
 
-		var root1 = canvasView.add(new CompositeBox({ x: 25, y: 35, l: "1" }));
-		var root2 = canvasView.add(new CompositeBox({ x: 150, y: 45, l: "2" }));
+		var root1 = canvasView.add(new CompositeBox({ x: 10, y: 10, l: "1" }));
+		var root2 = canvasView.add(new CompositeBox({ x: 175, y: 10, l: "2" }));
 
-		var child11 = root1.add(new CompositeBox({ x: 5, y: 10, width: 40, height: 45, l: "11" }));
-		var child12 = root1.add(new CompositeBox({ x: 10, y: 60, width: 45, height: 40, l: "12" }));
+		var child11 = root1.add(new CompositeBox({ x: 5, y: 10, width: 70, height: 100, l: "11" }));
+		var child12 = root1.add(new CompositeBox({ x: 55, y: 120, width: 45, height: 40, l: "12" }));
 
 		var grandChild111 = child11.add(new CompositeBox({ width: 20, height: 20, l: "111" }));
 
-		var child21 = root2.add(new CompositeBox({ x: 10, y: 15, width: 50, height: 60, l: "21" }));
+		var child21 = root2.add(new CompositeBox({ x: 30, y: 15, width: 130, height: 60, l: "21" }));
 
 		canvasView.paint();
 
