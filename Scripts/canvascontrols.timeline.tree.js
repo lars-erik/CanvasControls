@@ -13,6 +13,7 @@
 			this._hasChildren = true;
 			this._super(node);
 			this._raise("nodeAdded.cc", { parent: this, child: node });
+			return node;
 		},
 
 		remove: function (node) {
