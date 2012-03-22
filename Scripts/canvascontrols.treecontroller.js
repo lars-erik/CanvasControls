@@ -49,6 +49,7 @@
 
 		addDone: function (data) {
 			this.newNode.model = data;
+			this.newNode.edit();
 			this.newNode = null;
 		},
 

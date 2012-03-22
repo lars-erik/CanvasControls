@@ -19,9 +19,13 @@
 
 module("Tree Controller", {
 	setup: function () {
+		$("input[type='text']").remove();
 		tree = new canvascontrols.TimelineTree();
 		datasource = new MockDataSource();
 		controller = createController();
+	},
+	teardown: function () {
+		$("input[type='text']").remove();
 	}
 });
 
@@ -149,10 +153,19 @@ test("controller add just adds if node already toggled", function () {
 	ok(datasource.addCalled);
 });
 
-test("controller add passes callback to datasource and sets model when done", function () {
+test("controller add passes callback to datasource and sets model when done, then calls node.edit", function () {
 	var node = createAndAddRootNode();
 	node._isLoaded = true;
 	datasource.addModel = { Id: "1" };
+	equal($("input[type='text']").length, 0);
 	controller.addTo(node);
 	ok(node.getShapes()[0].model === datasource.addModel);
+	equal($("input[type='text']").length, 1);
+});
+
+test("calls update on datasource when node is renamed", function () {
+	var node = createAndAddRootNode();
+	node.edit();
+	$("input[type='text']").val("hei hei");
+	ok(false, "Not implemented");
 });
