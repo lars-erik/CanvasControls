@@ -45,9 +45,9 @@ function createMediator() {
 	return new canvascontrols.TreeBoardMediator(tree, board, ctrl);
 }
 
-function createNodeData(date, id) {
+function createNodeData(date, id, treeNodeId) {
 	var nextDate = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
-	return { start: date, end: nextDate, model: { start: date, end: nextDate, id: id} };
+	return { start: date, end: nextDate, model: { start: date, end: nextDate, id: id, treeNode: treeNodeId} };
 }
 
 test("can create", function () {
@@ -55,6 +55,16 @@ test("can create", function () {
 	ok(mediator.tree === tree);
 	ok(mediator.board === board);
 	
+});
+
+test("Board node has reference to treeNode", function () {
+	var mediator = createMediator();
+	var node1 = new canvascontrols.TimelineTreeNode();
+	node1.model = { id: 1, boardNodes: [createNodeData(now, 1), createNodeData(now, 2)] };
+	tree.add(node1);
+
+	ok(board.getShapes()[0].treeNode === node1);
+	ok(board.getShapes()[1].treeNode === node1);
 });
 
 test("nodeAdded adds nodes to board", function () {
@@ -74,7 +84,7 @@ test("nodeAdded adds nodes to board", function () {
 	var node2 = new canvascontrols.TimelineTreeNode();
 	node2.model = { id: 2, boardNodes: [createNodeData(now, 3), createNodeData(now, 4)] };
 	
-	tree.add(node1);
+	tree.add(node1);	
 	tree.add(node2);
 	
 	equal(board.getShapes().length, 4);
@@ -91,47 +101,99 @@ test("nodeAdded adds nodes to board", function () {
 test("on tree toggle, mediator loads and adds children of toggled node and board nodes", function () {
 
 	var mediator = createMediator();
+
 	var node1 = new canvascontrols.TimelineTreeNode();
 	node1.model = { id: 1, boardNodes: [createNodeData(now, 1), createNodeData(now, 2)] };
 	tree.add(node1);
 
-	equal(tree.getShapes().length, 1);
-	equal(board.getShapes().length, 2);
+	equal(tree.getShapeCount(), 1);
+	equal(node1.getShapeCount(), 0);
+	equal(board.getShapeCount(), 2);
 
 	dataSrc.data = [
-	{ label: "abc", model: { Id: 3, Name: "abc", boardNodes: [createNodeData(now, 5), createNodeData(now, 6)]} }
-	
+		{ label: "abc", model: { Id: 3, Name: "abc", boardNodes: [createNodeData(now, 5), createNodeData(now, 6)]} }
 	];
-	console.log("wtf");
+
 	node1.toggle();
 
-	
-	equal(tree.getShapes().length, 3);
-	
+	equal(tree.getShapeCount(), 1);
+	equal(node1.getShapeCount(), 1);
+	equal(board.getShapeCount(), 4);
 });
-/*
+
 test("when tree has two items with board nodes, and a subnode is added to the first, " +
 	 "the second boardnode is pushed down", function () {
-	 	datasource.data = [
-			{ label: "abc", boardNodes: [createNodeData(now, 1)], model: { someId: 1, someName: "abc"} },
-			{ label: "bcd", boardNodes: [createNodeData(now, 2)], model: { someId: 2, someName: "bcd"} }
-		];
 	 	var mediator = createMediator();
-	 	mediator.load();
+	 	dataSrc.data = [
+			{ label: "abc", model: { someId: 1, someName: "abc", boardNodes: [createNodeData(now, 1, 1)]} },
+			{ label: "bcd", model: { someId: 2, someName: "bcd", boardNodes: [createNodeData(now, 2, 2)]} }
+		];
+	 	ctrl.load();
+
+	 	equal(tree.getShapeCount(), 2);
+	 	equal(board.getShapeCount(), 2);
 
 	 	equal(board.getShapes()[0].y(), 0);
 	 	equal(board.getShapes()[1].y(), 25);
 
-	 	datasource.data = [
-	 		{ label: "dingsebomse", boardNodes: [createNodeData(now, 3)], model: { someId: 3, someName: "dingsebomse"} }
-		];
+	 	dataSrc.data = [
+	 		{ label: "dingsebomse", model: { someId: 3, someName: "dingsebomse", boardNodes: [createNodeData(now, 3,3 )]} }
+	 	];
 
 	 	var node1 = tree.getShapes()[0];
 	 	node1.toggle();
 
+	 	equal(tree.getShapeCount(), 2);
+	 	equal(node1.getShapeCount(), 1);
+	 	equal(board.getShapeCount(), 3);
+	 	
 	 	equal(board.getShapes()[0].y(), 0);
-	 	equal(board.getShapes()[2].y(), 50);
+	 	equal(board.getShapes()[1].y(), 50);
+	 });
 
-	 	console.log(tree.getShapes());
-	 	console.log(board.getShapes());
-	 });*/
+	 test("removing a treenode removes nodes from board", function () {
+	 	var mediator = createMediator();
+	 	dataSrc.data = [
+			{ label: "abc", model: { someId: 1, someName: "abc", boardNodes: [createNodeData(now, 1, 1)]} },
+			{ label: "bcd", model: { someId: 2, someName: "bcd", boardNodes: [createNodeData(now, 2, 2)]} }
+		];
+	 	ctrl.load();
+
+	 	equal(tree.getShapeCount(), 2);
+	 	equal(board.getShapeCount(), 2);	
+
+	 	
+		tree.remove(tree.getShapes()[0]);
+
+	 	equal(tree.getShapeCount(), 1);
+	 	equal(board.getShapeCount(), 1);
+	 });
+
+	 test("removing a treenode removes child nodes from tree and board nodes", function () {
+	 	var mediator = createMediator();
+	 	dataSrc.data = [
+			{ label: "abc", model: { someId: 1, someName: "abc", boardNodes: [createNodeData(now, 1, 1)]} },
+			{ label: "bcd", model: { someId: 2, someName: "bcd", boardNodes: [createNodeData(now, 2, 2)]} }
+		];
+	 	ctrl.load();
+
+	 	equal(tree.getShapeCount(), 2);
+	 	equal(board.getShapeCount(), 2);
+
+	 	dataSrc.data = [
+	 		{ label: "dingsebomse", model: { someId: 3, someName: "dingsebomse", boardNodes: [createNodeData(now, 3, 3)]} }
+	 	];
+
+	 	var node1 = tree.getShapes()[0];
+	 	node1.toggle();
+
+	 	equal(tree.getShapeCount(), 2);
+	 	equal(node1.getShapeCount(), 1);
+	 	equal(board.getShapeCount(), 3);
+
+	 	tree.remove(node1);
+
+	 	equal(tree.getShapeCount(), 1);
+	 	equal(node1.getShapeCount(), 0);
+	 	equal(board.getShapeCount(), 1);
+	 });

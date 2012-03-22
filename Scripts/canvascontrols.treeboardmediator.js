@@ -14,31 +14,38 @@
 			var boardNode = new cc.TimelineBoardNode({
 				start: boardData.start,
 				end: boardData.end,
-				y: treeNode.globalY()
+				y: treeNode.globalY(),
+				valid: boardData.valid
 			});
 			boardNode.model = boardData.model;
+			boardNode.treeNode = treeNode;
 			this.board.add(boardNode);
 		},
-
+		_removeBoardNode: function (n) {
+			board.remove(n);
+		},
 		_onNodeAdded: function (s, e) {
-			console.log(e.target);
-			if (e.target._parent == undefined || (e.target._hasChildren && e.target._expanded)) {
-				for (var i = 0; i < e.target._shapes.length; i++) {
-					var boardData = e.target._shapes[i].model.boardNodes;
-					for (var j = 0; j < boardData.length; j++) {
-						this._addBoardNode(e.child, boardData[j]);
-					}
-				}
+			var boardData = e.child.model.boardNodes;
+			for (var i = 0; i < boardData.length; i++) {
+				this._addBoardNode(e.child, boardData[i]);
 			}
-			//if (e.target._parent == undefined) {
-			//	var boardData = e.child.model.boardNodes;
-			//	for (var i = 0; i < boardData.length; i++) {
-			//this._addBoardNode(e.child, boardData[i]);
-			//	}
-			//}
+			this._updateY();
 		},
 		_onNodeRemoved: function (s, e) {
-
+			console.debug(e.node);
+			
+			for (var i = 0; i < board.getShapeCount(); i++) {
+				var bnode = board.getShapes()[i];
+				if (bnode.treeNode === e.node)
+					this._removeBoardNode(bnode);
+			}
+			this._updateY();
+		},
+		_updateY: function () {
+			for (var i = 0; i < board.getShapeCount(); i++) {
+				var node = board.getShapes()[i];
+				node._y = node.treeNode.globalY();
+			}
 		}
 	});
 

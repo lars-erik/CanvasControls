@@ -84,8 +84,8 @@
                     }
                 }
                 if (this._selectedChild == null) {
-                    //child._onMouseOver(sender, data);
-                    child._raise("mouseover", data);
+                    child._onMouseOver(sender, data);
+                    //child._raise("mouseover", data);
                     child._isHovered = true;
                     this._selectedChild = child;
                 }

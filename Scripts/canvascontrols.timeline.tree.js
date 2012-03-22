@@ -17,13 +17,18 @@
 		},
 
 		remove: function (node) {
+			for (var i = 0; i < node.getShapeCount(); i++) {
+				node.remove(node.getShapes()[i]);
+			}
+
 			var origChildCount = this.getShapes().length;
 			this._super(node);
 			if (origChildCount != this.getShapes().length) {
 				this._hasChildren = this.getShapes().length > 0;
 				this._updateBounds(-1);
-				this._raise("nodeRemoved.cc");
+				this._raise("nodeRemoved.cc", { node: node });
 			}
+			
 		},
 
 		_paintChildren: function (context) {
