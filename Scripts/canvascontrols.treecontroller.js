@@ -33,7 +33,8 @@
 					wait = true;
 					this.callback = this.addToTarget;
 				}
-				node.toggle();
+				if (node instanceof cc.TimelineTreeNode)
+					node.toggle();
 			}
 			if (!wait)
 				this.addToTarget();
@@ -43,7 +44,7 @@
 			this.callback = null;
 			this.newNode = this.target.add(new canvascontrols.TimelineTreeNode());
 			var callback = $.proxy(this.addDone, this);
-			datasource.add(this.newNode, callback);
+			datasource.addTo(this.target.model, callback);
 		},
 
 		addDone: function (data) {

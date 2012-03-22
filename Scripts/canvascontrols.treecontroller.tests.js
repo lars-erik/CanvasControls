@@ -40,7 +40,8 @@ var MockDataSource = Class.extend({
 		this.passedCallback = callback;
 		callback(this.data);
 	},
-	add: function (node, callback) {
+	addTo: function (parentModel, callback) {
+		this.passedParentModel = parentModel;
 		this.addCalled = true;
 		callback(this.addModel);
 	}
@@ -112,6 +113,12 @@ test("does not load children if already loaded", function () {
 	equal(node.getShapes().length, 2);
 });
 
+test("does not toggle if the tree is being loaded", function () {
+	datasource.data = createData();
+	controller.load();
+	equal(tree.getShapes().length, 2);
+});
+
 test("controller add toggles treenode if collapsed, " +
 	 "waits for load done, " +
 	 "adds new node, " +
@@ -122,6 +129,7 @@ function () {
 	equal(node._expanded, false);
 	ok(node._isLoaded == undefined);
 	controller.addTo(node);
+	equal(datasource.passedParentModel.Id, "3");
 	equal(node._expanded, true);
 	equal(node._isLoaded, true);
 	equal(node.getShapes().length, 2);

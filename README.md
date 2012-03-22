@@ -3,6 +3,8 @@
 
 CanvasControls aims to provide a simple and reusable framework for UI controls in the HTML 5 Canvas.
 
+A simple sample can be found here: http://lars-erik.github.com/CanvasControls/compositesandbox.htm.
+
 ## Dependencies
 
 jQuery
@@ -13,6 +15,9 @@ http://ejohn.org/blog/simple-javascript-inheritance/
 
 Brandon Aaron's jQuery mousewheel plugin
 http://brandonaaron.net/code/mousewheel/docs
+
+Jonathan Sharp's mockjax for tests
+https://github.com/appendto/jquery-mockjax
 
 ## Core classes
 
@@ -68,6 +73,24 @@ See animationsandbox.htm
 
 Copies image data from a context and fades it in a quarter ellipse.
 See dragsandbox.htm
+
+## Utilities
+
+### AjaxQueue
+
+Queues ajax request/callback pairs. 
+Used for ensuring that calls are done in sequence.
+
+## Controllers / Mediators
+
+### TimelineTreeController
+
+Controls communication between the tree, a datasource and menus
+
+### TreeBoardMediator
+
+Controls communication between the tree and the timeline board
+
 
 ## Samples
 
