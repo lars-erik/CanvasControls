@@ -8,6 +8,7 @@
 
 			tree.on("nodeAdded.cc", this, this._onNodeAdded);
 			tree.on("nodeRemoved.cc", this, this._onNodeRemoved);
+			tree.on("toggled.cc", this, this._onToggle);
 		},
 
 		_addBoardNode: function (treeNode, boardData) {
@@ -21,6 +22,11 @@
 			boardNode.treeNode = treeNode;
 			this.board.add(boardNode);
 		},
+		_removeBoardNodes: function (nodes) {
+			for (var i = 0; i < nodes.length; i++) {
+				this._removeBoardNode(nodes[i]);
+			}
+		},
 		_removeBoardNode: function (n) {
 			board.remove(n);
 		},
@@ -33,11 +39,31 @@
 		},
 		_onNodeRemoved: function (s, e) {
 			console.debug(e.node);
-			
+
 			for (var i = 0; i < board.getShapeCount(); i++) {
 				var bnode = board.getShapes()[i];
 				if (bnode.treeNode === e.node)
 					this._removeBoardNode(bnode);
+			}
+			this._updateY();
+		},
+		_onToggle: function (s, e) {
+			var tnode;
+			
+			if (!e.target._expanded) {
+				for (var i = 0; i < e.target.getShapeCount(); i++) {
+					tnode = e.target.getShapes()[i];
+					this._removeBoardNodes(this._getBoardNodes(tnode));
+				}
+			} else if (e.target._hasChildren && e.target._isLoaded) {
+				for (var j = 0; j < e.target.getShapeCount(); j++) {
+					tnode = e.target.getShapes()[j];
+					if (this._getBoardNodes(tnode).length == 0) {
+						for (var k = 0; k < tnode.model.boardNodes.length; k++) {
+							this._addBoardNode(tnode, tnode.model.boardNodes[k]);
+						}
+					}
+				}
 			}
 			this._updateY();
 		},
@@ -46,6 +72,15 @@
 				var node = board.getShapes()[i];
 				node._y = node.treeNode.globalY();
 			}
+		},
+		_getBoardNodes: function (treeNode) {
+			var arr = [];
+			for (var i = 0; i < board.getShapeCount(); i++) {
+				var bnode = board.getShapes()[i];
+				if (bnode.treeNode === treeNode)
+					arr.push(bnode);
+			}
+			return arr;
 		}
 	});
 
