@@ -1,4 +1,4 @@
-﻿/*!
+/*!
 * MockJax - jQuery Plugin to Mock Ajax requests
 *
 * Version:  1.5.0pre

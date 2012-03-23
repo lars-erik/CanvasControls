@@ -1,4 +1,4 @@
-﻿(function (cc) {
+(function (cc) {
 
 	cc.Image = cc.Shape.extend({
 		init: function (path) {

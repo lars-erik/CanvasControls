@@ -1,4 +1,4 @@
-﻿var MockContext = Mock.extend({
+var MockContext = Mock.extend({
     clearRect: function (x, y, w, h) { this.log("clearRect", arguments); },
     save: function () { this.log("save", arguments); },
     restore: function () { this.log("restore", arguments); },

@@ -1,4 +1,4 @@
-﻿///<reference path="class.js"/>
+///<reference path="class.js"/>
 ///<reference path="mockjax.js"/>
 ///<reference path="canvascontrols.js"/>
 ///<reference path="canvascontrols.ajaxqueue.js"/>

@@ -1,4 +1,4 @@
-﻿(function (cc) {
+(function (cc) {
 
 	cc.CanvasView = cc.CompositeShape.extend({
 		init: function (selector) {

@@ -1,4 +1,4 @@
-﻿/// <reference path="jquery-1.7.1.js" />
+/// <reference path="jquery-1.7.1.js" />
 /// <reference path="jquery-mousewheel-3.0.6/jquery.mousewheel.js" />
 /// <reference path="class.js"/>
 /// <reference path="qunit.extensions.js"/>

@@ -1,4 +1,4 @@
-﻿(function (cc) {
+(function (cc) {
 
 	cc.Shape = cc.Observable.extend({
 		init: function (options) {

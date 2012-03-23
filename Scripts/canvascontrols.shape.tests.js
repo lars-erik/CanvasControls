@@ -1,4 +1,4 @@
-﻿///<reference path="qunit.extensions.js"/>
+///<reference path="qunit.extensions.js"/>
 ///<reference path="class.js"/>
 ///<reference path="jquery-1.7.1.js"/>
 ///<reference path="canvascontrols.js"/>

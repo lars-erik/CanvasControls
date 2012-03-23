@@ -1,4 +1,4 @@
-﻿(function (cc) {
+(function (cc) {
 
 	cc.AjaxQueue = Class.extend({
 		init: function () {

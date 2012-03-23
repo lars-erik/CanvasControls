@@ -1,4 +1,4 @@
-﻿/// <reference path="class.js"/>
+/// <reference path="class.js"/>
 /// <reference path="jquery-1.7.1.js"/>
 /// <reference path="canvascontrols.js"/>
 /// <reference path="canvascontrols.observable.js"/>

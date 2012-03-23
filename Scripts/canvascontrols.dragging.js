@@ -1,4 +1,4 @@
-﻿(function (cc) {
+(function (cc) {
 
 	cc.DragView = cc.CanvasView.extend({
 		init: function (options) {

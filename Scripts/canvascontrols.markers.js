@@ -1,4 +1,4 @@
-﻿(function (cc) {
+(function (cc) {
     cc.Marker = cc.CompositeShape.extend({
         init: function (options) {
             this._super(options);

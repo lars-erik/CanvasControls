@@ -1,4 +1,4 @@
-﻿function throwsError(delegate, message) {
+function throwsError(delegate, message) {
 	try {
 		delegate();
 		ok(false, message);

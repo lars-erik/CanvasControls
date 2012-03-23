@@ -1,4 +1,4 @@
-﻿(function (cc) {
+(function (cc) {
 	cc.BoardController = Class.extend({
 		init: function (board, dataSrc) {
 			this.board = board;
