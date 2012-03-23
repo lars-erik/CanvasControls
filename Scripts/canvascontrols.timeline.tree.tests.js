@@ -62,18 +62,23 @@ test("can remove subnodes and adjust other children's y", function () {
 	node.add(child);
 	node.add(child2);
 
-	var gotSender, eventName;
+	var gotSender, gotEvent, eventName;
 	node.on("nodeRemoved.cc", {}, function (sender, event) {
 		gotSender = sender;
+		gotEvent = event;
 		eventName = event.type;
 	});
 
 	node.remove(child);
+	ok(node === gotSender);
+	ok(child === gotEvent.child);
 	equal(node.getShapes().length, 1);
 	ok(node.getShapes()[0] === child2);
 	equal(eventName, "nodeRemoved");
 	equal(node.getShapes()[0].y(), 25);
 	node.remove(child2);
+	ok(node === gotSender);
+	ok(child2 === gotEvent.child);
 	equal(node.getShapes().length, 0);
 	equal(node._hasChildren, false);
 });
@@ -275,7 +280,7 @@ test("node.edit shows textbox on document", function () {
 	equal($(textSelector).length, 0);
 	grandChild.edit();
 	equal($(textSelector).length, 1);
-	equal($(textSelector).css("left"), (grandChild.globalX() + 1) + "px");
+	equal($(textSelector).css("left"), (grandChild.globalX() + grandChild._boxX + 1) + "px");
 	equal($(textSelector).css("top"), (grandChild.globalY() + 1) + "px");
 	equal($(textSelector).val(), grandChild._label);
 	$(textSelector).val("test");

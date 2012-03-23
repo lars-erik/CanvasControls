@@ -7,6 +7,8 @@
 			this.newNode = null;
 
 			tree.on("toggled.cc", this, this._onToggle);
+			tree.on("renamed.cc", this, this._onRenamed);
+			tree.on("nodeRemoved.cc", this, this._onRemoved);
 		},
 
 		load: function (node) {
@@ -63,6 +65,14 @@
 		_onToggle: function (s, e) {
 			if (e.target._hasChildren && !e.target._isLoaded)
 				this.load(e.target);
+		},
+
+		_onRenamed: function (s, e) {
+			datasource.update(e.child.model);
+		},
+
+		_onRemoved: function (s, e) {
+			datasource.remove(e.child.model);
 		}
 	});
 })(canvascontrols);

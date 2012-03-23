@@ -8,6 +8,7 @@
 		add: function (node) {
 			node.setPosition(this._childXPadding(), this._childYPadding() + this._getChildHeight());
 			node.on("toggled.cc nodeAdded.cc nodeRemoved.cc", this, this._childEvent);
+			node.on("renamed.cc", this, this._childEvent);
 			node._parent = this;
 			node._state = "new";
 			this._hasChildren = true;
@@ -26,9 +27,9 @@
 			if (origChildCount != this.getShapes().length) {
 				this._hasChildren = this.getShapes().length > 0;
 				this._updateBounds(-1);
-				this._raise("nodeRemoved.cc", { node: node });
+				this._raise("nodeRemoved.cc", { child: node });
 			}
-			
+
 		},
 
 		_paintChildren: function (context) {
@@ -172,7 +173,8 @@
 			var update = function () {
 				self._label = textBox.val();
 				textBox.remove();
-				parentRoot.paint();
+				if (parentRoot != null)
+					parentRoot.paint();
 				self._raise("renamed.cc", { child: self });
 			};
 			textBox.blur(update);

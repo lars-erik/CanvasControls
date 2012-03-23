@@ -36,18 +36,27 @@ var MockDataSource = Class.extend({
 	init: function () {
 		this.data = null;
 		this.addModel = null;
+		this.passedModel = Number.NaN;
 		this.passedParentModel = Number.NaN;
+		this.loadCalled = false;
 		this.addCalled = false;
+		this.updateCalled = 0;
 	},
 	load: function (parentModel, callback) {
 		this.passedParentModel = parentModel;
 		this.passedCallback = callback;
+		this.loadCalled = true;
 		callback(this.data);
 	},
 	addTo: function (parentModel, callback) {
 		this.passedParentModel = parentModel;
 		this.addCalled = true;
 		callback(this.addModel);
+	},
+	update: function (model, callback) {
+		this.passedModel = model;
+		this.updateCalled++;
+		if (callback != null) callback();
 	}
 });
 
@@ -67,7 +76,6 @@ function createAndAddRootNode() {
 		hasChildren: true
 	}));
 	node.model = { Id: "3" };
-	tree.add(node);
 	return node;
 }
 
@@ -148,7 +156,7 @@ test("controller add just adds if node already toggled", function () {
 	equal(node._isLoaded, true);
 	datasource.init();
 	controller.addTo(node);
-	ok(datasource.passedParams == null);
+	ok(!datasource.loadCalled);
 	equal(node.getShapes().length, 2);
 	ok(datasource.addCalled);
 });
@@ -165,7 +173,19 @@ test("controller add passes callback to datasource and sets model when done, the
 
 test("calls update on datasource when node is renamed", function () {
 	var node = createAndAddRootNode();
-	node.edit();
-	$("input[type='text']").val("hei hei");
-	ok(false, "Not implemented");
+	var child = node.add(new canvascontrols.TimelineTreeNode());
+	child.model = { Id: 1 };
+	// what's done inside edit->update:
+	child._raise("renamed.cc", { child: child });
+	equal(datasource.updateCalled, 1);
+	ok(datasource.passedModel === child.model);
+});
+
+test("calls remove on datasource when node is removed", function () {
+	var node = createAndAddRootNode();
+	var child = node.add(new canvascontrols.TimelineTreeNode());
+	child.model = { Id: 1 };
+	node.remove(child);
+	equal(datasource.removeCalled, 1);
+	ok(datasource.passedModel === child.model);
 });
