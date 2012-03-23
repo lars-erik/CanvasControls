@@ -123,79 +123,110 @@ test("on tree toggle, mediator loads and adds children of toggled node and board
 
 test("when tree has two items with board nodes, and a subnode is added to the first, " +
 	 "the second boardnode is pushed down", function () {
-	 	var mediator = createMediator();
-	 	dataSrc.data = [
-			{ label: "abc", model: { someId: 1, someName: "abc", boardNodes: [createNodeData(now, 1, 1)]} },
-			{ label: "bcd", model: { someId: 2, someName: "bcd", boardNodes: [createNodeData(now, 2, 2)]} }
-		];
-	 	ctrl.load();
+	var mediator = createMediator();
+	dataSrc.data = [
+		{ label: "abc", model: { someId: 1, someName: "abc", boardNodes: [createNodeData(now, 1, 1)]} },
+		{ label: "bcd", model: { someId: 2, someName: "bcd", boardNodes: [createNodeData(now, 2, 2)]} }
+	];
+	ctrl.load();
 
-	 	equal(tree.getShapeCount(), 2);
-	 	equal(board.getShapeCount(), 2);
+	equal(tree.getShapeCount(), 2);
+	equal(board.getShapeCount(), 2);
 
-	 	equal(board.getShapes()[0].y(), 0);
-	 	equal(board.getShapes()[1].y(), 25);
+	equal(board.getShapes()[0].y(), 0);
+	equal(board.getShapes()[1].y(), 25);
 
-	 	dataSrc.data = [
-	 		{ label: "dingsebomse", model: { someId: 3, someName: "dingsebomse", boardNodes: [createNodeData(now, 3, 3)]} }
-	 	];
+	dataSrc.data = [
+	 	{ label: "dingsebomse", model: { someId: 3, someName: "dingsebomse", boardNodes: [createNodeData(now, 3, 3)]} }
+	];
 
-	 	var node1 = tree.getShapes()[0];
-	 	node1._hasChildren = true;
-	 	node1.toggle();
+	var node1 = tree.getShapes()[0];
+	node1._hasChildren = true;
+	node1.toggle();
 
-	 	equal(tree.getShapeCount(), 2);
-	 	equal(node1.getShapeCount(), 1);
-	 	equal(board.getShapeCount(), 3);
+	equal(tree.getShapeCount(), 2);
+	equal(node1.getShapeCount(), 1);
+	equal(board.getShapeCount(), 3);
 
-	 	equal(board.getShapes()[0].y(), 0);
-	 	equal(board.getShapes()[1].y(), 50);
-	 });
+	equal(board.getShapes()[0].y(), 0);
+	equal(board.getShapes()[1].y(), 50);
+});
 
-	 test("removing a treenode removes nodes from board", function () {
-	 	var mediator = createMediator();
-	 	dataSrc.data = [
-			{ label: "abc", model: { someId: 1, someName: "abc", boardNodes: [createNodeData(now, 1, 1)]} },
-			{ label: "bcd", model: { someId: 2, someName: "bcd", boardNodes: [createNodeData(now, 2, 2)]} }
-		];
-	 	ctrl.load();
+test("removing a treenode removes nodes from board", function () {
+	var mediator = createMediator();
+	dataSrc.data = [
+		{ label: "abc", model: { someId: 1, someName: "abc", boardNodes: [createNodeData(now, 1, 1)]} },
+		{ label: "bcd", model: { someId: 2, someName: "bcd", boardNodes: [createNodeData(now, 2, 2)]} }
+	];
+	ctrl.load();
 
-	 	equal(tree.getShapeCount(), 2);
-	 	equal(board.getShapeCount(), 2);	
+	equal(tree.getShapeCount(), 2);
+	equal(board.getShapeCount(), 2);	
 
 	 	
-		tree.remove(tree.getShapes()[0]);
+	tree.remove(tree.getShapes()[0]);
 
-	 	equal(tree.getShapeCount(), 1);
-	 	equal(board.getShapeCount(), 1);
-	 });
+	equal(tree.getShapeCount(), 1);
+	equal(board.getShapeCount(), 1);
+});
 
-	 test("removing a treenode removes child nodes from tree and board nodes", function () {
-	 	var mediator = createMediator();
-	 	dataSrc.data = [
-			{ label: "abc", hasChildren : true, model: { someId: 1, someName: "abc", boardNodes: [createNodeData(now, 1, 1)]} },
-			{ label: "bcd", model: { someId: 2, someName: "bcd", boardNodes: [createNodeData(now, 2, 2)]} }
-		];
-	 	ctrl.load();
+test("removing a treenode removes child nodes from tree and board nodes", function () {
+	var mediator = createMediator();
+	dataSrc.data = [
+		{ label: "abc", hasChildren : true, model: { someId: 1, someName: "abc", boardNodes: [createNodeData(now, 1, 1)]} },
+		{ label: "bcd", model: { someId: 2, someName: "bcd", boardNodes: [createNodeData(now, 2, 2)]} }
+	];
+	ctrl.load();
 
-	 	equal(tree.getShapeCount(), 2);
-	 	equal(board.getShapeCount(), 2);
+	equal(tree.getShapeCount(), 2);
+	equal(board.getShapeCount(), 2);
 
-	 	dataSrc.data = [
-	 		{ label: "dingsebomse", model: { someId: 3, someName: "dingsebomse", boardNodes: [createNodeData(now, 3, 3)]} }
-	 	];
+	dataSrc.data = [
+	 	{ label: "dingsebomse", model: { someId: 3, someName: "dingsebomse", boardNodes: [createNodeData(now, 3, 3)]} }
+	];
 
-	 	var node1 = tree.getShapes()[0];
+	var node1 = tree.getShapes()[0];
 	 	
-	 	node1.toggle();
+	node1.toggle();
 
-	 	equal(tree.getShapeCount(), 2);
-	 	equal(node1.getShapeCount(), 1);
-	 	equal(board.getShapeCount(), 3);
+	equal(tree.getShapeCount(), 2);
+	equal(node1.getShapeCount(), 1);
+	equal(board.getShapeCount(), 3);
 
-	 	tree.remove(node1);
+	tree.remove(node1);
 
-	 	equal(tree.getShapeCount(), 1);
-	 	equal(node1.getShapeCount(), 0);
-	 	equal(board.getShapeCount(), 1);
-	 });
+	equal(tree.getShapeCount(), 1);
+	equal(node1.getShapeCount(), 0);
+	equal(board.getShapeCount(), 1);
+});
+
+test("Toggling a treenode removes and adds boarnodes even when " +
+	"treenode is loaded already", function() {
+	var mediator = createMediator();
+	dataSrc.data = [
+		{ label: "abc", hasChildren: true, model: { someId: 1, someName: "abc", boardNodes: [createNodeData(now, 1, 1)]} },
+		{ label: "bcd", model: { someId: 2, someName: "bcd", boardNodes: [createNodeData(now, 2, 2)]} }
+	];
+	ctrl.load();
+
+	equal(tree.getShapeCount(), 2);
+	equal(board.getShapeCount(), 2);
+
+	dataSrc.data = [
+		{ label: "dingsebomse", model: { someId: 3, someName: "dingsebomse", boardNodes: [createNodeData(now, 3, 3)]} }
+	];
+
+	var node1 = tree.getShapes()[0];
+
+	node1.toggle();
+
+	equal(tree.getShapeCount(), 2);
+	equal(node1.getShapeCount(), 1);
+	equal(board.getShapeCount(), 3);
+
+	tree.remove(node1);
+
+	equal(tree.getShapeCount(), 1);
+	equal(node1.getShapeCount(), 0);
+	equal(board.getShapeCount(), 1);
+});
