@@ -113,7 +113,7 @@ test("on tree toggle, mediator loads and adds children of toggled node and board
 	dataSrc.data = [
 		{ label: "abc", model: { Id: 3, Name: "abc", boardNodes: [createNodeData(now, 5), createNodeData(now, 6)]} }
 	];
-
+	node1._hasChildren = true;
 	node1.toggle();
 
 	equal(tree.getShapeCount(), 1);
@@ -137,16 +137,17 @@ test("when tree has two items with board nodes, and a subnode is added to the fi
 	 	equal(board.getShapes()[1].y(), 25);
 
 	 	dataSrc.data = [
-	 		{ label: "dingsebomse", model: { someId: 3, someName: "dingsebomse", boardNodes: [createNodeData(now, 3,3 )]} }
+	 		{ label: "dingsebomse", model: { someId: 3, someName: "dingsebomse", boardNodes: [createNodeData(now, 3, 3)]} }
 	 	];
 
 	 	var node1 = tree.getShapes()[0];
+	 	node1._hasChildren = true;
 	 	node1.toggle();
 
 	 	equal(tree.getShapeCount(), 2);
 	 	equal(node1.getShapeCount(), 1);
 	 	equal(board.getShapeCount(), 3);
-	 	
+
 	 	equal(board.getShapes()[0].y(), 0);
 	 	equal(board.getShapes()[1].y(), 50);
 	 });
@@ -172,7 +173,7 @@ test("when tree has two items with board nodes, and a subnode is added to the fi
 	 test("removing a treenode removes child nodes from tree and board nodes", function () {
 	 	var mediator = createMediator();
 	 	dataSrc.data = [
-			{ label: "abc", model: { someId: 1, someName: "abc", boardNodes: [createNodeData(now, 1, 1)]} },
+			{ label: "abc", hasChildren : true, model: { someId: 1, someName: "abc", boardNodes: [createNodeData(now, 1, 1)]} },
 			{ label: "bcd", model: { someId: 2, someName: "bcd", boardNodes: [createNodeData(now, 2, 2)]} }
 		];
 	 	ctrl.load();
@@ -185,6 +186,7 @@ test("when tree has two items with board nodes, and a subnode is added to the fi
 	 	];
 
 	 	var node1 = tree.getShapes()[0];
+	 	
 	 	node1.toggle();
 
 	 	equal(tree.getShapeCount(), 2);
