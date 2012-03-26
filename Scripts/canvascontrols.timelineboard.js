@@ -1,4 +1,4 @@
-﻿(function (cc) {
+(function (cc) {
 
 	cc.TimelineBoardBase = cc.CompositeShape.extend({
 		init: function (options) {

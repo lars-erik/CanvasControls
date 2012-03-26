@@ -1,4 +1,4 @@
-﻿/* Simple JavaScript Inheritance
+/* Simple JavaScript Inheritance
 * By John Resig http://ejohn.org/
 * MIT Licensed.
 */

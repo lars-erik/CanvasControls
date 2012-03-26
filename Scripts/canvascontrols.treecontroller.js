@@ -1,4 +1,4 @@
-﻿(function (cc) {
+(function (cc) {
 	cc.TreeController = Class.extend({
 		init: function (tree, src) {
 			this.tree = tree;

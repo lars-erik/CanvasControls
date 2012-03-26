@@ -1,1 +1,1 @@
-﻿var canvascontrols = new Object();
+var canvascontrols = new Object();

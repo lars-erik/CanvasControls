@@ -1,4 +1,4 @@
-﻿(function (cc) {
+(function (cc) {
 
 	cc.CompositeShape = cc.Shape.extend({
 		init: function (options) {

@@ -1,4 +1,4 @@
-﻿var Mock = Class.extend({
+var Mock = Class.extend({
 	logged: [],
 	calls: [],
 	logCalls: 0,

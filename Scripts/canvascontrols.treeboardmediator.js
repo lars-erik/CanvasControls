@@ -1,4 +1,4 @@
-﻿(function (cc) {
+(function (cc) {
 
 	cc.TreeBoardMediator = Class.extend({
 		init: function (tree, board, treeCtrl) {

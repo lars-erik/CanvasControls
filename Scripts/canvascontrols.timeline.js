@@ -1,4 +1,4 @@
-﻿(function (cc) {
+(function (cc) {
 
     cc.MonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Des"];
     cc.QuarterNames = ["Q1", "Q2", "Q3", "Q4"];
