@@ -29,7 +29,7 @@
 			}
 		},
 		_removeBoardNode: function (n) {
-			this.boardController.addBoardNode(n);
+			this.boardController.removeBoardNode(n);
 		},
 		_onTreeNodeAdded: function (s, e) {
 			var boardData = e.child.model.boardNodes;
