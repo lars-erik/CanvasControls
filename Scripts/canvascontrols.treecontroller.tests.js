@@ -20,7 +20,7 @@ module("Tree Controller", {
 	setup: function () {
 		$("input[type='text']").remove();
 		tree = new canvascontrols.TimelineTree();
-		datasource = new MockDataSource();
+		datasrc = new Mockdatasrc();
 		controller = createController();
 	},
 	teardown: function () {
@@ -28,10 +28,10 @@ module("Tree Controller", {
 	}
 });
 
-var tree, datasource, controller;
+var tree, datasrc, controller;
 var now = new Date();
 
-var MockDataSource = Class.extend({
+var Mockdatasrc = Class.extend({
 	init: function () {
 		this.data = null;
 		this.addModel = null;
@@ -66,7 +66,7 @@ var MockDataSource = Class.extend({
 });
 
 function createController() {
-	return new canvascontrols.TreeController(tree, datasource);
+	return new canvascontrols.TreeController(tree, datasrc);
 }
 
 function createData() {
@@ -86,13 +86,13 @@ function createAndAddRootNode() {
 
 test("can create", function () {
 	ok(controller.tree === tree);
-	ok(controller.datasource === datasource);
+	ok(controller.datasource === datasrc);
 });
 
-test("load calls datasource with parentModel(!!) null and callback", function () {
-	datasource.data = createData();
+test("load calls datasrc with parentModel(!!) null and callback", function () {
+	datasrc.data = createData();
 	controller.load();
-	ok(datasource.passedParentModel == null);
+	ok(datasrc.passedParentModel == null);
 });
 
 test("loadDone adds nodes to tree", function () {
@@ -107,17 +107,17 @@ test("loadDone adds nodes to tree", function () {
 });
 
 test("on tree toggle, controller loads and adds children of toggled node", function () {
-	datasource.data = createData();
+	datasrc.data = createData();
 
 	var node = createAndAddRootNode();
 	node.toggle();
 
-	equal(datasource.passedParentModel, node.model);
+	equal(datasrc.passedParentModel, node.model);
 	equal(node.getShapes().length, 2);
 });
 
 test("does not load children if already loaded", function () {
-	datasource.data = createData();
+	datasrc.data = createData();
 
 	var node = createAndAddRootNode();
 	node.toggle();
@@ -131,7 +131,7 @@ test("does not load children if already loaded", function () {
 });
 
 test("does not toggle if the tree is being loaded", function () {
-	datasource.data = createData();
+	datasrc.data = createData();
 	controller.load();
 	equal(tree.getShapes().length, 2);
 });
@@ -139,45 +139,45 @@ test("does not toggle if the tree is being loaded", function () {
 test("controller add toggles treenode if collapsed, " +
 	 "waits for load done, " +
 	 "adds new node, " +
-	 "then calls datasource add", 
+	 "then calls datasrc add", 
 function () {
-	datasource.data = [{ Id: "1.1", Name: "abc"}];
+	datasrc.data = [{ Id: "1.1", Name: "abc"}];
 	var node = createAndAddRootNode();
 	equal(node._expanded, false);
 	ok(node._isLoaded == undefined);
 	controller.addTo(node);
-	equal(datasource.passedParentModel.Id, "3");
+	equal(datasrc.passedParentModel.Id, "3");
 	equal(node._expanded, true);
 	equal(node._isLoaded, true);
 	equal(node.getShapes().length, 2);
-	ok(datasource.addCalled);
+	ok(datasrc.addCalled);
 });
 
 test("controller add just adds if node already toggled", function () {
-	datasource.data = [{ Id: "1.1", Name: "abc"}];
+	datasrc.data = [{ Id: "1.1", Name: "abc"}];
 	var node = createAndAddRootNode();
 	node.toggle();
 	equal(node._expanded, true);
 	equal(node._isLoaded, true);
-	datasource.init();
+	datasrc.init();
 	controller.addTo(node);
-	ok(!datasource.loadCalled);
+	ok(!datasrc.loadCalled);
 	equal(node.getShapes().length, 2);
-	ok(datasource.addCalled);
+	ok(datasrc.addCalled);
 });
 
-test("controller add passes callback to datasource and sets model and _isLoaded when done, then calls node.edit", function () {
+test("controller add passes callback to datasrc and sets model and _isLoaded when done, then calls node.edit", function () {
 	var node = createAndAddRootNode();
 	node._isLoaded = true;
-	datasource.addModel = { Id: "1" };
+	datasrc.addModel = { Id: "1" };
 	equal($("input[type='text']").length, 0);
 	controller.addTo(node);
-	ok(node.getShapes()[0].model === datasource.addModel);
+	ok(node.getShapes()[0].model === datasrc.addModel);
 	ok(node.getShapes()[0]._isLoaded == true);
 	equal($("input[type='text']").length, 1);
 });
 
-test("calls update on datasource when node is renamed", function () {
+test("calls update on datasrc when node is renamed", function () {
 	var node = createAndAddRootNode();
 	var child = node.add(new canvascontrols.TimelineTreeNode());
 	child.model = { Id: 1 };
@@ -185,17 +185,17 @@ test("calls update on datasource when node is renamed", function () {
 	child._label = "Hei hei";
 	child._raise("renamed.cc", { child: child });
 	equal(child.model.label, "Hei hei");
-	equal(datasource.updateCalled, 1);
-	ok(datasource.passedModel === child.model);
+	equal(datasrc.updateCalled, 1);
+	ok(datasrc.passedModel === child.model);
 });
 
-test("calls remove on datasource when node is removed", function () {
+test("calls remove on datasrc when node is removed", function () {
 	var node = createAndAddRootNode();
 	var child = node.add(new canvascontrols.TimelineTreeNode());
 	child.model = { Id: 1 };
 	node.remove(child);
-	equal(datasource.removeCalled, 1);
-	ok(datasource.passedModel === child.model);
+	equal(datasrc.removeCalled, 1);
+	ok(datasrc.passedModel === child.model);
 });
 
 test("if node does not have children and is not loaded, onToggle just calls callback", function () {

@@ -46,7 +46,7 @@
 			this.callback = null;
 			this.newNode = this.target.add(new canvascontrols.TimelineTreeNode());
 			var callback = $.proxy(this.addDone, this);
-			datasource.addTo(this.target.model, callback);
+			this.datasource.addTo(this.target.model, callback);
 		},
 
 		addDone: function (data) {
@@ -70,11 +70,11 @@
 
 		_onRenamed: function (s, e) {
 			e.child.model.label = e.child._label;
-			datasource.update(e.child.model);
+			this.datasource.update(e.child.model);
 		},
 
 		_onRemoved: function (s, e) {
-			datasource.remove(e.child.model);
+			this.datasource.remove(e.child.model);
 		}
 	});
 })(canvascontrols);
