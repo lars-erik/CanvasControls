@@ -23,11 +23,12 @@ function addSimple() {
 	});
 }
 
-function callback(data, textStatus, jqXHR) {
+function callback(data, textStatus, jqXHR, extra) {
 	callbackArgs = {
 		data: data,
 		textStatus: textStatus,
-		jqXHR: jqXHR
+		jqXHR: jqXHR,
+		extra: extra
 	};
 }
 
@@ -127,7 +128,18 @@ asyncTest("sends extra data to callback if defined", function () {
 	});
 	addSimple();
 	setTimeout(function () {
-		equal(callbackArgs.data.extra.hello, "hi");
+		ok(callbackArgs.data.extra == undefined);
+		equal(callbackArgs.extra.hello, "hi");
+		start();
+	}, 5);
+});
+
+asyncTest("ignores callback if not defined", function () {
+	$.mockjax({ url: "Hello", responseTime: 1 });
+	queue.add("Hello");
+	equal(queue.count(), 1);
+	setTimeout(function () {
+		equal(queue.count(), 0);
 		start();
 	}, 5);
 });

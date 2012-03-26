@@ -28,8 +28,8 @@
 				this._hasChildren = this.getShapes().length > 0;
 				this._updateBounds(-1);
 				this._raise("nodeRemoved.cc", { child: node });
+				this.invalidate(true);
 			}
-
 		},
 
 		_paintChildren: function (context) {
