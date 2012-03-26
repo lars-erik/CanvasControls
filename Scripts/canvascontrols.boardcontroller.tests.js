@@ -39,6 +39,7 @@ var MockDataSource = Class.extend({
 		this.passedParentModel = Number.NaN;
 		this.loadCalled = false;
 		this.addCalled = false;
+		this.removeCalled = false;
 		this.updateCalled = 0;
 	},
 	load: function (parentModel, callback) {
@@ -56,6 +57,11 @@ var MockDataSource = Class.extend({
 		this.passedModel = model;
 		this.updateCalled++;
 		if (callback != null) callback();
+	},
+	remove: function (model, callback) {
+		this.passedModel = model;
+		this.removeCalled = true;
+		callback();
 	}
 });
 
@@ -81,10 +87,28 @@ test("can create", function () {
 
 test("Boardcontroller catches drag event and calls update", function () {
 
-	controller._addBoardNode(new canvascontrols.TimelineBoardNode());
+	controller._addBoardNode(new canvascontrols.TimelineBoardNode());	
 	equal(datasource.updateCalled, 0);
 	board._raise("mousedown", { offsetX: 10, offsetY: 10 });
 	board._raise("mousedown", { offsetX: 10, offsetY: 10 });
 	board._raise("mouseup", { offsetX: 10, offsetY: 10 });
 	equal(datasource.updateCalled, 1);
+});
+
+test("Catches removeNode event and calls remove on datasource", function () {
+	var node = new canvascontrols.TimelineBoardNode();
+	board.add(node);
+
+	equal(datasource.removeCalled, false);
+	ok(board.getShapes()[0] === node);
+
+	board.remove(node);
+	equal(datasource.removeCalled, true);
+	ok(board.getShapeCount() == 0);
+
+	datasource.removeCalled = false;
+	board.add(node);
+	
+	board.clear();
+	equal(datasource.removeCalled, true);
 });

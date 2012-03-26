@@ -215,7 +215,14 @@
 			this._super(node);
 			this._raise("nodeAdded.cc", { parent: this, child: node });
 		},
+		remove: function (node) {
+			this._super(node);
+			this._raise("nodeRemoved.cc", { parent: this, child: node });
+		},
 		clear: function () {
+			for (var i = 0; i < this.getShapeCount(); i++) {
+				this.remove(this.getShapes()[i]);
+			}
 			this._shapes = [];
 		},
 		setOffset: function (offset) {
