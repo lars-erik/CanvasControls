@@ -9,6 +9,7 @@
 			this._children = settings.children;
 			this._offset = 0.5;
 			this._dragging = false;
+			this._wasResized = null;
 			this._dragX = 0;
 			this._moveMarker = new cc.MoveMarker();
 			this._expandMarker = new cc.ExpandWidthMarker();
@@ -47,6 +48,11 @@
 				this._raise("dragged.cc");
 			}
 			this._dragging = false;
+			
+			if (this._wasResized != null) {
+				this._raise("resized.cc", { parent: this, child: this._wasResized });
+			}
+			this._wasResized = null;
 		},
 		_onMouseMove: function (sender, data) {
 			var length = data.pageX - this._dragX;
@@ -66,16 +72,20 @@
 					this._expandMarker.setVisible(true);
 					this._expandMarker.setX(data.offsetX);
 					this._expandMarker.setY(child._y + 12);
-					if (this._dragging)
+					if (this._dragging) {
 						child._start.setTime(d.getTime());
+						this._wasResized = child;
+					}
 				} else if (data.offsetX <= child._x + child._width && data.offsetX > child._x + child._width - 10) {
 					this._moveMarker.setVisible(false);
 					this._expandMarker.setDirection("right");
 					this._expandMarker.setVisible(true);
 					this._expandMarker.setX(data.offsetX);
 					this._expandMarker.setY(child._y + 12);
-					if (this._dragging)
+					if (this._dragging) {
 						child._end = new Date(d.getTime() + dist);
+						this._wasResized = child;
+					}
 				} else {
 					this._expandMarker.setVisible(false);
 					this._moveMarker.setVisible(true);
@@ -215,7 +225,14 @@
 			this._super(node);
 			this._raise("nodeAdded.cc", { parent: this, child: node });
 		},
+		remove: function (node) {
+			this._super(node);
+			this._raise("nodeRemoved.cc", { parent: this, child: node });
+		},
 		clear: function () {
+			for (var i = 0; i < this.getShapeCount(); i++) {
+				this.remove(this.getShapes()[i]);
+			}
 			this._shapes = [];
 		},
 		setOffset: function (offset) {

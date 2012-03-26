@@ -16,5 +16,6 @@ var MockContext = Mock.extend({
     drawImage: function (image, x, y, width, height) { this.log("drawImage", arguments); },
     canvas: { width: 1000, height: 200 },
     measureText: function (t) { return 10; },
-    fill: function () {}
+    fill: function () {},
+    rect : function (a,b,c,d) {}
 });

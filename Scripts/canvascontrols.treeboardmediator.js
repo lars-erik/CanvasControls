@@ -6,10 +6,10 @@
 			this.board = board;
 			this.treeController = treeCtrl;
 			this.boardController = boardCtrl;
-			
-			tree.on("nodeAdded.cc", this, this._onNodeAdded);
-			tree.on("nodeRemoved.cc", this, this._onNodeRemoved);
-			tree.on("toggled.cc", this, this._onToggle);
+
+			tree.on("nodeAdded.cc", this, this._onTreeNodeAdded);
+			tree.on("nodeRemoved.cc", this, this._onTreeNodeRemoved);
+			tree.on("toggled.cc", this, this._onTreeNodeToggled);
 		},
 
 		_addBoardNode: function (treeNode, boardData) {
@@ -21,7 +21,7 @@
 			});
 			boardNode.model = boardData.model;
 			boardNode.treeNode = treeNode;
-			this.board.add(boardNode);
+			this.boardController.addBoardNode(boardNode);	
 		},
 		_removeBoardNodes: function (nodes) {
 			for (var i = 0; i < nodes.length; i++) {
@@ -29,16 +29,16 @@
 			}
 		},
 		_removeBoardNode: function (n) {
-			board.remove(n);
+			this.boardController.addBoardNode(n);
 		},
-		_onNodeAdded: function (s, e) {
+		_onTreeNodeAdded: function (s, e) {
 			var boardData = e.child.model.boardNodes;
 			for (var i = 0; i < boardData.length; i++) {
 				this._addBoardNode(e.child, boardData[i]);
 			}
 			this._updateY();
 		},
-		_onNodeRemoved: function (s, e) {
+		_onTreeNodeRemoved: function (s, e) {
 			console.debug(e.node);
 
 			for (var i = 0; i < board.getShapeCount(); i++) {
@@ -48,7 +48,7 @@
 			}
 			this._updateY();
 		},
-		_onToggle: function (s, e) {
+		_onTreeNodeToggled: function (s, e) {
 			var tnode;
 
 			if (!e.target._expanded) {

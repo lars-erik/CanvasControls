@@ -20,6 +20,7 @@
 
 module("Board Controller", {
 	setup: function () {
+		mock.reset();
 		board = new canvascontrols.TimelineBoard();
 		datasource = new MockDataSource();
 		controller = createController();
@@ -28,7 +29,7 @@ module("Board Controller", {
 		$("input[type='text']").remove();
 	}
 });
-
+var mock = new MockContext();
 var tree, board, datasource, controller;
 
 var MockDataSource = Class.extend({
@@ -39,6 +40,7 @@ var MockDataSource = Class.extend({
 		this.passedParentModel = Number.NaN;
 		this.loadCalled = false;
 		this.addCalled = false;
+		this.removeCalled = false;
 		this.updateCalled = 0;
 	},
 	load: function (parentModel, callback) {
@@ -56,6 +58,11 @@ var MockDataSource = Class.extend({
 		this.passedModel = model;
 		this.updateCalled++;
 		if (callback != null) callback();
+	},
+	remove: function (model, callback) {
+		this.passedModel = model;
+		this.removeCalled = true;
+		callback();
 	}
 });
 
@@ -74,17 +81,76 @@ function createNodeData(date, id, treeNodeId) {
 	return { start: date, end: nextDate, model: { start: date, end: nextDate, id: id, treeNode: treeNodeId} };
 }
 
-test("can create", function () {
+function createNode() {
+	return new canvascontrols.TimelineBoardNode({ start: new Date(2012, 1, 1), end: new Date(2012, 5, 1) });
+}
+test("Can create", function () {
 	ok(controller.board === board);
 	ok(controller.datasource === datasource);
 });
 
-test("Boardcontroller catches drag event and calls update", function () {
+test("Catches drag event and calls update", function () {
+	var n1 = new canvascontrols.TimelineBoardNode(
+		{
+			start: new Date(2012, 2, 1),
+			end: new Date(2012, 2, 31)
+		});
+	n1.model = {};
+	controller.addBoardNode(n1);
+	board.paint(mock);
+	ok(datasource.updateCalled == 0);
+	board._raise("mousedown", { offsetX: 10, offsetY: 10, pageX: 10});
+	board._raise("mousemove", { offsetX: 11, offsetY: 10, pageX: 11 });
+	board._raise("mouseup", { offsetX: 11, offsetY: 10 });
+	ok(datasource.updateCalled > 0);
+});
 
-	controller._addBoardNode(new canvascontrols.TimelineBoardNode());
-	equal(datasource.updateCalled, 0);
-	board._raise("mousedown", { offsetX: 10, offsetY: 10 });
-	board._raise("mousedown", { offsetX: 10, offsetY: 10 });
-	board._raise("mouseup", { offsetX: 10, offsetY: 10 });
-	equal(datasource.updateCalled, 1);
+test("Catches resize event calls update", function () {
+	var n1 = new canvascontrols.TimelineBoardNode(
+		{
+			start: new Date(2012, 2, 1),
+			end: new Date(2012, 2, 31)
+		});
+	n1.model = {};
+	var n2 = new canvascontrols.TimelineBoardNode(
+		{
+			start: new Date(2012, 3, 1),
+			end: new Date(2012, 3, 30)
+		});
+	n2.model = { };
+	
+	controller.addBoardNode(n1);
+	controller.addBoardNode(n2);
+
+
+	board.paint(mock);
+	ok(datasource.updateCalled == 0);
+	board._raise("mousedown", { offsetX: 4, offsetY: 0, pageX: 4 });
+	board._raise("mousemove", { offsetX: 6, offsetY: 0, pageX: 6 });
+	board._raise("mouseup", { offsetX: 6, offsetY: 0 });
+	ok(datasource.updateCalled > 0);
+
+	console.log(board.getShapes());
+});
+
+test("Catches add event and calls add on datasource", function () {
+	ok(false);
+});
+
+test("Catches removeNode event and calls remove on datasource", function () {
+	var node = new canvascontrols.TimelineBoardNode();
+	controller.addBoardNode(node);	
+
+	equal(datasource.removeCalled, false);
+	ok(board.getShapes()[0] === node);
+
+	controller.removeBoardNode(node);
+	equal(datasource.removeCalled, true);
+	ok(board.getShapeCount() == 0);
+
+	datasource.removeCalled = false;
+	controller.addBoardNode(node);	
+	
+	board.clear();
+	equal(datasource.removeCalled, true);
 });
