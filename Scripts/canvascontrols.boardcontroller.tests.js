@@ -1,4 +1,4 @@
-/// <reference path="jquery-1.7.1.js" />
+﻿/// <reference path="jquery-1.7.1.js" />
 /// <reference path="class.js"/>
 /// <reference path="qunit.extensions.js"/>
 /// <reference path="Mock.js"/>
@@ -35,18 +35,27 @@ var MockDataSource = Class.extend({
 	init: function () {
 		this.data = null;
 		this.addModel = null;
+		this.passedModel = Number.NaN;
 		this.passedParentModel = Number.NaN;
+		this.loadCalled = false;
 		this.addCalled = false;
+		this.updateCalled = 0;
 	},
 	load: function (parentModel, callback) {
 		this.passedParentModel = parentModel;
 		this.passedCallback = callback;
+		this.loadCalled = true;
 		callback(this.data);
 	},
 	addTo: function (parentModel, callback) {
 		this.passedParentModel = parentModel;
 		this.addCalled = true;
 		callback(this.addModel);
+	},
+	update: function (model, callback) {
+		this.passedModel = model;
+		this.updateCalled++;
+		if (callback != null) callback();
 	}
 });
 
@@ -68,4 +77,14 @@ function createNodeData(date, id, treeNodeId) {
 test("can create", function () {
 	ok(controller.board === board);
 	ok(controller.datasource === datasource);
+});
+
+test("Boardcontroller catches drag event and calls update", function () {
+
+	controller._addBoardNode(new canvascontrols.TimelineBoardNode());
+	equal(datasource.updateCalled, 0);
+	board._raise("mousedown", { offsetX: 10, offsetY: 10 });
+	board._raise("mousedown", { offsetX: 10, offsetY: 10 });
+	board._raise("mouseup", { offsetX: 10, offsetY: 10 });
+	equal(datasource.updateCalled, 1);
 });

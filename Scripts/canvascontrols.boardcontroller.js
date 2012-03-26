@@ -1,4 +1,4 @@
-(function (cc) {
+﻿(function (cc) {
 	cc.BoardController = Class.extend({
 		init: function (board, dataSrc) {
 			this.board = board;
@@ -15,13 +15,12 @@
 			}
 		},
 		_saveBoardNode: function (node) {
-			this.datasource.save(node, this._onSaveDone);
+			this.datasource.update(node.model, this._onSaveDone);
 		},
 		_onSaveDone: function (data) {
-			console.log(data);
+			
 		},
 		_onDrag: function (s, e) {
-			console.log(e.target);
 			this._saveBoardNodes(e.target.getShapes());
 		}
 	});

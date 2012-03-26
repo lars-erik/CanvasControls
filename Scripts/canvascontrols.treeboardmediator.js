@@ -1,11 +1,12 @@
-(function (cc) {
+﻿(function (cc) {
 
 	cc.TreeBoardMediator = Class.extend({
-		init: function (tree, board, treeCtrl) {
+		init: function (tree, board, treeCtrl, boardCtrl) {
 			this.tree = tree;
 			this.board = board;
 			this.treeController = treeCtrl;
-
+			this.boardController = boardCtrl;
+			
 			tree.on("nodeAdded.cc", this, this._onNodeAdded);
 			tree.on("nodeRemoved.cc", this, this._onNodeRemoved);
 			tree.on("toggled.cc", this, this._onToggle);
@@ -49,7 +50,7 @@
 		},
 		_onToggle: function (s, e) {
 			var tnode;
-			
+
 			if (!e.target._expanded) {
 				for (var i = 0; i < e.target.getShapeCount(); i++) {
 					tnode = e.target.getShapes()[i];
