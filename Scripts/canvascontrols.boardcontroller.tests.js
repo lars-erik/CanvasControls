@@ -90,35 +90,43 @@ test("Can create", function () {
 });
 
 test("Catches drag event and calls update", function () {
+	var initialStart = new Date(2012, 2, 1);
+	var initialEnd = new Date(2012, 2, 31);
 	var n1 = new canvascontrols.TimelineBoardNode(
 		{
-			start: new Date(2012, 2, 1),
-			end: new Date(2012, 2, 31)
+			start: initialStart,
+			end: initialEnd
 		});
-	n1.model = {};
+	n1.model = { start: initialStart, end: initialEnd};
+	
 	controller.addBoardNode(n1);
 	board.paint(mock);
 	ok(datasource.updateCalled == 0);
-	board._raise("mousedown", { offsetX: 10, offsetY: 10, pageX: 10});
+	board._raise("mousedown", { offsetX: 10, offsetY: 10, pageX: 10 });
 	board._raise("mousemove", { offsetX: 11, offsetY: 10, pageX: 11 });
 	board._raise("mouseup", { offsetX: 11, offsetY: 10 });
+	notEqual(initialStart, datasource.passedModel.start);
 	ok(datasource.updateCalled > 0);
 });
 
 test("Catches resize event calls update", function () {
+	var initialStart1 = new Date(2012, 2, 1);
+	var initialEnd1 = new Date(2012, 2, 31);
+	var initialStart2 = new Date(2012, 3, 1);
+	var initialEnd2 = new Date(2012, 3, 30);
 	var n1 = new canvascontrols.TimelineBoardNode(
 		{
-			start: new Date(2012, 2, 1),
-			end: new Date(2012, 2, 31)
+			start: initialStart1,
+			end: initialEnd1
 		});
-	n1.model = {};
+		n1.model = { start: initialStart1, end: initialEnd1 };
 	var n2 = new canvascontrols.TimelineBoardNode(
 		{
-			start: new Date(2012, 3, 1),
-			end: new Date(2012, 3, 30)
+			start: initialStart2,
+			end: initialEnd2
 		});
-	n2.model = { };
-	
+		n2.model = { start: initialStart2, end: initialEnd2 };
+
 	controller.addBoardNode(n1);
 	controller.addBoardNode(n2);
 
@@ -129,13 +137,11 @@ test("Catches resize event calls update", function () {
 	board._raise("mousemove", { offsetX: 6, offsetY: 0, pageX: 6 });
 	board._raise("mouseup", { offsetX: 6, offsetY: 0 });
 	ok(datasource.updateCalled > 0);
-
+	notEqual(initialStart1, datasource.passedModel.start);
 	console.log(board.getShapes());
 });
 
-test("Catches add event and calls add on datasource", function () {
-	ok(false);
-});
+
 
 test("Catches removeNode event and calls remove on datasource", function () {
 	var node = new canvascontrols.TimelineBoardNode();

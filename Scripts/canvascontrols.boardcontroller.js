@@ -23,6 +23,8 @@
 			}
 		},
 		_saveBoardNode: function (node) {
+			node.model.start = node.start;
+			node.model.end = node.end;
 			this.datasource.update(node.model, this._onSaveDone);
 		},
 		_onSaveDone: function (data) {
