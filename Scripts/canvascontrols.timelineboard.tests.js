@@ -97,6 +97,26 @@ test("Mousedown on board raises nodeClicked", function () {
     ok(toggled);
 
 });
+
+test("Mousemove raises resized event", function () {
+	var board = new canvascontrols.TimelineBoard();
+	var node1 = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1, 0, 0, 0), end: new Date(2012, 2, 31, 23, 59, 59) });
+	var node2 = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 3, 1, 0, 0, 0), end: new Date(2012, 4, 30, 23, 59, 59) });
+	board.add(node1);
+	board.add(node2);
+	board.paint(mock);
+	var resized = false;
+	board.on("resized.cc", {}, function (s, e) {
+		resized = true;
+		ok(node1 === e.child);
+	});
+
+	board._raise("mousedown", { offsetX: 2, offsetY: 10, pageX: 2 });
+	board._raise("mousemove", { offsetX: 3, offsetY: 10, pageX: 3 });
+	board._raise("mouseup", { offsetX: 3, offsetY: 10 });
+
+	ok(resized);
+});
 /*
 test("Mousemove on board on a node raises mouseover on node", function () {
     var board = new canvascontrols.TimelineBoard();
