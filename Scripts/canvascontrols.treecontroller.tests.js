@@ -14,7 +14,6 @@
 /// <reference path="canvascontrols.timeline.js"/>
 /// <reference path="canvascontrols.timeline.tree.js"/>
 /// <reference path="canvascontrols.timelineboard.js"/>
-/// <reference path="canvascontrols.treeboardcontroller.js"/>
 /// <reference path="canvascontrols.treecontroller.js"/>
 
 module("Tree Controller", {
@@ -41,6 +40,7 @@ var MockDataSource = Class.extend({
 		this.loadCalled = false;
 		this.addCalled = false;
 		this.updateCalled = 0;
+		this.removeCalled = 0;
 	},
 	load: function (parentModel, callback) {
 		this.passedParentModel = parentModel;
@@ -56,6 +56,11 @@ var MockDataSource = Class.extend({
 	update: function (model, callback) {
 		this.passedModel = model;
 		this.updateCalled++;
+		if (callback != null) callback();
+	},
+	remove: function (model, callback) {
+		this.passedModel = model;
+		this.removeCalled++;
 		if (callback != null) callback();
 	}
 });
@@ -75,7 +80,7 @@ function createAndAddRootNode() {
 	var node = tree.add(new canvascontrols.TimelineTreeNode({
 		hasChildren: true
 	}));
-	node.model = { Id: "3" };
+	node.model = { Id: "3", label: "test" };
 	return node;
 }
 
@@ -161,13 +166,14 @@ test("controller add just adds if node already toggled", function () {
 	ok(datasource.addCalled);
 });
 
-test("controller add passes callback to datasource and sets model when done, then calls node.edit", function () {
+test("controller add passes callback to datasource and sets model and _isLoaded when done, then calls node.edit", function () {
 	var node = createAndAddRootNode();
 	node._isLoaded = true;
 	datasource.addModel = { Id: "1" };
 	equal($("input[type='text']").length, 0);
 	controller.addTo(node);
 	ok(node.getShapes()[0].model === datasource.addModel);
+	ok(node.getShapes()[0]._isLoaded == true);
 	equal($("input[type='text']").length, 1);
 });
 
@@ -176,7 +182,9 @@ test("calls update on datasource when node is renamed", function () {
 	var child = node.add(new canvascontrols.TimelineTreeNode());
 	child.model = { Id: 1 };
 	// what's done inside edit->update:
+	child._label = "Hei hei";
 	child._raise("renamed.cc", { child: child });
+	equal(child.model.label, "Hei hei");
 	equal(datasource.updateCalled, 1);
 	ok(datasource.passedModel === child.model);
 });
@@ -189,3 +197,10 @@ test("calls remove on datasource when node is removed", function () {
 	equal(datasource.removeCalled, 1);
 	ok(datasource.passedModel === child.model);
 });
+
+test("if node does not have children and is not loaded, onToggle just calls callback", function () {
+	var node = createAndAddRootNode();
+	node._hasChildren = false;
+	controller.addTo(node);
+	equal(node.getShapes().length, 1);
+})

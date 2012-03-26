@@ -31,7 +31,7 @@
 			this.target = node;
 			var wait;
 			if (!node._expanded) {
-				if (!node._isLoaded) {
+				if (!node._isLoaded && node._hasChildren) {
 					wait = true;
 					this.callback = this.addToTarget;
 				}
@@ -51,6 +51,7 @@
 
 		addDone: function (data) {
 			this.newNode.model = data;
+			this.newNode._isLoaded = true;
 			this.newNode.edit();
 			this.newNode = null;
 		},
@@ -68,6 +69,7 @@
 		},
 
 		_onRenamed: function (s, e) {
+			e.child.model.label = e.child._label;
 			datasource.update(e.child.model);
 		},
 

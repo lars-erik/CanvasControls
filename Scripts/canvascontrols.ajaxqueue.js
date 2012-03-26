@@ -27,6 +27,7 @@
 			if (this._isInCall) return;
 			var next = this.peek();
 			if (next == null) return;
+			next.settings = $.extend(next.settings, {});
 			next.extra = $.extend(next.extra, {
 				callback: next.settings.success
 			});
@@ -36,7 +37,8 @@
 		},
 		_queueCallback: function (data, textStatus, jqXHR) {
 			var called = this.pop();
-			called.extra.callback($.extend(data, { extra: called.extra }), textStatus, jqXHR);
+			if (called.extra.callback != null)
+				called.extra.callback(data, textStatus, jqXHR, called.extra);
 			this._isInCall = false;
 			this._attemptCall();
 		}
