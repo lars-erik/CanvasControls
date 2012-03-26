@@ -120,12 +120,7 @@
        
     
         <script type="text/javascript">
-            // For IE
-            if (console.debug == undefined) {
-                console.debug = function (v) {
-                    console.log(v);
-                };
-            }
+            
             var model = createModel();
             
             var timelineCanvasView = new canvascontrols.CanvasView("#timeline");
@@ -156,7 +151,7 @@
                 boardCanvasView.paint();
             });
             tree.on("nodeRemoved.cc", {}, function (sender, data) {
-                console.debug("removed");
+                
             });
 
             tree.on("nodeAdded.cc", {}, function (sender, data) {
@@ -258,8 +253,7 @@
                 boardCanvasView.paint();
             });
             board.on("nodeClicked.cc", {}, function (sender, data) {
-                //console.debug(sender);
-                //console.debug(data);
+                
             });
             
 

@@ -37,7 +37,7 @@
 		_onDblClick: function (sender, data) {
 		},
 		_onMouseDown: function (sender, data) {
-			//console.debug(data.offsetX);
+			
 			this._dragging = true;
 			this._dragX = data.pageX;
 			var child = this._getChild(data);
@@ -127,7 +127,7 @@
 			this._raise("demandRedraw.cc", { parent: this, child: null });
 		},
 		_onPeriodChange: function (sender, data) {
-			console.debug("_onPeriodChange");
+			
 		},
 		_onKey: function (sender, data) {
 
@@ -242,7 +242,7 @@
 			this._period = period;
 		},
 		moveNode: function (node) {
-			console.debug(node);
+			
 		},
 		_onMouseMove: function (s, e) {
 			this._mouseCoords = { x: e.offsetX, y: e.offsetY };

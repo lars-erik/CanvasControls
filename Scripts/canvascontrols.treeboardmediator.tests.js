@@ -15,6 +15,7 @@
 /// <reference path="canvascontrols.timeline.tree.js"/>
 /// <reference path="canvascontrols.timelineboard.js"/>
 /// <reference path="canvascontrols.treecontroller.js"/>
+/// <reference path="canvascontrols.boardcontroller.js"/>
 /// <reference path="canvascontrols.treeboardmediator.js"/>
 
 module("Tree / Board Mediator", {
@@ -23,26 +24,48 @@ module("Tree / Board Mediator", {
 		board = new canvascontrols.TimelineBoard();
 		dataSrc = new MockDataSource();
 		ctrl = new canvascontrols.TreeController(tree, dataSrc);
+		bctrl = new canvascontrols.BoardController(board, dataSrc);
 	}
 });
 
-var tree, board, ctrl, dataSrc;
+var tree, board, ctrl, bctrl, dataSrc;
 var now = new Date();
 
 var MockDataSource = Class.extend({
 	init: function () {
 		this.data = null;
+		this.addModel = null;
+		this.passedModel = Number.NaN;
 		this.passedParentModel = Number.NaN;
+		this.loadCalled = false;
+		this.addCalled = false;
+		this.removeCalled = false;
+		this.updateCalled = 0;
 	},
 	load: function (parentModel, callback) {
 		this.passedParentModel = parentModel;
 		this.passedCallback = callback;
+		this.loadCalled = true;
 		callback(this.data);
+	},
+	addTo: function (parentModel, callback) {
+		this.passedParentModel = parentModel;
+		this.addCalled = true;
+		callback(this.addModel);
+	},
+	update: function (model, callback) {
+		this.passedModel = model;
+		this.updateCalled++;
+		if (callback != null) callback();
+	},
+	remove: function (model, callback) {
+		this.passedModel = model;
+		this.removeCalled = true;
+		if (callback != null) callback();
 	}
 });
-
 function createMediator() {
-	return new canvascontrols.TreeBoardMediator(tree, board, ctrl);
+	return new canvascontrols.TreeBoardMediator(tree, board, ctrl, bctrl);
 }
 
 function createNodeData(date, id, treeNodeId) {

@@ -39,11 +39,11 @@
 			this._updateY();
 		},
 		_onTreeNodeRemoved: function (s, e) {
-			console.debug(e.node);
+			
 
-			for (var i = 0; i < board.getShapeCount(); i++) {
-				var bnode = board.getShapes()[i];
-				if (bnode.treeNode === e.node)
+			for (var i = 0; i < this.board.getShapeCount(); i++) {
+				var bnode = this.board.getShapes()[i];
+				if (bnode.treeNode === e.child)
 					this._removeBoardNode(bnode);
 			}
 			this._updateY();
