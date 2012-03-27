@@ -8,15 +8,15 @@
 			}, options);
 			this._children = settings.children;
 			this._offset = 0.5;
+			this._isMouseDown = false;
 			this._dragging = false;
-			this._wasResized = null;
-			this._dragX = 0;
+			this._dragStartX = 0;
 			this._moveMarker = new cc.MoveMarker();
 			this._expandMarker = new cc.ExpandWidthMarker();
 			this._isHovered = false;
 			this._selectedChild = null;
 			this.on("dblclick", this, this._onDblClick);
-			this.on("mousedown", this, this._onMouseDown);
+			//			this.on("mousedown", this, this._onMouseDown);
 			this.on("mouseup", this, this._onMouseUp);
 			this.on("mousemove", this, this._onMouseMove);
 			this.on("periodChanged.c    c", this, this._onPeriodChange);
@@ -37,82 +37,68 @@
 		_onDblClick: function (sender, data) {
 		},
 		_onMouseDown: function (sender, data) {
-			
-			this._dragging = true;
-			this._dragX = data.pageX;
-			var child = this._getChild(data);
-			this._raise("nodeClicked.cc", { parent: this, child: child });
+			//this._isMouseDown = true;
+			//console.log("test" + " " + this._selectedChild + " " + this._isMouseDown);
+			//			this._dragStartX = data.pageX;
+
+			//			var child = this._getChild(data);
+			//			if (child != null) {
+			//				this._selectedChild = child;
+			//				this._raise("nodeClicked.cc", { parent: this, child: child });
+			//			}
 		},
 		_onMouseUp: function (sender, data) {
-			if (this._dragging) {
-				this._raise("dragged.cc");
+
+			if (this._selectedChild != null) {
+				console.log(this._selectedChild);
+				if (this._dragging)
+					this._raise("dragged.cc", { parent: this, child: this._selectedChild });
+
+				else if (this._selectedChild._wasResized)
+					this._raise("resized.cc", { parent: this, child: this._selectedChild });
 			}
 			this._dragging = false;
-			
-			if (this._wasResized != null) {
-				this._raise("resized.cc", { parent: this, child: this._wasResized });
-			}
-			this._wasResized = null;
+			this._isMouseDown = false;
+			this._selectedChild = null;
 		},
 		_onMouseMove: function (sender, data) {
-			var length = data.pageX - this._dragX;
-			if (Math.abs(length) > 0) {
-				this._dragX = data.pageX;
-			}
-			var child = this._getChild(data);
 
+			var dragLength = data.pageX - this._dragStartX;
+			if (Math.abs(dragLength) > 0) {
+				this._dragStartX = data.pageX;
+			}
+
+
+			var child = null;
+			for (var i = 0; i < this.getShapeCount(); i++) {
+				var c = this.getShapes()[i];
+				if (c._isMouseDown)
+					child = c;
+			}
 			if (child != null) {
-
+				this._selectedChild = child;
 				var dist = child._end.getTime() - child._start.getTime();
-				var d = this.findDateAtCoord(child._x + length);
+				var d = this.findDateAtCoord(child._x + dragLength);
 
-				if (data.offsetX > child._x && data.offsetX <= child._x + 10) {
-					this._moveMarker.setVisible(false);
-					this._expandMarker.setDirection("left");
-					this._expandMarker.setVisible(true);
-					this._expandMarker.setX(data.offsetX);
-					this._expandMarker.setY(child._y + 12);
-					if (this._dragging) {
-						child._start.setTime(d.getTime());
-						this._wasResized = child;
-					}
-				} else if (data.offsetX <= child._x + child._width && data.offsetX > child._x + child._width - 10) {
-					this._moveMarker.setVisible(false);
-					this._expandMarker.setDirection("right");
-					this._expandMarker.setVisible(true);
-					this._expandMarker.setX(data.offsetX);
-					this._expandMarker.setY(child._y + 12);
-					if (this._dragging) {
-						child._end = new Date(d.getTime() + dist);
-						this._wasResized = child;
-					}
+				if (child._dragHandler == child._resizeLeft) {
+					this._setResizeMarker(true, "left", data.offsetX, child._y + child._height / 2);
+					child._start.setTime(d.getTime());
+					child._wasResized = true;
+				} else if (child._dragHandler == child._resizeRight) {
+					this._setResizeMarker(true, "right", data.offsetX, child._y + child._height / 2);
+					child._end = new Date(d.getTime() + dist);
+					child._wasResized = true;
 				} else {
-					this._expandMarker.setVisible(false);
-					this._moveMarker.setVisible(true);
-					this._moveMarker.setX(data.offsetX);
-					this._moveMarker.setY(child._y + 12);
-					if (this._dragging) {
-						child._start.setTime(d.getTime());
-						child._end = new Date(d.getTime() + dist);
-					}
+					this._setMoveMarker(true, data.offsetX, child._y + child._height / 2);
+					child._start.setTime(d.getTime());
+					child._end = new Date(d.getTime() + dist);
+					child._wasResized = false;
+					this._dragging = true;
 				}
-				if (this._selectedChild == null) {
-					child._onMouseOver(sender, data);
-					//child._raise("mouseover", data);
-					child._isHovered = true;
-					this._selectedChild = child;
-				}
-				this._raise("demandRedraw.cc", { parent: this, child: null });
-			} else {
-				if (this._selectedChild != null) {
-					this._selectedChild._onMouseOut(sender, data);
-					this._selectedChild._isHovered = false;
-					this._selectedChild = null;
-				}
-				this._moveMarker.setVisible(false);
-				this._expandMarker.setVisible(false);
-				this._raise("demandRedraw.cc", { parent: this, child: null });
+
+				this._raise("demandRedraw.cc", { parent: this, child: child });
 			}
+
 		},
 		_onMouseOver: function (sender, data) {
 			var child = this._getChild(data);
@@ -127,10 +113,25 @@
 			this._raise("demandRedraw.cc", { parent: this, child: null });
 		},
 		_onPeriodChange: function (sender, data) {
-			
+
 		},
 		_onKey: function (sender, data) {
 
+		},
+		_setResizeMarker: function (visible, direction, x, y) {
+			this._expandMarker.setVisible(visible);
+			if (visible) {
+				this._moveMarker.setVisible(!visible);
+				this._expandMarker.setDirection(direction);
+				this._expandMarker.setCoords(x, y);
+			}
+		},
+		_setMoveMarker: function (visible, x, y) {
+			this._moveMarker.setVisible(visible);
+			if (visible) {
+				this._expandMarker.setVisible(!visible);
+				this._moveMarker.setCoords(x, y);
+			}
 		},
 		_getChildOffset: function (coords, child) {
 			return {
@@ -185,7 +186,7 @@
 			this._marker = new cc.TimeMarker();
 			this._lines = settings.lines;
 			this.on("mousemove", this, this._onMouseMove);
-
+			this.on("mousedown", this, this._onMouseDown);
 		},
 		getPeriod: function () {
 			return this._period;
@@ -242,10 +243,10 @@
 			this._period = period;
 		},
 		moveNode: function (node) {
-			
+
 		},
 		_onMouseMove: function (s, e) {
-			this._mouseCoords = { x: e.offsetX, y: e.offsetY };
+			//this._mouseCoords = { x: e.offsetX, y: e.offsetY };
 			this._super(s, e);
 		},
 		_onMouseOver: function (s, e) {
@@ -253,6 +254,9 @@
 		},
 		_onMouseOut: function (s, e) {
 			this._super(s, e);
+		},
+		_onMouseDown: function (s, e) {
+			this._raise("boardClicked.cc");
 		}
 	});
 
@@ -281,8 +285,10 @@
 			this._invalidFillColor = settings.invalidFillColor;
 			this._strokeColor = settings.strokeColor;
 			this._valid = settings.valid;
+			this._mode = null;
 			this.on("mouseover", this, this._onMouseOver);
-
+			this.on("mousedown", this, this._onMouseDown);
+			this.on("mouseout", this, this._onMouseOut);
 		},
 		setValid: function (b) {
 			this._valid = b;
@@ -343,12 +349,42 @@
 			}
 		},
 		_isBoxClick: function (coords) {
-
 			return coords.offsetX >= this._boxX && coords.offsetX < this._boxX + this._boxWidth &&
 				   coords.offsetY >= 0 && coords.offsetY <= this._height;
 		},
 		_onMouseOver: function (sender, data) {
 			this._super(sender, data);
+		},
+		_onMouseOut: function (sender, data) {
+			this._isMouseDown = false;
+		},
+		_onMouseUp: function (sender, data) {
+			this._isMouseDown = false;
+			this._dragHandler = null;
+		},
+		_onMouseDown: function (sender, data) {
+			this._isMouseDown = true;
+			if (data.offsetX > 0 && data.offsetX <= 10) {
+				this._dragHandler = this._resizeLeft;
+			} else if (data.offsetX <= this._width && data.offsetX > this._width - 10) {
+				this._dragHandler = this._resizeRight;
+			} else {
+				this._dragHandler = this._drag;
+			}
+			this._raise("nodeClicked.cc");
+		},
+		_onMouseMove: function (s, e) {
+			//this._dragHandler(e);
+			this._super(s, e);
+		},
+		_resizeLeft: function () { // dunno params yet
+			console.log("resizing left");
+		},
+		_resizeRight: function () {
+			console.log("resize right");
+		},
+		_drag: function () {
+			console.log("drag");
 		}
 	});
 

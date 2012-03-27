@@ -62,7 +62,7 @@ var MockDataSource = Class.extend({
 	remove: function (model, callback) {
 		this.passedModel = model;
 		this.removeCalled = true;
-		callback();
+		if (callback != null) callback();
 	}
 });
 
@@ -94,17 +94,18 @@ test("Catches drag event and calls update", function () {
 	var initialEnd = new Date(2012, 2, 31);
 	var n1 = new canvascontrols.TimelineBoardNode(
 		{
-			start: initialStart,
-			end: initialEnd
+			start: new Date(initialStart.getTime()),
+			end: new Date(initialEnd.getTime())
 		});
-	n1.model = { start: initialStart, end: initialEnd};
-	
+	n1.model = { start: initialStart, end: initialEnd };
+
 	controller.addBoardNode(n1);
 	board.paint(mock);
 	ok(datasource.updateCalled == 0);
-	board._raise("mousedown", { offsetX: 10, offsetY: 10, pageX: 10 });
-	board._raise("mousemove", { offsetX: 11, offsetY: 10, pageX: 11 });
-	board._raise("mouseup", { offsetX: 11, offsetY: 10 });
+	board._raise("mousedown", { offsetX: 2, offsetY: 10, pageX: 2 });
+	board._raise("mousemove", { offsetX: 15, offsetY: 10, pageX: 15 });
+	board._raise("mouseup", { offsetX: 15, offsetY: 10 });
+	
 	notEqual(initialStart, datasource.passedModel.start);
 	ok(datasource.updateCalled > 0);
 });
@@ -116,16 +117,16 @@ test("Catches resize event calls update", function () {
 	var initialEnd2 = new Date(2012, 3, 30);
 	var n1 = new canvascontrols.TimelineBoardNode(
 		{
-			start: initialStart1,
-			end: initialEnd1
+			start: new Date(initialStart1.getTime()),
+			end: new Date(initialEnd1.getTime())
 		});
-		n1.model = { start: initialStart1, end: initialEnd1 };
+	n1.model = { start: initialStart1, end: initialEnd1 };
 	var n2 = new canvascontrols.TimelineBoardNode(
 		{
-			start: initialStart2,
-			end: initialEnd2
+			start: new Date(initialStart2.getTime()),
+			end: new Date(initialEnd2.getTime())
 		});
-		n2.model = { start: initialStart2, end: initialEnd2 };
+	n2.model = { start: initialStart2, end: initialEnd2 };
 
 	controller.addBoardNode(n1);
 	controller.addBoardNode(n2);
@@ -136,9 +137,12 @@ test("Catches resize event calls update", function () {
 	board._raise("mousedown", { offsetX: 4, offsetY: 0, pageX: 4 });
 	board._raise("mousemove", { offsetX: 6, offsetY: 0, pageX: 6 });
 	board._raise("mouseup", { offsetX: 6, offsetY: 0 });
+
 	ok(datasource.updateCalled > 0);
+	console.log(datasource.passedModel.start);
 	notEqual(initialStart1, datasource.passedModel.start);
-	console.log(board.getShapes());
+	notEqual(initialStart2, datasource.passedModel.start);
+	//equal(initialEnd1, datasource.passedModel.end);
 });
 
 

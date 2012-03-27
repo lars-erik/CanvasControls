@@ -14,6 +14,7 @@
 			this.board.add(boardNode);
 		},
 		removeBoardNode: function (boardNode) {
+			//this.datasource.remove(boardNode);
 			this.board.remove(boardNode);
 		},
 
@@ -23,8 +24,8 @@
 			}
 		},
 		_saveBoardNode: function (node) {
-			node.model.start = node.start;
-			node.model.end = node.end;
+			node.model.start = node._start;
+			node.model.end = node._end;
 			this.datasource.update(node.model, this._onSaveDone);
 		},
 		_onSaveDone: function (data) {
@@ -43,7 +44,7 @@
 		},
 		_onResize: function (s, e) {
 			console.log("resize");
-			console.log(e.child);
+			//console.log(e.child);
 			this._saveBoardNode(e.child);
 		},
 		_onRemove: function (s, e) {

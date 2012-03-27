@@ -68,68 +68,99 @@ test("Adding node to TimelineBoard raises nodeAdded", function () {
 });
 
 test("Mousedown on node raises nodeClicked", function () {
-    var board = new canvascontrols.TimelineBoard();
-    var node = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1, 0, 0, 0), end: new Date(2012, 2, 31, 23, 59, 59) });
-    board.add(node);
-    var toggled = false;
-    node.on("nodeClicked.cc", {}, function (s, e) {
-        toggled = true;
-    });
-    node._raise("mousedown", { offsetX: 10, offsetY: 10 });
-    
-    ok(toggled);
+	var board = new canvascontrols.TimelineBoard();
+	var node = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1, 0, 0, 0), end: new Date(2012, 2, 31, 23, 59, 59) });
+	board.add(node);
+	var toggled = false;
+	node.on("nodeClicked.cc", {}, function (s, e) {
+		toggled = true;
+		ok(s === node);
+	});
+	node._raise("mousedown", { offsetX: 10, offsetY: 10 });
+
+	ok(toggled);
 });
 
-test("Mousedown on board raises nodeClicked", function () {
+test("Mousedown on board raises boardClicked", function () {
     var board = new canvascontrols.TimelineBoard();
     var node = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1, 0, 0, 0), end: new Date(2012, 2, 31, 23, 59, 59) });
     board.add(node);
     var toggled = false;
-    board.on("nodeClicked.cc", {}, function (s, e) {
+    board.on("boardClicked.cc", {}, function (s, e) {
         toggled = true;
-        
         ok(s instanceof canvascontrols.TimelineBoard);
         equal(s, board);
-        equal(e.parent, board);
     });
     board._raise("mousedown", { offsetX: 10, offsetY: 10 });
 
     ok(toggled);
 
 });
-
-test("Mousemove raises resized event", function () {
+test("Mousedown finds correct action", function () {
 	var board = new canvascontrols.TimelineBoard();
 	var node1 = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1, 0, 0, 0), end: new Date(2012, 2, 31, 23, 59, 59) });
 	var node2 = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 3, 1, 0, 0, 0), end: new Date(2012, 4, 30, 23, 59, 59) });
 	board.add(node1);
 	board.add(node2);
 	board.paint(mock);
-	var resized = false;
-	board.on("resized.cc", {}, function (s, e) {
-		resized = true;
-		ok(node1 === e.child);
-	});
+
+	equal(node1.x(), 0.5, node1.x());
+	equal(parseInt(node2.x() * 10) / 10, 85.5, node2.x() + " " + node2.width());
 
 	board._raise("mousedown", { offsetX: 2, offsetY: 10, pageX: 2 });
-	board._raise("mousemove", { offsetX: 3, offsetY: 10, pageX: 3 });
-	board._raise("mouseup", { offsetX: 3, offsetY: 10 });
+	ok(node1._isMouseDown);
+	ok(node1._dragHandler === node1._resizeLeft);
+	node1._raise("mousemove", {});
 
-	ok(resized);
+	board._raise("mousedown", { offsetX: 100, offsetY: 10, pageX: 2 });
+	ok(node2._isMouseDown);
+	ok(node2._dragHandler === node2._drag);
+
+	board._raise("mousedown", { offsetX: 250, offsetY: 10, pageX: 22 });
+	ok(node2._isMouseDown);
+	ok(node2._dragHandler === node2._resizeRight);
+
+	node1._isMouseDown = false;
+	node2._isMouseDown = false;
+	
+	board._raise("mousedown", { offsetX: 450, offsetY: 10, pageX: 22 });
+	ok(!node1._isMouseDown);
+	ok(!node2._isMouseDown);
+	// TODO: New raise, test hit outside, no action (possibly reset state first)
 });
 /*
+test("Mousemove raises resized event", function () {
+var board = new canvascontrols.TimelineBoard();
+var node1 = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1, 0, 0, 0), end: new Date(2012, 2, 31, 23, 59, 59) });
+var node2 = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 3, 1, 0, 0, 0), end: new Date(2012, 4, 30, 23, 59, 59) });
+board.add(node1);
+board.add(node2);
+board.paint(mock);
+var resized = false;
+board.on("resized.cc", {}, function (s, e) {
+resized = true;
+ok(node1 === e.child);
+});
+
+board._raise("mousedown", { offsetX: 2, offsetY: 10, pageX: 2 });
+board._raise("mousemove", { offsetX: 3, offsetY: 10, pageX: 3 });
+board._raise("mouseup", { offsetX: 3, offsetY: 10 });
+
+ok(resized);
+});
+
 test("Mousemove on board on a node raises mouseover on node", function () {
-    var board = new canvascontrols.TimelineBoard();
-    var node = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1, 0, 0, 0), end: new Date(2012, 2, 31, 23, 59, 59), y: 10 });
-    board.add(node);
-    var mouseOver = false;
+var board = new canvascontrols.TimelineBoard();
+var node = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1, 0, 0, 0), end: new Date(2012, 2, 31, 23, 59, 59), y: 10 });
+board.add(node);
+var mouseOver = false;
 
-    node.on("mouseover", {}, function (s, e) {
-        mouseOver = true;
-    });
+node.on("mouseover", {}, function (s, e) {
+mouseOver = true;
+});
 
-    board._raise("mousemove", { offsetX: 10, offsetY: 10 });
-    ok(mouseOver);
+board._raise("mousemove", { offsetX: 10, offsetY: 10 });
+ok(mouseOver);
 });*/
 /*
 test("can hold instance", function () {
