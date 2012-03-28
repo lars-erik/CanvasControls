@@ -22,7 +22,7 @@
 				child.paint(context);
 			}
 		},
-		
+
 		_onMouseUp: function (sender, data) {
 			if (this._selectedChild != null) {
 				if (this._dragging)
@@ -68,7 +68,7 @@
 			}
 
 		},
-		
+
 		_getChildOffset: function (coords, child) {
 			return {
 				offsetX: coords.offsetX - child.x(),
@@ -123,7 +123,7 @@
 			this.on("mousemove", this, this._onMouseMove);
 			this.on("mousedown", this, this._onMouseDown);
 			this.on("mouseup", this, this._onMouseUp);
-			
+
 		},
 		getPeriod: function () {
 			return this._period;
@@ -198,7 +198,7 @@
 				}
 			}
 		},
-		
+
 		_onMouseDown: function (s, e) {
 			this._raise("boardClicked.cc");
 		},
@@ -216,6 +216,7 @@
 				boxX: 0,
 				boxWidth: 100,
 				y: 0,
+				height: 20,
 				normalColor: "#8ED6FF",
 				invalidFillColor: "#FF0000",
 				strokeColor: "#000",
@@ -227,12 +228,11 @@
 			this._boxWidth = settings.boxWidth;
 			this._hasChildren = this.getShapeCount() > 0;
 			this._y = settings.y;
-			this._isHovered = false;
+			this._height = settings.height;
 			this._normalFillColor = settings.normalColor;
 			this._invalidFillColor = settings.invalidFillColor;
 			this._strokeColor = settings.strokeColor;
 			this._valid = settings.valid;
-			this._mode = null;
 			this._moveMarker = new cc.MoveMarker();
 			this._expandLeftMarker = new cc.ExpandWidthMarker({ direction: "left" });
 			this._expandRightMarker = new cc.ExpandWidthMarker({ direction: "right" });
@@ -270,7 +270,7 @@
 
 					context.save();
 					context.translate(pieceX + offset - viewWidth, this._y);
-					this._paintRect(context, 0, y, pieceWidth, 20);
+					this._paintRect(context, 0, y, pieceWidth, this._height);
 
 					context.restore();
 
@@ -281,12 +281,11 @@
 
 			this._boxX = x + this._parent._offset;
 			this._x = this._boxX;
-			this._height = 20;
 			this._width = width;
 			this._boxWidth = width;
 
-			this._expandLeftMarker.setCoords(this._x + 10, this._y + this._height / 2);
-			this._expandRightMarker.setCoords(this._x + this._width - 10, this._y + this._height / 2);
+			this._expandLeftMarker.setCoords(this._x + 5, this._y + this._height / 2);
+			this._expandRightMarker.setCoords(this._x + this._width - 5, this._y + this._height / 2);
 			this._moveMarker.setCoords(this._x + this._width / 2, this._y + this._height / 2);
 
 			this._expandLeftMarker.paint(context);
@@ -307,7 +306,6 @@
 				context.stroke();
 			}
 		},
-
 		_onMouseOver: function (sender, data) {
 			this._setMarkers(true);
 		},

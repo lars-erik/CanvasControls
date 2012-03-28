@@ -17,6 +17,7 @@
 				start: boardData.start,
 				end: boardData.end,
 				y: treeNode.globalY(),
+				height : treeNode._boxHeight,
 				valid: boardData.valid
 			});
 			boardNode.model = boardData.model;

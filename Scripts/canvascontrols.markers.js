@@ -42,13 +42,13 @@
             if (this._visible) {
                 context.fillStyle = '#000';
                 context.beginPath();
-                context.moveTo(this._x, this._y - 10);
+                context.moveTo(this._x, this._y - 5);
                 if (this._direction == "left") {
-                    context.lineTo(this._x - 10, this._y);
+                    context.lineTo(this._x - 5, this._y);
                 } else {
-                    context.lineTo(this._x + 10, this._y);
+                    context.lineTo(this._x + 5, this._y);
                 }
-                context.lineTo(this._x, this._y + 10);
+                context.lineTo(this._x, this._y + 5);
                 context.fill();
             }
         }
@@ -66,10 +66,10 @@
 
                 context.fillStyle = '#000';
                 context.beginPath();
-                context.moveTo(this._x - 10, this._y);
-                context.lineTo(this._x + 10, this._y);
-                context.moveTo(this._x, this._y - 10);
-                context.lineTo(this._x, this._y + 10);
+                context.moveTo(this._x - 5, this._y);
+                context.lineTo(this._x + 5 , this._y);
+                context.moveTo(this._x, this._y - 5);
+                context.lineTo(this._x, this._y + 5);
                 context.stroke();
             }
         }

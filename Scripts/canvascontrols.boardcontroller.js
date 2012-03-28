@@ -39,12 +39,9 @@
 		},
 
 		_onDrag: function (s, e) {
-			console.log("drag");
 			this._saveBoardNodes(e.target.getShapes());
 		},
 		_onResize: function (s, e) {
-			console.log("resize");
-			//console.log(e.child);
 			this._saveBoardNode(e.child);
 		},
 		_onRemove: function (s, e) {
