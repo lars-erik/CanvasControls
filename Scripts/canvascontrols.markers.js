@@ -30,9 +30,10 @@
         init: function (options) {
             this._super(options);
             var settings = $.extend({
-                shape: "Expand"
+            	shape: "Expand",
+            	direction : "left"
             }, options);
-            this._direction = "left";
+            this._direction = settings.direction;
         },
         setDirection: function (dir) {
             this._direction = dir;
