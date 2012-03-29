@@ -14,7 +14,6 @@
 			this.board.add(boardNode);
 		},
 		removeBoardNode: function (boardNode) {
-			//this.datasource.remove(boardNode);
 			this.board.remove(boardNode);
 		},
 
@@ -22,6 +21,11 @@
 			for (var i = 0; i < nodes.length; i++) {
 				this._saveBoardNode(nodes[i]);
 			}
+		},
+		_addBoardNode : function (node) {
+			node.model.start = node._start;
+			node.model.end = node._end;
+			this.datasource.addTo(node.model, this._onSaveDone);
 		},
 		_saveBoardNode: function (node) {
 			node.model.start = node._start;
@@ -48,7 +52,10 @@
 			this._removeNode(e.child);
 		},
 		_onAdd: function (s, e) {
-
+			if (e.child.model == undefined) {
+				e.child.model = {};
+			}
+			this._addBoardNode(e.child);
 		}
 	});
 })(canvascontrols);

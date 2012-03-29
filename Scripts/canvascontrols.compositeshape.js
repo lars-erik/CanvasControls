@@ -64,14 +64,14 @@
 				context.restore();
 			}
 		},
-		findShapeAt: function (coords) {
+		findShapeAt: function (coords, yOnly) {
 			for (var i = 0; i < this._shapes.length; i++) {
 				var child = this._shapes[i];
 				var childCoords = this._getChildCoords(coords, child);
-				if (child.isInBounds(childCoords)) {
+				if (child.isInBounds(childCoords, yOnly)) {
 					var candidate;
 					if (child instanceof cc.CompositeShape)
-						candidate = child.findShapeAt(childCoords);
+						candidate = child.findShapeAt(childCoords, yOnly);
 					if (candidate == null)
 						candidate = child;
 					return candidate;
@@ -118,7 +118,6 @@
 				e.handlers = [];
 			for (var i = 0; i < this._shapes.length; i++) {
 				var child = this._shapes[i];
-
 				var childCoords = this._getChildCoords(e, child);
 				if (child.isInBounds(childCoords)) {
 					var originalOffset = { offsetX: e.offsetX, offsetY: e.offsetY };

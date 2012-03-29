@@ -11,18 +11,18 @@
 			tree.on("nodeRemoved.cc", this, this._onTreeNodeRemoved);
 			tree.on("toggled.cc", this, this._onTreeNodeToggled);
 		},
-
+		
 		_addBoardNode: function (treeNode, boardData) {
 			var boardNode = new cc.TimelineBoardNode({
 				start: boardData.start,
 				end: boardData.end,
 				y: treeNode.globalY(),
-				height : treeNode._boxHeight,
+				height: treeNode._boxHeight,
 				valid: boardData.valid
 			});
 			boardNode.model = boardData.model;
 			boardNode.treeNode = treeNode;
-			this.boardController.addBoardNode(boardNode);	
+			this.boardController.addBoardNode(boardNode);
 		},
 		_removeBoardNodes: function (nodes) {
 			for (var i = 0; i < nodes.length; i++) {
@@ -40,7 +40,7 @@
 			this._updateY();
 		},
 		_onTreeNodeRemoved: function (s, e) {
-			
+
 
 			for (var i = 0; i < this.board.getShapeCount(); i++) {
 				var bnode = this.board.getShapes()[i];
