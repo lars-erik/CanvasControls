@@ -24,7 +24,9 @@
 		},
 
 		_onMouseUp: function (sender, data) {
+			
 			if (this._selectedChild != null) {
+				
 				if (this._dragging)
 					this._raise("dragged.cc", { parent: this, child: this._selectedChild });
 

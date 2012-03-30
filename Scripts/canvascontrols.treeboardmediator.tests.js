@@ -53,10 +53,17 @@ var MockDataSource = Class.extend({
 		this.addCalled = true;
 		callback(this.addModel);
 	},
+	add: function (model, callback) {
+		this.addModel = model;
+		this.addModel.valid = Math.random() > 0.5;
+		this.addCalled = true;
+		if (callback != null) callback(this.addModel);
+	},
 	update: function (model, callback) {
 		this.passedModel = model;
+		this.passedModel.valid = Math.random() > 0.5;
 		this.updateCalled++;
-		if (callback != null) callback();
+		if (callback != null) callback(this.passedModel);
 	},
 	remove: function (model, callback) {
 		this.passedModel = model;

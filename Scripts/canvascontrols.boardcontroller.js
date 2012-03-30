@@ -13,37 +13,38 @@
 		addBoardNode: function (boardNode) {
 			this.board.add(boardNode);
 		},
+
 		removeBoardNode: function (boardNode) {
 			this.board.remove(boardNode);
 		},
 
-		_saveBoardNodes: function (nodes) {
-			for (var i = 0; i < nodes.length; i++) {
-				this._saveBoardNode(nodes[i]);
-			}
-		},
-		_addBoardNode : function (node) {
+		_addBoardNode: function (node) {
 			node.model.start = node._start;
 			node.model.end = node._end;
-			this.datasource.addTo(node.model, this._onSaveDone);
+			var callback = $.proxy(this._onSaveDone, node);
+			this.datasource.add(node.model, callback);
 		},
 		_saveBoardNode: function (node) {
 			node.model.start = node._start;
 			node.model.end = node._end;
-			this.datasource.update(node.model, this._onSaveDone);
-		},
-		_onSaveDone: function (data) {
-
+			var callback = $.proxy(this._onSaveDone, node);
+			this.datasource.update(node.model, callback);
 		},
 		_removeNode: function (node) {
 			this.datasource.remove(node.model, this._onRemoveDone);
 		},
+		
+		_onSaveDone: function (data) {
+			this._valid = data.valid;
+			this._start = data.start;
+			this._end = data.end;
+		},
 		_onRemoveDone: function (data) {
-
+			// What here? O.o
 		},
 
 		_onDrag: function (s, e) {
-			this._saveBoardNodes(e.target.getShapes());
+			this._saveBoardNode(e.child);
 		},
 		_onResize: function (s, e) {
 			this._saveBoardNode(e.child);

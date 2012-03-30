@@ -1,866 +1,870 @@
 (function (cc) {
 
-    cc.MonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Des"];
-    cc.QuarterNames = ["Q1", "Q2", "Q3", "Q4"];
-    cc.MouseButton = { "Left": 0, "Middle": 1, "Right": 2 };
+	cc.MonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Des"];
+	cc.QuarterNames = ["Q1", "Q2", "Q3", "Q4"];
+	cc.MouseButton = { "Left": 0, "Middle": 1, "Right": 2 };
 
-    cc.TimelineBase = cc.Shape.extend({
-        init: function (options) {
-            this._super(options);
-            var settings = $.extend({
-                children: []
-            }, options);
+	cc.TimelineBase = cc.Shape.extend({
+		init: function (options) {
+			this._super(options);
+			var settings = $.extend({
+				children: []
+			}, options);
 
-            this._children = settings.children;
-            this._isMouseDown = false;
-            this._currentX = 0;
-            this._offset = 0.5;
-            this._wasDragged = false;
+			this._children = settings.children;
+			this._isMouseDown = false;
+			this._currentX = 0;
+			this._offset = 0.5;
+			this._wasDragged = false;
 
-            this.on("dblclick", this, this._onDblClick);
-            this.on("mousewheel", this, this._onScroll);
-            this.on("mousedown", this, this._onMouseDown);
-            this.on("mouseup", this, this._onMouseUp);
-            this.on("mousemove", this, this._onMouseMove);
-            this.on("periodChanged.cc", this, this._onPeriodChange);
-            this.on("keyup keydown", this, this._onKey);
+			this.on("dblclick", this, this._onDblClick);
+			this.on("mousewheel", this, this._onScroll);
+			this.on("mousedown", this, this._onMouseDown);
+			this.on("mouseup", this, this._onMouseUp);
+			this.on("mousemove", this, this._onMouseMove);
+			this.on("periodChanged.cc", this, this._onPeriodChange);
+			this.on("keyup keydown", this, this._onKey);
 
-        },
-        add: function (node) {
-            node._parent = this;
-            this._children.push(node);
-            this._raise("nodeAdded.cc", { parent: this, child: node });
-        },
-        clear: function () {
-            this._children = [];
-        },
-        isInBounds: function (coords) {
-            return this._findChildAtCoords(coords) != null;
-        },
-        _clearSelected: function () {
-            for (var i = 0; i < this._children.length; i++) {
-                var child = this._children[i];
-                child._selected = false;
-            }
-        },
-        _paintChildren: function (context) {
-            var x = this._offset - (context.canvas.width * this._children[0].getProportion());
-            for (var i = 0; i < this._children.length; i++) {
-                var child = this._children[i];
-                var stepWidth = context.canvas.width * child.getProportion();
+		},
+		add: function (node) {
+			node._parent = this;
+			this._children.push(node);
+			this._raise("nodeAdded.cc", { parent: this, child: node });
+		},
+		clear: function () {
+			this._children = [];
+		},
+		isInBounds: function (coords) {
+			return this._findChildAtCoords(coords) != null;
+		},
+		_clearSelected: function () {
+			for (var i = 0; i < this._children.length; i++) {
+				var child = this._children[i];
+				child._selected = false;
+			}
+		},
+		_paintChildren: function (context) {
+			var x = this._offset - (context.canvas.width * this._children[0].getProportion());
+			for (var i = 0; i < this._children.length; i++) {
+				var child = this._children[i];
+				var stepWidth = context.canvas.width * child.getProportion();
 
-                context.save();
-                context.translate(x, 0);
-                child._width = stepWidth;
-                child._x = x;
-                child.paint(context);
+				context.save();
+				context.translate(x, 0);
+				child._width = stepWidth;
+				child._x = x;
+				child.paint(context);
 
-                context.restore();
-                x += stepWidth;
-            }
-            this._timeMarker.paint(context);
-        },
-        _moveByDragLength: function (length, data) {
-            var child = this._getChild(data);
-            var steps = 0;
+				context.restore();
+				x += stepWidth;
+			}
+			this._timeMarker.paint(context);
+		},
+		_moveByDragLength: function (length, data) {
+			var child = this._getChild(data);
+			var steps = 0;
 
-            if (this._offset + length <= 0) {
-                steps = parseInt(Math.abs(length) / child._width) + ((length % child._width) == 0 ? 0 : 1);
-                this._offset += length + child._width * steps;
-                this.getPeriod().shift(steps);
-                this._raise("periodChanged.cc", { parent: this, child: null, period: this.getPeriod() });
-            } else if (this._offset + length >= child._width) {
-                steps = parseInt((this._offset + length) / child._width);
-                this._offset = (this._offset + length) % child._width;
-                this.getPeriod().shift(steps * -1);
-                this._raise("periodChanged.cc", { parent: this, child: null, period: this.getPeriod() });
-            } else {
-                this._offset += length;
-            }
-            this._raise("drag.cc", { parent: this, child: null, offset: this._offset });
+			if (this._offset + length <= 0) {
+				steps = parseInt(Math.abs(length) / child._width) + ((length % child._width) == 0 ? 0 : 1);
+				this._offset += length + child._width * steps;
+				this.getPeriod().shift(steps);
+				this._raise("periodChanged.cc", { parent: this, child: null, period: this.getPeriod() });
+			} else if (this._offset + length >= child._width) {
+				steps = parseInt((this._offset + length) / child._width);
+				this._offset = (this._offset + length) % child._width;
+				this.getPeriod().shift(steps * -1);
+				this._raise("periodChanged.cc", { parent: this, child: null, period: this.getPeriod() });
+			} else {
+				this._offset += length;
+			}
+			this._raise("drag.cc", { parent: this, child: null, offset: this._offset });
 
-            return steps;
-        },
-        _onKey: function (sender, data) {
+			return steps;
+		},
+		_onKey: function (sender, data) {
 
-        },
-        _onMouseMove: function (sender, data) {
-            if (this._isMouseDown) {
-                var length = data.pageX - this._currentX;
-                if (Math.abs(length) > 0) {
-                    this._currentX = data.pageX;
-                    this._moveByDragLength(length, data);
-                    this._wasDragged = true;
-                }
-            }
-            this._raise("demandRedraw.cc", { parent: this, child: null });
-        },
-        _onMouseDown: function (sender, data) {
-            this._wasDragged = false;
-            if (data.button == cc.MouseButton.Left) {
-                this._isMouseDown = true;
-                this._currentX = data.pageX;
-            }
-        },
-        _onMouseUp: function (sender, data) {
-            this._isMouseDown = false;
+		},
+		_onMouseMove: function (sender, data) {
+			if (this._isMouseDown) {
+				var length = data.pageX - this._currentX;
+				if (Math.abs(length) > 0) {
+					this._currentX = data.pageX;
+					this._moveByDragLength(length, data);
+					this._wasDragged = true;
+				}
+			}
+			this._raise("demandRedraw.cc", { parent: this, child: null });
+		},
+		_onMouseDown: function (sender, data) {
+			this._wasDragged = false;
+			if (data.button == cc.MouseButton.Left) {
+				this._isMouseDown = true;
+				this._currentX = data.pageX;
+			}
+		},
+		_onMouseUp: function (sender, data) {
+			this._isMouseDown = false;
 
-            if (!this._wasDragged) {
-                this._onClick(sender, data);
-            }
-        },
-        _onClick: function (sender, data) {
-            var child = this._getChild(data);
+			if (!this._wasDragged) {
+				this._onClick(sender, data);
+			}
+		},
+		_onClick: function (sender, data) {
+			var child = this._getChild(data);
 
-            if (child != null) {
-                child._onClick(this, $.extend(data, this._getChildOffset(data, child)));
-            }
-        },
-        _onDblClick: function (sender, data) {
-            var child = this._getChild(data);
-            if (child != null) {
-                this.getPeriod().zoomTo(child._date);
-                this._raise("periodChanged.cc", { parent: this, child: sender, period: this.getPeriod() });
-            }
-        },
-        _onScroll: function (sender, data) {
-            data.deltaY / Math.abs(data.deltaY) > 0 ? this.getPeriod().zoomIn() : this.getPeriod().zoomOut();
-            this._raise("periodChanged.cc", { parent: this, child: sender, period: this.getPeriod() });
-        },
-        _getChildOffset: function (coords, child) {
-            return {
-                offsetX: coords.offsetX - child.x(),
-                offsetY: coords.offsetY - child.y()
-            };
-        },
-        _isInOwnOffset: function (coords) {
-            if (this._width == undefined || this._height == undefined)
-                throw { name: "NotImplemented", message: "_width or _height" };
+			if (child != null) {
+				child._onClick(this, $.extend(data, this._getChildOffset(data, child)));
+			}
+		},
+		_onDblClick: function (sender, data) {
+			var child = this._getChild(data);
+			if (child != null) {
+				this.getPeriod().zoomTo(child._date);
+				this._raise("periodChanged.cc", { parent: this, child: sender, period: this.getPeriod() });
+			}
+		},
+		_onScroll: function (sender, data) {
+			data.deltaY / Math.abs(data.deltaY) > 0 ? this.getPeriod().zoomIn() : this.getPeriod().zoomOut();
+			this._raise("periodChanged.cc", { parent: this, child: sender, period: this.getPeriod() });
+		},
+		_getChildOffset: function (coords, child) {
+			return {
+				offsetX: coords.offsetX - child.x(),
+				offsetY: coords.offsetY - child.y()
+			};
+		},
+		_isInOwnOffset: function (coords) {
+			if (this._width == undefined || this._height == undefined)
+				throw { name: "NotImplemented", message: "_width or _height" };
 
-            return coords.offsetX >= 0 && coords.offsetX <= this._width &&
+			return coords.offsetX >= 0 && coords.offsetX <= this._width &&
 				coords.offsetY >= 0 && coords.offsetY <= this._height;
-        },
-        _findChildAtCoords: function (coords) {
-            for (var i = 0; i < this._children.length; i++) {
-                var child = this._children[i];
-                var offset = this._getChildOffset(coords, child);
+		},
+		_findChildAtCoords: function (coords) {
+			for (var i = 0; i < this._children.length; i++) {
+				var child = this._children[i];
+				var offset = this._getChildOffset(coords, child);
 
-                if (child.isInBounds(offset)) {
-                    return child;
-                }
-            };
-            return null;
-        },
-        _getChild: function (data) {
-            if (!data.originalX) {
-                data.originalX = data.offsetX;
-                data.originalY = data.offsetY;
-            }
-            return this._findChildAtCoords(data);
-        },
-        _onPeriodChange: function (sender, data) {
-            this.clear();
-            this.createNodes();
-        }
-    });
+				if (child.isInBounds(offset)) {
+					return child;
+				}
+			};
+			return null;
+		},
+		_getChild: function (data) {
+			if (!data.originalX) {
+				data.originalX = data.offsetX;
+				data.originalY = data.offsetY;
+			}
+			return this._findChildAtCoords(data);
+		},
+		_onPeriodChange: function (sender, data) {
+			this.clear();
+			this.createNodes();
+		}
+	});
 
-    cc.Timeline = cc.TimelineBase.extend({
-        init: function (options) {
-            this._super(options);
-            var settings = $.extend({
-                period: new cc.Period(new cc.Month())
-            }, options);
+	cc.Timeline = cc.TimelineBase.extend({
+		init: function (options) {
+			this._super(options);
+			var settings = $.extend({
+				period: new cc.Period(new cc.Month())
+			}, options);
 
-            this._period = settings.period;
-            this.createNodes();
-            this._hasChildren = this._children.length > 0;
-            this._currentSelectedDate = null;
-            this._timeMarker = new cc.TimeMarker();
-            this._timeMarker.setVisible(true);
+			this._period = settings.period;
+			this.createNodes();
+			this._hasChildren = this._children.length > 0;
+			this._currentSelectedDate = null;
+			this._timeMarker = new cc.TimeMarker();
+			this._timeMarker.setVisible(true);
 
-            this.on("mousemove", this, this._onMouseMove);
-        },
-        paint: function (context) {
-            this._width = context.canvas.width;
-            this._paintChildren(context);
-            this._timeMarker.paint(context);
-        },
-        getPeriod: function () {
-            return this._period;
-        },
-        createNodes: function () {
-            var view = this._period.getView();
-            for (var i = 0; i < view.length; i++) {
-                var n = new cc.TimelineNode(view[i]);
-                n.on("nodeClicked.cc", this, this._onNodeClick);
-                this.add(n);
+			this.on("mousemove", this, this._onMouseMove);
+		},
+		paint: function (context) {
+			this._width = context.canvas.width;
+			this._paintChildren(context);
+			this._timeMarker.paint(context);
+		},
+		getPeriod: function () {
+			return this._period;
+		},
+		createNodes: function () {
+			var view = this._period.getView();
+			for (var i = 0; i < view.length; i++) {
+				var n = new cc.TimelineNode(view[i]);
+				n.on("nodeClicked.cc", this, this._onNodeClick);
+				this.add(n);
 
-                if (this._currentSelectedDate != null) {
-                    if (n._date.toDateString() == this._currentSelectedDate.toDateString())
-                        n._selected = true;
-                }
-            }
-        },
-        findDateAtCoord: function (x) {
-            var views = this._period.getView();
-            var currentX = this._offset - (this._width * views[0].Proportion);
-            for (var i = 0; i < views.length; i++) {
-                var view = views[i];
-                var span = view.DateEnd.getTime() - view.DateStart.getTime();
-                var stepWidth = this._width * view.Proportion;
-                var frac = stepWidth / span;
-                if (x >= currentX && x <= currentX + stepWidth) {
-                    return new Date((x - currentX) / frac + view.DateStart.getTime());
-                }
-                currentX += stepWidth;
-            }
-            return null;
-        },
-        _onMouseMove: function (sender, data) {
-            this._timeMarker.setCoords(data.offsetX, 30);
-            this._timeMarker.setStr(this._formatDateTime(this.findDateAtCoord(data.offsetX)));
-            this._super(sender, data);
-        },
-        _onNodeClick: function (sender, data) {
-            this._clearSelected();
-            if (this._currentSelectedDate != null && sender._date.toDateString() == this._currentSelectedDate.toDateString()) {
-                this._currentSelectedDate = null;
-                sender._selected = false;
-            } else {
-                this._currentSelectedDate = sender._date;
-                sender._selected = true;
-            }
-            this._raise("nodeClicked.cc", { parent: this, child: sender });
-        },
-        _formatDateTime: function (d) {
-            var out;
-            switch (this._period.getName().toLowerCase()) {
-                case "day":
-                    out = d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes();
-                    break;
-                case "month":
-                case "quarter":
-                case "year":
-                    out = d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear();
-                    break;
-                default:
-                    out = "Err";
-                    break;
-            }
-            return out;
+				if (this._currentSelectedDate != null) {
+					if (n._date.toDateString() == this._currentSelectedDate.toDateString())
+						n._selected = true;
+				}
+			}
+		},
+		findDateAtCoord: function (x) {
+			var views = this._period.getView();
+			var currentX = this._offset - (this._width * views[0].Proportion);
+			for (var i = 0; i < views.length; i++) {
+				var view = views[i];
+				var span = view.DateEnd.getTime() - view.DateStart.getTime();
+				var stepWidth = this._width * view.Proportion;
+				var frac = stepWidth / span;
+				if (x >= currentX && x <= currentX + stepWidth) {
+					return new Date((x - currentX) / frac + view.DateStart.getTime());
+				}
+				currentX += stepWidth;
+			}
+			return null;
+		},
+		_onMouseMove: function (sender, data) {
+			this._timeMarker.setCoords(data.offsetX, 30);
+			this._timeMarker.setStr(this._formatDateTime(this.findDateAtCoord(data.offsetX)));
+			this._super(sender, data);
+		},
+		_onNodeClick: function (sender, data) {
+			this._clearSelected();
+			if (this._currentSelectedDate != null && sender._date.toDateString() == this._currentSelectedDate.toDateString()) {
+				this._currentSelectedDate = null;
+				sender._selected = false;
+			} else {
+				this._currentSelectedDate = sender._date;
+				sender._selected = true;
+			}
+			this._raise("nodeClicked.cc", { parent: this, child: sender });
+		},
+		_formatDateTime: function (d) {
+			var out;
+			try {
+				switch (this._period.getName().toLowerCase()) {
+					case "day":
+						out = d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes();
+						break;
+					case "month":
+					case "quarter":
+					case "year":
+						out = d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear();
+						break;
+					default:
+						out = "Err";
+						break;
+				}
+			} catch (e) {
+				out = "d";
+			}
+			return out;
 
-        }
-    });
+		}
+	});
 
-    cc.TimelineNode = cc.TimelineBase.extend({
-        init: function (options) {
-            this._super(options);
-            var settings = $.extend({
-                Active: false,
-                Header: null,
-                Label: "",
-                Value: null,
-                Subheader: false,
-                hasChildren: false,
-                Proportion: 0.1,
-                width: 100,
-                height: 50,
-                Date: null,
-                Units: 11
-            }, options);
-            this._date = settings.Date;
-            this._active = settings.Active;
-            this._header = settings.Header;
-            this._label = settings.Label;
-            this._value = settings.Value;
-            this._subheader = settings.Subheader;
-            this._hasChildren = settings.hasChildren;
-            this._proportion = settings.Proportion;
-            this._width = settings.width;
-            this._height = settings.height;
-            this._units = settings.Units;
-            this._context = null;
-            this._selected = false;
-            this._defaultFill = "#000000";
-            this._currentSelectionFill = "#F5DA81";
-            this._activeFill = "#CCCCFF";
-        },
-        getProportion: function () {
-            return this._proportion;
-        },
-        paint: function (context) {
-            this._context = context;
-            if (this._header != null)
-                this._paintHeader(context);
+	cc.TimelineNode = cc.TimelineBase.extend({
+		init: function (options) {
+			this._super(options);
+			var settings = $.extend({
+				Active: false,
+				Header: null,
+				Label: "",
+				Value: null,
+				Subheader: false,
+				hasChildren: false,
+				Proportion: 0.1,
+				width: 100,
+				height: 50,
+				Date: null,
+				Units: 11
+			}, options);
+			this._date = settings.Date;
+			this._active = settings.Active;
+			this._header = settings.Header;
+			this._label = settings.Label;
+			this._value = settings.Value;
+			this._subheader = settings.Subheader;
+			this._hasChildren = settings.hasChildren;
+			this._proportion = settings.Proportion;
+			this._width = settings.width;
+			this._height = settings.height;
+			this._units = settings.Units;
+			this._context = null;
+			this._selected = false;
+			this._defaultFill = "#000000";
+			this._currentSelectionFill = "#F5DA81";
+			this._activeFill = "#CCCCFF";
+		},
+		getProportion: function () {
+			return this._proportion;
+		},
+		paint: function (context) {
+			this._context = context;
+			if (this._header != null)
+				this._paintHeader(context);
 
-            if (this._active)
-                this._paintRect(context, this._activeFill);
+			if (this._active)
+				this._paintRect(context, this._activeFill);
 
-            if (this._selected)
-                this._paintRect(context, this._currentSelectionFill);
+			if (this._selected)
+				this._paintRect(context, this._currentSelectionFill);
 
-            this._paintMeasuredLabel(context);
+			this._paintMeasuredLabel(context);
 
-            var height = this._header != null ? 45 : (this._subheader ? 35 : 25);
-            var y = this._header != null ? 0 : this._subheader ? 10 : 20;
-            this._paintLine(context, 0, y, 0, y + height);
-            this._paintSmallDingseBomser(context);
-        },
-        isInBounds: function (coords) {
-            if (this._isInOwnOffset(coords))
-                return true;
-            return this._super(coords);
-        },
-        _paintSmallDingseBomser: function (context) {
-            var s = 0;
-            for (var i = 0; i < this._units; i++) {
-                this._paintLine(context, s, 43, s, 45);
-                s += (this._width / this._units);
-            }
-        },
-        _paintHeader: function (context) {
-            context.fillText(this._header, 0 + 5, this._y + 10);
-        },
-        _paintRect: function (context, fillColor) {
-            context.fillStyle = fillColor;
-            context.fillRect(0, 20, this._width, 25);
-            context.fillStyle = this._defaultFill;
-        },
-        _paintMeasuredLabel: function (context) {
-            var metric = context.measureText(this._label);
-            while (metric.width > this._width && this._label.length >= 0) {
-                this._label = this._label.substring(0, this._label.length - 1);
-                metric = context.measureText(this._label);
-            }
-            context.fillText(this._label, (this._width - metric.width) / 2, this._y + 38);
-        },
-        _paintLine: function (context, x1, y1, x2, y2) {
-            context.beginPath();
-            context.moveTo(x1, y1);
-            context.lineTo(x2, y2);
-            context.stroke();
-        },
-        _onClick: function (sender, data) {
-            this._raise("nodeClicked.cc", { parent: this, child: null });
-        },
-        _getChildOffset: function (coords, child) {
-            return {
-                offsetX: coords.offsetX - child.x() - this._width,
-                offsetY: coords.offsetY - child.y()
-            };
-        }
-    });
+			var height = this._header != null ? 45 : (this._subheader ? 35 : 25);
+			var y = this._header != null ? 0 : this._subheader ? 10 : 20;
+			this._paintLine(context, 0, y, 0, y + height);
+			this._paintSmallDingseBomser(context);
+		},
+		isInBounds: function (coords) {
+			if (this._isInOwnOffset(coords))
+				return true;
+			return this._super(coords);
+		},
+		_paintSmallDingseBomser: function (context) {
+			var s = 0;
+			for (var i = 0; i < this._units; i++) {
+				this._paintLine(context, s, 43, s, 45);
+				s += (this._width / this._units);
+			}
+		},
+		_paintHeader: function (context) {
+			context.fillText(this._header, 0 + 5, this._y + 10);
+		},
+		_paintRect: function (context, fillColor) {
+			context.fillStyle = fillColor;
+			context.fillRect(0, 20, this._width, 25);
+			context.fillStyle = this._defaultFill;
+		},
+		_paintMeasuredLabel: function (context) {
+			var metric = context.measureText(this._label);
+			while (metric.width > this._width && this._label.length >= 0) {
+				this._label = this._label.substring(0, this._label.length - 1);
+				metric = context.measureText(this._label);
+			}
+			context.fillText(this._label, (this._width - metric.width) / 2, this._y + 38);
+		},
+		_paintLine: function (context, x1, y1, x2, y2) {
+			context.beginPath();
+			context.moveTo(x1, y1);
+			context.lineTo(x2, y2);
+			context.stroke();
+		},
+		_onClick: function (sender, data) {
+			this._raise("nodeClicked.cc", { parent: this, child: null });
+		},
+		_getChildOffset: function (coords, child) {
+			return {
+				offsetX: coords.offsetX - child.x() - this._width,
+				offsetY: coords.offsetY - child.y()
+			};
+		}
+	});
 
 
-    // OLD
-    cc.TimelineController = function (view, period, drawnEventHandler) {
+	// OLD
+	cc.TimelineController = function (view, period, drawnEventHandler) {
 
-        if (period == null)
-            period = new cc.Period(cc.Month());
+		if (period == null)
+			period = new cc.Period(cc.Month());
 
-        var stepWidth;
-        var offset = 0.5;
+		var stepWidth;
+		var offset = 0.5;
 
-        var isDown;
-        var dragLength;
-        var prevLength;
-        var setPrev;
-        var prevX;
-        var slowAmount;
-        var slowFactor = 30;
-        var slowFps = 20;
+		var isDown;
+		var dragLength;
+		var prevLength;
+		var setPrev;
+		var prevX;
+		var slowAmount;
+		var slowFactor = 30;
+		var slowFps = 20;
 
-        drawTimeLine();
+		drawTimeLine();
 
-        view.dragStarted = dragStarted;
-        view.dragging = dragging;
-        view.dragStopped = dragStopped;
-        view.scrolled = scrolled;
-        view.doubleClicked = doubleClicked;
-        view.resized = resized;
+		view.dragStarted = dragStarted;
+		view.dragging = dragging;
+		view.dragStopped = dragStopped;
+		view.scrolled = scrolled;
+		view.doubleClicked = doubleClicked;
+		view.resized = resized;
 
-        function resized() {
-            drawTimeLine();
-        }
+		function resized() {
+			drawTimeLine();
+		}
 
-        function drawTimeLine() {
-            var periodView = period.getView();
-            calculateStepWidth();
-            view.clear();
-            if (periodView[1].Header == null && periodView[0].Header == null && periodView.StartHeader != null)
-                drawHeader(.5, periodView.StartHeader);
-            for (
+		function drawTimeLine() {
+			var periodView = period.getView();
+			calculateStepWidth();
+			view.clear();
+			if (periodView[1].Header == null && periodView[0].Header == null && periodView.StartHeader != null)
+				drawHeader(.5, periodView.StartHeader);
+			for (
 				var x = offset - stepWidth, p = 0;
 				x < view.getWidth(), p < periodView.length;
 				x += stepWidth, p++
 			) {
-                drawSeparator(x, periodView[p]);
-                drawLabel(x, periodView[p]);
-                if (periodView[p].Header != null)
-                    drawHeader(x, periodView[p].Header);
-            }
-            if (drawnEventHandler)
-                drawnEventHandler({ offset: offset, stepWidth: stepWidth, period: period });
-        }
+				drawSeparator(x, periodView[p]);
+				drawLabel(x, periodView[p]);
+				if (periodView[p].Header != null)
+					drawHeader(x, periodView[p].Header);
+			}
+			if (drawnEventHandler)
+				drawnEventHandler({ offset: offset, stepWidth: stepWidth, period: period });
+		}
 
-        function calculateStepWidth() {
-            stepWidth = view.getWidth() / period.getZoomLevel();
-        }
+		function calculateStepWidth() {
+			stepWidth = view.getWidth() / period.getZoomLevel();
+		}
 
-        function drawSeparator(x, periodStep) {
-            var height = periodStep.Header != null ? 45 : (periodStep.Subheader ? 35 : 25);
-            var y = periodStep.Header != null ? 0 : periodStep.Subheader ? 10 : 20;
-            view.drawLine(x, y, x, y + height, periodStep.Active, stepWidth);
-        }
+		function drawSeparator(x, periodStep) {
+			var height = periodStep.Header != null ? 45 : (periodStep.Subheader ? 35 : 25);
+			var y = periodStep.Header != null ? 0 : periodStep.Subheader ? 10 : 20;
+			view.drawLine(x, y, x, y + height, periodStep.Active, stepWidth);
+		}
 
-        function drawLabel(x, periodStep) {
-            view.drawLabel(periodStep.Label, x, 38, stepWidth);
-        }
+		function drawLabel(x, periodStep) {
+			view.drawLabel(periodStep.Label, x, 38, stepWidth);
+		}
 
-        function drawHeader(x, text) {
-            view.drawHeader(text, x + 5, 17);
-        }
+		function drawHeader(x, text) {
+			view.drawHeader(text, x + 5, 17);
+		}
 
-        function moveByDragLength() {
-            var steps;
-            if (offset + dragLength <= 0) {
-                steps = parseInt(Math.abs(dragLength) / stepWidth) + ((dragLength % stepWidth) == 0 ? 0 : 1);
-                offset += dragLength + stepWidth * steps;
-                period.shift(steps);
-            }
-            else if (offset + dragLength >= stepWidth) {
-                steps = parseInt((offset + dragLength) / stepWidth);
-                offset = (offset + dragLength) % stepWidth;
-                period.shift(steps * -1);
-            }
-            else {
-                offset += dragLength;
-            }
-        }
+		function moveByDragLength() {
+			var steps;
+			if (offset + dragLength <= 0) {
+				steps = parseInt(Math.abs(dragLength) / stepWidth) + ((dragLength % stepWidth) == 0 ? 0 : 1);
+				offset += dragLength + stepWidth * steps;
+				period.shift(steps);
+			}
+			else if (offset + dragLength >= stepWidth) {
+				steps = parseInt((offset + dragLength) / stepWidth);
+				offset = (offset + dragLength) % stepWidth;
+				period.shift(steps * -1);
+			}
+			else {
+				offset += dragLength;
+			}
+		}
 
-        function dragStarted(x) {
-            isDown = true;
-            setPrev = true;
-            prevX = x;
-        }
+		function dragStarted(x) {
+			isDown = true;
+			setPrev = true;
+			prevX = x;
+		}
 
-        function dragging(x) {
-            if (isDown) {
-                dragLength = x - prevX;
-                prevX = x;
-                if (setPrev) prevLength = dragLength;
-                moveByDragLength();
-                drawTimeLine();
-            }
-        }
+		function dragging(x) {
+			if (isDown) {
+				dragLength = x - prevX;
+				prevX = x;
+				if (setPrev) prevLength = dragLength;
+				moveByDragLength();
+				drawTimeLine();
+			}
+		}
 
-        function dragStopped(x) {
-            if (isDown) {
-                setPrev = false;
-                dragging(x);
-                isDown = false;
-                slowAmount = prevLength / slowFactor;
-                window.setTimeout(slowdown, slowFps);
-            }
-        }
+		function dragStopped(x) {
+			if (isDown) {
+				setPrev = false;
+				dragging(x);
+				isDown = false;
+				slowAmount = prevLength / slowFactor;
+				window.setTimeout(slowdown, slowFps);
+			}
+		}
 
-        function slowdown() {
-            prevLength = prevLength - slowAmount;
-            dragLength = prevLength;
-            if (isNaN(dragLength)) return;
-            moveByDragLength();
-            drawTimeLine();
-            if (Math.abs(prevLength) > 5 && !isDown)
-                window.setTimeout(slowdown, slowFps);
-        }
+		function slowdown() {
+			prevLength = prevLength - slowAmount;
+			dragLength = prevLength;
+			if (isNaN(dragLength)) return;
+			moveByDragLength();
+			drawTimeLine();
+			if (Math.abs(prevLength) > 5 && !isDown)
+				window.setTimeout(slowdown, slowFps);
+		}
 
-        function scrolled(e, delta) {
-            var prevZoom = period.getZoomLevel();
-            var direction = delta / Math.abs(delta);
-            if (direction > 0)
-                period.zoomIn();
-            else
-                period.zoomOut();
-            if (prevZoom != period.getZoomLevel()) {
-                calculateStepWidth();
-                dragLength = stepWidth * (e.x / view.getWidth()) * direction * -1;
-                moveByDragLength();
-                drawTimeLine();
-            }
-        }
+		function scrolled(e, delta) {
+			var prevZoom = period.getZoomLevel();
+			var direction = delta / Math.abs(delta);
+			if (direction > 0)
+				period.zoomIn();
+			else
+				period.zoomOut();
+			if (prevZoom != period.getZoomLevel()) {
+				calculateStepWidth();
+				dragLength = stepWidth * (e.x / view.getWidth()) * direction * -1;
+				moveByDragLength();
+				drawTimeLine();
+			}
+		}
 
-        function doubleClicked(e) {
-            var element = parseInt((e.x - offset) / view.getWidth() * period.getZoomLevel());
-            period.zoomTo(element);
-            offset = .5;
-            drawTimeLine();
-        }
-    };
+		function doubleClicked(e) {
+			var element = parseInt((e.x - offset) / view.getWidth() * period.getZoomLevel());
+			period.zoomTo(element);
+			offset = .5;
+			drawTimeLine();
+		}
+	};
 
-    cc.CanvasTimelineView = function (canvasId) {
+	cc.CanvasTimelineView = function (canvasId) {
 
-        var defaultFill = "#000000";
-        var activeFill = "#CCCCFF";
+		var defaultFill = "#000000";
+		var activeFill = "#CCCCFF";
 
-        var jqCanvas = $(canvasId);
-        var canvas = jqCanvas[0];
-        if (!canvas.getContext)
-            throw new Error("Canvas not supported");
-        var ctx = canvas.getContext("2d");
-        var self = this;
+		var jqCanvas = $(canvasId);
+		var canvas = jqCanvas[0];
+		if (!canvas.getContext)
+			throw new Error("Canvas not supported");
+		var ctx = canvas.getContext("2d");
+		var self = this;
 
-        initialize();
+		initialize();
 
-        function initialize() {
-            jqCanvas.mousedown(function (e) { self.onDragStarted(e); });
-            jqCanvas.dblclick(function (e) { self.onDoubleClicked(e); });
-            jqCanvas.mousewheel(function (e, delta) { self.onScroll(e, delta); });
-            $(document).mousemove(function (e) { self.onDragging(e); });
-            $(document).mouseup(function (e) { self.onDragStopped(e); });
-            $(window).resize(function (e) { self.onResized(e); });
+		function initialize() {
+			jqCanvas.mousedown(function (e) { self.onDragStarted(e); });
+			jqCanvas.dblclick(function (e) { self.onDoubleClicked(e); });
+			jqCanvas.mousewheel(function (e, delta) { self.onScroll(e, delta); });
+			$(document).mousemove(function (e) { self.onDragging(e); });
+			$(document).mouseup(function (e) { self.onDragStopped(e); });
+			$(window).resize(function (e) { self.onResized(e); });
 
-            initializeLayout();
-        }
+			initializeLayout();
+		}
 
-        function initializeLayout() {
-            jqCanvas.attr("width", jqCanvas.width());
-            jqCanvas.attr("height", jqCanvas.height());
+		function initializeLayout() {
+			jqCanvas.attr("width", jqCanvas.width());
+			jqCanvas.attr("height", jqCanvas.height());
 
-            ctx.fillStyle = defaultFill;
-            ctx.strokeStyle = "#000000";
-            ctx.lineWidth = 1;
-            ctx.font = "10pt Segoe UI";
-        }
+			ctx.fillStyle = defaultFill;
+			ctx.strokeStyle = "#000000";
+			ctx.lineWidth = 1;
+			ctx.font = "10pt Segoe UI";
+		}
 
-        this.getWidth = function () { return jqCanvas.width(); };
-        this.getHeight = function () { return jqCanvas.height(); };
+		this.getWidth = function () { return jqCanvas.width(); };
+		this.getHeight = function () { return jqCanvas.height(); };
 
-        this.clear = function () {
-            ctx.clearRect(0, 0, this.getWidth(), this.getHeight());
-        };
+		this.clear = function () {
+			ctx.clearRect(0, 0, this.getWidth(), this.getHeight());
+		};
 
-        this.drawLine = function (x1, y1, x2, y2, active, width) {
-            if (active) {
-                ctx.fillStyle = activeFill;
-                ctx.fillRect(x1, 20, width, 25);
-                ctx.fillStyle = defaultFill;
-            }
+		this.drawLine = function (x1, y1, x2, y2, active, width) {
+			if (active) {
+				ctx.fillStyle = activeFill;
+				ctx.fillRect(x1, 20, width, 25);
+				ctx.fillStyle = defaultFill;
+			}
 
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.closePath();
-            ctx.stroke();
-        };
+			ctx.beginPath();
+			ctx.moveTo(x1, y1);
+			ctx.lineTo(x2, y2);
+			ctx.closePath();
+			ctx.stroke();
+		};
 
-        this.drawHeader = function (text, x, y) {
-            ctx.fillText(text, x, y);
-        };
+		this.drawHeader = function (text, x, y) {
+			ctx.fillText(text, x, y);
+		};
 
-        this.drawLabel = function (text, x, y, maxWidth) {
-            var metric = ctx.measureText(text);
-            while (metric.width > maxWidth && text.length >= 0) {
-                text = text.substring(0, text.length - 1);
-                metric = ctx.measureText(text);
-            }
-            if (text.length > 0)
-                ctx.fillText(text, x + (maxWidth - metric.width) / 2, y);
-        };
+		this.drawLabel = function (text, x, y, maxWidth) {
+			var metric = ctx.measureText(text);
+			while (metric.width > maxWidth && text.length >= 0) {
+				text = text.substring(0, text.length - 1);
+				metric = ctx.measureText(text);
+			}
+			if (text.length > 0)
+				ctx.fillText(text, x + (maxWidth - metric.width) / 2, y);
+		};
 
-        this.onResized = function (e) {
-            initializeLayout();
-            this.resized(e);
-        };
+		this.onResized = function (e) {
+			initializeLayout();
+			this.resized(e);
+		};
 
-        this.onDragStarted = function (e) {
-            this.dragStarted(e.pageX);
-        };
+		this.onDragStarted = function (e) {
+			this.dragStarted(e.pageX);
+		};
 
-        this.onDragging = function (e) {
-            this.dragging(e.pageX);
-        };
+		this.onDragging = function (e) {
+			this.dragging(e.pageX);
+		};
 
-        this.onDragStopped = function (e) {
-            this.dragStopped(e.pageX);
-        };
+		this.onDragStopped = function (e) {
+			this.dragStopped(e.pageX);
+		};
 
-        this.onScroll = function (e, delta) {
-            this.scrolled(getPositionInCanvas(e), delta);
-        };
+		this.onScroll = function (e, delta) {
+			this.scrolled(getPositionInCanvas(e), delta);
+		};
 
-        this.onDoubleClicked = function (e) {
-            this.doubleClicked(getPositionInCanvas(e));
-        };
+		this.onDoubleClicked = function (e) {
+			this.doubleClicked(getPositionInCanvas(e));
+		};
 
-        function getPositionInCanvas(e) {
-            return {
-                x: e.pageX - $(canvas).offset().left,
-                y: e.pageY - $(canvas).offset().top
-            };
-        }
-    };
-    /*
-    cc.Period = function (options) {
-    var settings = {
-    name: "uninitialized",
-    start: new Date(),
-    minZoom: 1,
-    maxZoom: 2,
-    zoomLevel: 0,
-    outerView: null
-    };
+		function getPositionInCanvas(e) {
+			return {
+				x: e.pageX - $(canvas).offset().left,
+				y: e.pageY - $(canvas).offset().top
+			};
+		}
+	};
+	/*
+	cc.Period = function (options) {
+	var settings = {
+	name: "uninitialized",
+	start: new Date(),
+	minZoom: 1,
+	maxZoom: 2,
+	zoomLevel: 0,
+	outerView: null
+	};
 
-    $.extend(settings, options);
+	$.extend(settings, options);
 
-    this.getName = function () {
-    return settings.name;
-    };
+	this.getName = function () {
+	return settings.name;
+	};
 
-    this.getZoomLevel = function () {
-    return settings.zoomLevel;
-    };
+	this.getZoomLevel = function () {
+	return settings.zoomLevel;
+	};
 
-    this.getStart = function () {
-    return settings.start;
-    };
+	this.getStart = function () {
+	return settings.start;
+	};
 
-    this.getEnd = function () {
-    return settings.getEnd(settings);
-    };
+	this.getEnd = function () {
+	return settings.getEnd(settings);
+	};
 
-    this.shift = function (value) {
-    settings.shift(settings.start, value);
-    };
+	this.shift = function (value) {
+	settings.shift(settings.start, value);
+	};
 
-    this.getView = function () {
-    return settings.getView(settings);
-    };
+	this.getView = function () {
+	return settings.getView(settings);
+	};
 
-    this.getViewStart = function () {
-    return settings.getViewStart(settings);
-    };
+	this.getViewStart = function () {
+	return settings.getViewStart(settings);
+	};
 
-    this.zoomIn = function () {
-    if (settings.zoomLevel > settings.minZoom)
-    settings.zoomLevel--;
-    else if (settings.innerView != null)
-    settings = settings.innerView(settings.start);
-    };
+	this.zoomIn = function () {
+	if (settings.zoomLevel > settings.minZoom)
+	settings.zoomLevel--;
+	else if (settings.innerView != null)
+	settings = settings.innerView(settings.start);
+	};
 
-    this.zoomOut = function () {
-    if (settings.zoomLevel < settings.maxZoom)
-    settings.zoomLevel++;
-    else if (settings.outerView != null)
-    settings = settings.outerView(settings.start);
-    };
+	this.zoomOut = function () {
+	if (settings.zoomLevel < settings.maxZoom)
+	settings.zoomLevel++;
+	else if (settings.outerView != null)
+	settings = settings.outerView(settings.start);
+	};
 
-    this.zoomTo = function (element) {
-    settings = settings.zoomTo(settings, element);
-    };
-    };
+	this.zoomTo = function (element) {
+	settings = settings.zoomTo(settings, element);
+	};
+	};
 
-    cc.Day = function () {
-    return {
-    name: "Day",
-    start: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()),
-    zoomLevel: 30,
-    minZoom: 1,
-    maxZoom: 30,
-    getEnd: function (settings) {
-    var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
-    date.setDate(date.getDate() + settings.zoomLevel);
-    date.setMilliseconds(-1);
-    return date;
-    },
-    outerView: function (currentStart) {
-    return $.extend(cc.Month(), {
-    start: new Date(currentStart.getFullYear(), currentStart.getMonth(), 1),
-    zoomLevel: 1
-    });
-    },
-    shift: function (start, value) {
-    start.setDate(start.getDate() + value);
-    },
-    getViewStart: function (settings) {
-    var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
-    date.setDate(date.getDate() - 1);
-    return date;
-    },
-    getView: function (settings) {
-    var view = [];
-    view.StartHeader = cc.MonthNames[settings.start.getMonth()] + " " + settings.start.getFullYear();
-    var date = settings.getViewStart(settings);
-    for (var i = 0; i < settings.zoomLevel + 1; i++) {
-    view[i] = {
-    Header: date.getDate() == 1 ? cc.MonthNames[date.getMonth()] + " " + date.getFullYear() : null,
-    Label: date.getDate().toString(),
-    Subheader: date.getDay() == 1,
-    Active: new Date().toDateString() == date.toDateString()
-    };
-    date.setDate(date.getDate() + 1);
-    }
-    return view;
-    },
-    zoomTo: function (settings, element) {
-    settings.start.setDate(settings.start.getDate() + element);
-    settings.zoomLevel = 1;
-    return settings;
-    }
-    };
-    };
+	cc.Day = function () {
+	return {
+	name: "Day",
+	start: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()),
+	zoomLevel: 30,
+	minZoom: 1,
+	maxZoom: 30,
+	getEnd: function (settings) {
+	var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
+	date.setDate(date.getDate() + settings.zoomLevel);
+	date.setMilliseconds(-1);
+	return date;
+	},
+	outerView: function (currentStart) {
+	return $.extend(cc.Month(), {
+	start: new Date(currentStart.getFullYear(), currentStart.getMonth(), 1),
+	zoomLevel: 1
+	});
+	},
+	shift: function (start, value) {
+	start.setDate(start.getDate() + value);
+	},
+	getViewStart: function (settings) {
+	var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
+	date.setDate(date.getDate() - 1);
+	return date;
+	},
+	getView: function (settings) {
+	var view = [];
+	view.StartHeader = cc.MonthNames[settings.start.getMonth()] + " " + settings.start.getFullYear();
+	var date = settings.getViewStart(settings);
+	for (var i = 0; i < settings.zoomLevel + 1; i++) {
+	view[i] = {
+	Header: date.getDate() == 1 ? cc.MonthNames[date.getMonth()] + " " + date.getFullYear() : null,
+	Label: date.getDate().toString(),
+	Subheader: date.getDay() == 1,
+	Active: new Date().toDateString() == date.toDateString()
+	};
+	date.setDate(date.getDate() + 1);
+	}
+	return view;
+	},
+	zoomTo: function (settings, element) {
+	settings.start.setDate(settings.start.getDate() + element);
+	settings.zoomLevel = 1;
+	return settings;
+	}
+	};
+	};
 
-    cc.Month = function () {
-    return {
-    name: "Month",
-    start: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    zoomLevel: 12,
-    minZoom: 1,
-    maxZoom: 12,
-    getEnd: function (settings) {
-    var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), 1);
-    date.setMonth(date.getMonth() + settings.zoomLevel);
-    date.setMilliseconds(-1);
-    return date;
-    },
-    innerView: function (currentStart) {
-    return $.extend(cc.Day(), {
-    start: currentStart
-    });
-    },
-    outerView: function (currentStart) {
-    return $.extend(cc.Quarter(), {
-    start: new Date(
-    currentStart.getFullYear(),
-    parseInt(currentStart.getMonth() / 3) * 3,
-    1)
-    });
-    },
-    shift: function (start, value) {
-    start.setMonth(start.getMonth() + value);
-    },
-    getViewStart: function (settings) {
-    var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
-    date.setMonth(date.getMonth() - 1);
-    return date;
-    },
-    getView: function (settings) {
-    var view = [];
-    view.StartHeader = settings.start.getFullYear().toString();
-    var date = settings.getViewStart(settings);
-    for (var i = 0; i < settings.zoomLevel + 1; i++) {
-    view[i] = {
-    Header: date.getMonth() == 0 ? date.getFullYear().toString() : null,
-    Label: cc.MonthNames[date.getMonth()],
-    Subheader: date.getMonth() % 3 == 0,
-    Active: new Date().getFullYear() == date.getFullYear() && new Date().getMonth() == date.getMonth()
-    };
-    date.setMonth(date.getMonth() + 1);
-    }
-    return view;
-    },
-    zoomTo: function (settings, element) {
-    var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
-    date.setMonth(date.getMonth() + element);
-    return settings.innerView(date);
-    }
-    };
-    };
+	cc.Month = function () {
+	return {
+	name: "Month",
+	start: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+	zoomLevel: 12,
+	minZoom: 1,
+	maxZoom: 12,
+	getEnd: function (settings) {
+	var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), 1);
+	date.setMonth(date.getMonth() + settings.zoomLevel);
+	date.setMilliseconds(-1);
+	return date;
+	},
+	innerView: function (currentStart) {
+	return $.extend(cc.Day(), {
+	start: currentStart
+	});
+	},
+	outerView: function (currentStart) {
+	return $.extend(cc.Quarter(), {
+	start: new Date(
+	currentStart.getFullYear(),
+	parseInt(currentStart.getMonth() / 3) * 3,
+	1)
+	});
+	},
+	shift: function (start, value) {
+	start.setMonth(start.getMonth() + value);
+	},
+	getViewStart: function (settings) {
+	var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
+	date.setMonth(date.getMonth() - 1);
+	return date;
+	},
+	getView: function (settings) {
+	var view = [];
+	view.StartHeader = settings.start.getFullYear().toString();
+	var date = settings.getViewStart(settings);
+	for (var i = 0; i < settings.zoomLevel + 1; i++) {
+	view[i] = {
+	Header: date.getMonth() == 0 ? date.getFullYear().toString() : null,
+	Label: cc.MonthNames[date.getMonth()],
+	Subheader: date.getMonth() % 3 == 0,
+	Active: new Date().getFullYear() == date.getFullYear() && new Date().getMonth() == date.getMonth()
+	};
+	date.setMonth(date.getMonth() + 1);
+	}
+	return view;
+	},
+	zoomTo: function (settings, element) {
+	var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
+	date.setMonth(date.getMonth() + element);
+	return settings.innerView(date);
+	}
+	};
+	};
 
-    cc.Quarter = function () {
-    return {
-    name: "Quarter",
-    zoomLevel: 4,
-    minZoom: 4,
-    maxZoom: 8,
-    start: new Date(new Date().getFullYear(), new Date().getMonth() / 4, 1),
-    getEnd: function (settings) {
-    var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
-    date.setMonth(date.getMonth() + 3 * settings.zoomLevel);
-    date.setMilliseconds(-1);
-    return date;
-    },
-    innerView: function (currentStart) {
-    return $.extend(cc.Month(), { start: currentStart });
-    },
-    outerView: function (currentStart) {
-    return $.extend(cc.Year(), { start: new Date(currentStart.getFullYear(), 0, 1), zoomLevel: 2 });
-    },
-    shift: function (start, value) {
-    start.setMonth(start.getMonth() + value * 3);
-    },
-    getViewStart: function (settings) {
-    var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
-    date.setMonth(date.getMonth() - 3);
-    return date;
-    },
-    getView: function (settings) {
-    var view = [];
-    view.StartHeader = settings.start.getFullYear().toString();
-    var date = settings.getViewStart(settings);
-    for (var i = 0; i < settings.zoomLevel + 1; i++) {
-    view[i] = {
-    Header: date.getMonth() == 0 ? date.getFullYear() : null,
-    Label: cc.QuarterNames[parseInt(date.getMonth() / 3)],
-    Subheader: false,
-    Active: new Date().getFullYear() == date.getFullYear() && parseInt(new Date().getMonth() / 3) == parseInt(date.getMonth() / 3)
-    };
-    date.setMonth(date.getMonth() + 3);
-    }
-    return view;
-    },
-    zoomTo: function (settings, element) {
-    var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
-    date.setMonth(date.getMonth() + element * 3);
-    return $.extend(settings.innerView(date), { zoomLevel: 3 });
-    }
-    };
-    };
+	cc.Quarter = function () {
+	return {
+	name: "Quarter",
+	zoomLevel: 4,
+	minZoom: 4,
+	maxZoom: 8,
+	start: new Date(new Date().getFullYear(), new Date().getMonth() / 4, 1),
+	getEnd: function (settings) {
+	var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
+	date.setMonth(date.getMonth() + 3 * settings.zoomLevel);
+	date.setMilliseconds(-1);
+	return date;
+	},
+	innerView: function (currentStart) {
+	return $.extend(cc.Month(), { start: currentStart });
+	},
+	outerView: function (currentStart) {
+	return $.extend(cc.Year(), { start: new Date(currentStart.getFullYear(), 0, 1), zoomLevel: 2 });
+	},
+	shift: function (start, value) {
+	start.setMonth(start.getMonth() + value * 3);
+	},
+	getViewStart: function (settings) {
+	var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
+	date.setMonth(date.getMonth() - 3);
+	return date;
+	},
+	getView: function (settings) {
+	var view = [];
+	view.StartHeader = settings.start.getFullYear().toString();
+	var date = settings.getViewStart(settings);
+	for (var i = 0; i < settings.zoomLevel + 1; i++) {
+	view[i] = {
+	Header: date.getMonth() == 0 ? date.getFullYear() : null,
+	Label: cc.QuarterNames[parseInt(date.getMonth() / 3)],
+	Subheader: false,
+	Active: new Date().getFullYear() == date.getFullYear() && parseInt(new Date().getMonth() / 3) == parseInt(date.getMonth() / 3)
+	};
+	date.setMonth(date.getMonth() + 3);
+	}
+	return view;
+	},
+	zoomTo: function (settings, element) {
+	var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
+	date.setMonth(date.getMonth() + element * 3);
+	return $.extend(settings.innerView(date), { zoomLevel: 3 });
+	}
+	};
+	};
 
-    cc.Year = function () {
-    return {
-    name: "Year",
-    zoomLevel: 2,
-    minZoom: 2,
-    maxZoom: 10,
-    start: new Date(new Date().getFullYear(), 0, 1),
-    getEnd: function (settings) {
-    var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
-    date.setFullYear(date.getFullYear() + settings.zoomLevel);
-    date.setMilliseconds(-1);
-    return date;
-    },
-    innerView: function (currentStart) {
-    return $.extend(cc.Quarter(), { start: currentStart, zoomLevel: 8 });
-    },
-    shift: function (start, value) {
-    start.setFullYear(start.getFullYear() + value);
-    },
-    getViewStart: function (settings) {
-    var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
-    date.setFullYear(date.getFullYear() - 1);
-    return date;
-    },
-    getView: function (settings) {
-    var view = [];
-    view.StartHeader = null;
-    var date = settings.getViewStart(settings);
-    for (var i = 0; i < settings.zoomLevel + 1; i++) {
-    view[i] = {
-    Header: null,
-    Label: date.getFullYear().toString(),
-    Subheader: false,
-    Active: new Date().getFullYear() == date.getFullYear()
-    };
-    date.setFullYear(date.getFullYear() + 1);
-    }
-    return view;
-    },
-    zoomTo: function (settings, element) {
-    var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
-    date.setFullYear(date.getFullYear() + element);
-    return $.extend(settings.innerView(date), { zoomLevel: 4 });
-    }
-    };
-    };*/
+	cc.Year = function () {
+	return {
+	name: "Year",
+	zoomLevel: 2,
+	minZoom: 2,
+	maxZoom: 10,
+	start: new Date(new Date().getFullYear(), 0, 1),
+	getEnd: function (settings) {
+	var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
+	date.setFullYear(date.getFullYear() + settings.zoomLevel);
+	date.setMilliseconds(-1);
+	return date;
+	},
+	innerView: function (currentStart) {
+	return $.extend(cc.Quarter(), { start: currentStart, zoomLevel: 8 });
+	},
+	shift: function (start, value) {
+	start.setFullYear(start.getFullYear() + value);
+	},
+	getViewStart: function (settings) {
+	var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
+	date.setFullYear(date.getFullYear() - 1);
+	return date;
+	},
+	getView: function (settings) {
+	var view = [];
+	view.StartHeader = null;
+	var date = settings.getViewStart(settings);
+	for (var i = 0; i < settings.zoomLevel + 1; i++) {
+	view[i] = {
+	Header: null,
+	Label: date.getFullYear().toString(),
+	Subheader: false,
+	Active: new Date().getFullYear() == date.getFullYear()
+	};
+	date.setFullYear(date.getFullYear() + 1);
+	}
+	return view;
+	},
+	zoomTo: function (settings, element) {
+	var date = new Date(settings.start.getFullYear(), settings.start.getMonth(), settings.start.getDate());
+	date.setFullYear(date.getFullYear() + element);
+	return $.extend(settings.innerView(date), { zoomLevel: 4 });
+	}
+	};
+	};*/
 
 })(canvascontrols);

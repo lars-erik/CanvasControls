@@ -6,12 +6,12 @@
 			this.board = board;
 			this.treeController = treeCtrl;
 			this.boardController = boardCtrl;
-
+			this.lines = [];
 			tree.on("nodeAdded.cc", this, this._onTreeNodeAdded);
 			tree.on("nodeRemoved.cc", this, this._onTreeNodeRemoved);
 			tree.on("toggled.cc", this, this._onTreeNodeToggled);
 		},
-		
+
 		_addBoardNode: function (treeNode, boardData) {
 			var boardNode = new cc.TimelineBoardNode({
 				start: boardData.start,

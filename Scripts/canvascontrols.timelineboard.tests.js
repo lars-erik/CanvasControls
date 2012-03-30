@@ -97,17 +97,30 @@ test("Mousedown on board raises boardClicked", function () {
 
 });
 test("Mousedown finds correct action", function () {
+	var startOfMonth = new Date();
+	startOfMonth.setDate(1);
+	startOfMonth.setHours(0);
+	startOfMonth.setMinutes(0);
+	startOfMonth.setSeconds(0);
+	
 	var board = new canvascontrols.TimelineBoard();
-	var node1 = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 2, 1, 0, 0, 0), end: new Date(2012, 2, 31, 23, 59, 59) });
-	var node2 = new canvascontrols.TimelineBoardNode({ start: new Date(2012, 3, 1, 0, 0, 0), end: new Date(2012, 4, 30, 23, 59, 59) });
+	var node1 = new canvascontrols.TimelineBoardNode({
+		start: new Date(startOfMonth.getTime()),
+		end: new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 2, 0, 23, 59, 59)
+	});
+	var node2 = new canvascontrols.TimelineBoardNode({
+		start: new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() +2 , 1, 0, 0, 0),
+		end: new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 4, 0, 23, 59, 59)
+	});
+
 	board.add(node1);
 	board.add(node2);
 	board.paint(mock);
 
-	equal(node1.x(), 0.5, node1.x());
-	equal(parseInt(node2.x() * 10) / 10, 85.5, node2.x() + " " + node2.width());
+	equal(parseInt(node1.x() * 10) / 10, -84.5, node1.x());
+	equal(parseInt(node2.x() * 10) / 10, 82.8, node2.x() + " " + node2.width());
 
-	board._raise("mousedown", { offsetX: 2, offsetY: 10, pageX: 2 });
+	board._raise("mousedown", { offsetX: -83, offsetY: 10, pageX: 2 });
 	ok(node1._isMouseDown);
 	ok(node1._dragHandler === node1._resizeLeft);
 	node1._raise("mousemove", {});
@@ -122,7 +135,7 @@ test("Mousedown finds correct action", function () {
 
 	node1._isMouseDown = false;
 	node2._isMouseDown = false;
-	
+
 	board._raise("mousedown", { offsetX: 450, offsetY: 10, pageX: 22 });
 	ok(!node1._isMouseDown);
 	ok(!node2._isMouseDown);
