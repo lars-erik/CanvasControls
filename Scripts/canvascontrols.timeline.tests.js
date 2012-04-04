@@ -119,6 +119,8 @@ test("Dragging steps are calculated correctly", function() {
 
     var steps = timeline._moveByDragLength(200, { offsetX: 10, offsetY: 10 });
     equal(2, steps);
+    steps = timeline._moveByDragLength(-200, { offsetX: 10, offsetY: 10 });
+    equal(2, steps);
 });
 
 test("Timeline period view sizes are correct", function () {
@@ -138,14 +140,49 @@ test("Timeline draws lines on correct locations", function () {
     equal(mock.calls.length, 13);
     
     // Todo: Calculate the correct values for check
-    equal(parseInt(mock.calls[0].args.x), -79);
+    equal(parseInt(mock.calls[0].args.x), -84);
     equal(parseInt(mock.calls[1].args.x), 0);
     
 });
 
-test("TimelineNode color is set correctly", function () {
-    ok(false);
+test("mousemove raises demandRedraw", function () {
+	var timeline = new canvascontrols.Timeline();
+	timeline.paint(mock);
+
+	var demanded = false;
+
+	timeline.on("demandRedraw.cc", {}, function (sender, data) {
+		demanded = true;
+	});
+
+	timeline._raise("mousedown", { offsetX: 10, offsetY: 10, pageX : 10});
+	timeline._raise("mousemove", { offsetX: 11, offsetY: 10 , pageX : 11});
+	timeline._raise("mouseup", { offsetX: 11, offsetY: 10 });
+	ok(demanded);
 });
+
+test("Clicking node sets it selected", function () {
+	var timeline = new canvascontrols.Timeline();
+	timeline.paint(mock);
+
+	timeline._raise("mousedown", { offsetX: 10, offsetY: 10, pageX: 10 });
+	timeline._raise("mouseup", { offsetX: 10, offsetY: 10 });
+	ok(!timeline._children[2]._selected);
+	ok(timeline._children[1]._selected);
+});
+
+test("calling clear will remove selected flags ", function () {
+	var timeline = new canvascontrols.Timeline();
+	timeline.paint(mock);
+
+	timeline._raise("mousedown", { offsetX: 10, offsetY: 10, pageX: 10 });
+	timeline._raise("mouseup", { offsetX: 10, offsetY: 10 });
+	ok(timeline._children[1]._selected);
+
+	timeline._clearSelected();
+	ok(!timeline._children[1]._selected);
+});
+
 
 /*
 var fakeView;
