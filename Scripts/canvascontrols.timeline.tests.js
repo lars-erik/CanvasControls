@@ -81,16 +81,6 @@ test("can clear nodes", function () {
     equal(timeline._children.length, 13);
 });
 
-test("findDateAtCoord returns correct time", function () {
-    var timeline = new canvascontrols.Timeline();
-    timeline.paint(mock);
-    
-    for (var i = 0; i < timeline._children.length; i++) {
-        var child = timeline._children[i];
-        equal(child._date.getMonth(), timeline.findDateAtCoord(child._x + (child._width / 2)).getMonth());
-    }
-});
-
 test("dragging timeline raises", function () {
     var timeline = new canvascontrols.Timeline();
     timeline.paint(mock);
@@ -134,18 +124,18 @@ test("Timeline period view sizes are correct", function () {
 });
 
 test("Timeline draws lines on correct locations", function () {
-    var timeline = new canvascontrols.Timeline(new canvascontrols.Period(new canvascontrols.Month({ start: new Date(2012, 0, 1), zoom: 12 })));
-    mock.logged = ["translate"];
-    timeline.paint(mock);
-    equal(mock.calls.length, 13);
-    
-    // Todo: Calculate the correct values for check
-    equal(parseInt(mock.calls[0].args.x), -84);
-    equal(parseInt(mock.calls[1].args.x), 0);
-    
+	var timeline = new canvascontrols.Timeline(new canvascontrols.Period(new canvascontrols.Month({ start: new Date(2012, 0, 1), zoom: 12 })));
+	mock.logged = ["translate"];
+	timeline.paint(mock);
+	equal(mock.calls.length, 13);
+
+	for (var i = 0; i < timeline._children.length; i++) {
+		var node = timeline._children[i];
+		equal(mock.calls[i].args.x, node.x());
+	}
 });
 
-test("mousemove raises demandRedraw", function () {
+test("mousemove with mousedown raises demandRedraw", function () {
 	var timeline = new canvascontrols.Timeline();
 	timeline.paint(mock);
 
@@ -158,6 +148,7 @@ test("mousemove raises demandRedraw", function () {
 	timeline._raise("mousedown", { offsetX: 10, offsetY: 10, pageX : 10});
 	timeline._raise("mousemove", { offsetX: 11, offsetY: 10 , pageX : 11});
 	timeline._raise("mouseup", { offsetX: 11, offsetY: 10 });
+	
 	ok(demanded);
 });
 
@@ -183,7 +174,58 @@ test("calling clear will remove selected flags ", function () {
 	ok(!timeline._children[1]._selected);
 });
 
+test("findDateAtCoord returns correct date", function () {
+	var timeline = new canvascontrols.Timeline(
+		{ period:
+			new canvascontrols.Period(
+				new canvascontrols.Month({ start: new Date(2012, 0, 1), zoom: 12 })
+			)
+		}
+	);
+	timeline.paint(mock);
+	
+	equal(timeline.findDateAtCoord(-1).getFullYear(), 2011);
+	equal(timeline.findDateAtCoord(-1).getMonth(), 11);
+	equal(timeline.findDateAtCoord(-1).getDate(), 31);
+	
+	equal(timeline.findDateAtCoord(1).getFullYear(), 2012);
+	equal(timeline.findDateAtCoord(1).getMonth(), 0);
+	equal(timeline.findDateAtCoord(1).getDate(), 1);
 
+	equal(timeline.findDateAtCoord(timeline._children[timeline._children.length - 1].x() + 1).getFullYear(), 2012);
+	equal(timeline.findDateAtCoord(timeline._children[timeline._children.length - 1].x() + 1).getMonth(), 11);
+	equal(timeline.findDateAtCoord(timeline._children[timeline._children.length - 1].x() + timeline._children[timeline._children.length - 1].width() - 1).getDate(), 31);
+
+	for (var i = 0; i < timeline._children.length; i++) {
+		var child = timeline._children[i];
+		equal(child._date.getMonth(), timeline.findDateAtCoord(child._x + (child._width / 2)).getMonth());
+	}
+});
+
+test("Mousewheel zooms in and out", function () {
+	var timeline = new canvascontrols.Timeline(
+		{ period:
+			new canvascontrols.Period(
+				new canvascontrols.Month({ start: new Date(2012, 0, 1), zoom: 12 })
+			)
+		}
+	);
+	timeline.paint(mock);
+
+	var periodChanged = false;
+
+	timeline.on("mousewheel", {}, function (sender, data) {
+		periodChanged = true;
+	});
+	
+	timeline._raise("mousewheel", { deltaY: 1 });
+	equal(timeline.getPeriod().periodState._zoomLevel, 11);
+
+	timeline._raise("mousewheel", { deltaY: -1 });
+	equal(timeline.getPeriod().periodState._zoomLevel, 12);
+
+	ok(periodChanged);
+})
 /*
 var fakeView;
 
