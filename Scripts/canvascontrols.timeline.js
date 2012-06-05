@@ -21,7 +21,7 @@
 			this.on("mousewheel", this, this._onScroll);
 			this.on("mousedown", this, this._onMouseDown);
 			this.on("mouseup", this, this._onMouseUp);
-			this.on("mousemove", this, this._onMouseMove);
+			//this.on("mousemove", this, this._onMouseMove);
 			this.on("periodChanged.cc", this, this._onPeriodChange);
 			this.on("keyup keydown", this, this._onKey);
 
@@ -62,6 +62,8 @@
 		},
 		_moveByDragLength: function (length, data) {
 			var child = this._getChild(data);
+			console.log(data);
+			console.log(child);
 			var steps = 0;
 
 			if (this._offset + length <= 0) {
@@ -77,7 +79,7 @@
 			} else {
 				this._offset += length;
 			}
-			this._raise("drag.cc", { parent: this, child: null, offset: this._offset });
+			this._raise("drag.cc", { parent: this, child: null, offset: this._offset, dragLength: length });
 
 			return steps;
 		},
@@ -85,8 +87,10 @@
 
 		},
 		_onMouseMove: function (sender, data) {
+			//console.log(data.offsetX + " " + this.findPositionAtDate(this.findDateAtCoord(data.offsetX)));
 			if (this._isMouseDown) {
 				var length = data.pageX - this._currentX;
+
 				if (Math.abs(length) > 0) {
 					this._currentX = data.pageX;
 					this._moveByDragLength(length, data);
@@ -124,8 +128,18 @@
 			}
 		},
 		_onScroll: function (sender, data) {
+			var pos = data.offsetX;
+			var d = this.findDateAtCoord(pos);
+
+
 			data.deltaY / Math.abs(data.deltaY) > 0 ? this.getPeriod().zoomIn() : this.getPeriod().zoomOut();
+
+			var newPos = this.findPositionAtDate(d);
+			var length = pos - newPos;
+			
+			this._moveByDragLength(length, data);
 			this._raise("periodChanged.cc", { parent: this, child: sender, period: this.getPeriod() });
+
 		},
 		_getChildOffset: function (coords, child) {
 			return {
@@ -216,10 +230,37 @@
 			}
 			return null;
 		},
+		findPositionAtDate: function (d) {
+			var views = this._period.getView();
+			var len = 0;
+			var currentX = this._offset - (this._width * views[0].Proportion);
+			for (var i = 0; i < views.length; i++) {
+				var view = views[i];
+				var stepWidth = this._width * view.Proportion;
+
+				if (view.DateStart.getTime() < d.getTime() && view.DateEnd.getTime() < d.getTime()) {
+					currentX += stepWidth;
+				}
+				if (view.DateStart.getTime() <= d.getTime() && view.DateEnd.getTime() >= d.getTime()) {
+					var span = view.DateEnd.getTime() - view.DateStart.getTime();
+					var startOffset = Math.max(d.getTime() - view.DateStart.getTime(), 0);
+					var frac = startOffset / span;
+					var x = frac * stepWidth;
+
+					currentX += x;
+
+				}
+			}
+
+			return currentX;
+		},
+
 		_onMouseMove: function (sender, data) {
 			this._timeMarker.setCoords(data.offsetX, 30);
 			this._timeMarker.setStr(this._formatDateTime(this.findDateAtCoord(data.offsetX)));
 			this._super(sender, data);
+
+			//console.log(data.offsetX + " " + this.findPositionAtDate(this.findDateAtCoord(data.offsetX)));
 		},
 		_onNodeClick: function (sender, data) {
 			this._clearSelected();
@@ -286,8 +327,8 @@
 			this._context = null;
 			this._selected = false;
 			this._defaultFill = "#000000";
-			this._currentSelectionFill = "#F5DA81";
-			this._activeFill = "#CCCCFF";
+			this._currentSelectionFill = "#FFD073";
+			this._activeFill = "#FFBF40";
 		},
 		getProportion: function () {
 			return this._proportion;

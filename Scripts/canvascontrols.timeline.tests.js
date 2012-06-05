@@ -202,30 +202,31 @@ test("findDateAtCoord returns correct date", function () {
 	}
 });
 
-test("Mousewheel zooms in and out", function () {
+test("Mousewheel zooms in and out", function() {
 	var timeline = new canvascontrols.Timeline(
-		{ period:
-			new canvascontrols.Period(
-				new canvascontrols.Month({ start: new Date(2012, 0, 1), zoom: 12 })
-			)
+		{
+			period:
+				new canvascontrols.Period(
+					new canvascontrols.Month({ start: new Date(2012, 6, 1), zoom: 12 })
+				)
 		}
 	);
 	timeline.paint(mock);
 
 	var periodChanged = false;
 
-	timeline.on("mousewheel", {}, function (sender, data) {
+	timeline.on("mousewheel", { }, function(sender, data) {
 		periodChanged = true;
 	});
-	
-	timeline._raise("mousewheel", { deltaY: 1 });
+
+	timeline._raise("mousewheel", { deltaY: 1, offsetX : 1, offsetY : 1, pageY : 10, pageX : 111 });
 	equal(timeline.getPeriod().periodState._zoomLevel, 11);
 
-	timeline._raise("mousewheel", { deltaY: -1 });
+	timeline._raise("mousewheel", { deltaY: -1, offsetX: 1, offsetY: 1, pageX: 111, pageY: 10 });
 	equal(timeline.getPeriod().periodState._zoomLevel, 12);
 
 	ok(periodChanged);
-})
+});
 /*
 var fakeView;
 
