@@ -19,54 +19,59 @@ module("image control", {
 });
 
 test("can create", function () {
-	var img = new canvascontrols.Image("path");
+	var img = new canvascontrols.Image("img/Green16.png");
 	ok(img instanceof canvascontrols.Shape);
 	ok(img instanceof canvascontrols.Image);
-	ok(img._image instanceof Image);
-	ok(img._image.src.indexOf("path") > -1);
+	ok(img._getSelected() instanceof Image);
+	ok(img._getSelected().src.indexOf("img/Green16.png") > -1);
 });
 
 test("paint does nothing if image not loaded", function () {
-	var img = new canvascontrols.Image("path");
+	var img = new canvascontrols.Image("img/Green16.png");
 	mock.logged = ["drawImage"];
 	img.paint(mock);
 	equal(mock.calls.length, 0);
 });
 
 test("puts image data if image is loaded", function () {
-	var img = new canvascontrols.Image("path");
-	img._loaded = function () { return true; };
+	var img = new canvascontrols.Image("img/Green16.png");
+	img.on("loaded.cc", this, function (s, e) {
+		img.paint(mock);
+		equal(mock.calls.length, 1);
+		equal(mock.calls[0].name, "drawImage");
+		equal(mock.calls[0].args.x, 0);
+		equal(mock.calls[0].args.y, 0);
+		equal(mock.calls[0].args.width, 0);
+		equal(mock.calls[0].args.height, 0);
+	});
+
 	mock.logged = ["drawImage"];
-	img.setPosition(15, 20);
 	img.paint(mock);
-	equal(mock.calls.length, 1);
-	equal(mock.calls[0].name, "drawImage");
-	equal(mock.calls[0].args.x, 0);
-	equal(mock.calls[0].args.y, 0);
-	equal(mock.calls[0].args.width, 0);
-	equal(mock.calls[0].args.height, 0);
+	equal(mock.calls.length, 0);
 });
 
 test("can set width and/or height", function () {
-	var img = new canvascontrols.Image("path");
+	var img = new canvascontrols.Image("img/Green16.png");
 	img.setSize(100, 50);
-	img._loaded = function () { return true; };
 	mock.logged = ["drawImage"];
-	img.paint(mock);
-	equal(mock.calls.length, 1);
-	equal(mock.calls[0].name, "drawImage");
-	equal(mock.calls[0].args.x, 0);
-	equal(mock.calls[0].args.y, 0);
-	equal(mock.calls[0].args.width, 100);
-	equal(mock.calls[0].args.height, 50);
+	img.on("loaded.cc", this, function(s, e) {
+		img.paint(mock);
+		equal(mock.calls.length, 1);
+		equal(mock.calls[0].name, "drawImage");
+		equal(mock.calls[0].args.x, 0);
+		equal(mock.calls[0].args.y, 0);
+		equal(mock.calls[0].args.width, 100);
+		equal(mock.calls[0].args.height, 50);
+	});
 });
 
 test("notifies listeners when image is loaded", function () {
-	var img = new canvascontrols.Image("path");
+	var img = new canvascontrols.Image("img/Green16.png");
 	var event;
 	img.on("loaded.cc", {}, function (s, e) {
 		event = e.type;
+		equal(event, "loaded.cc");
 	});
-	$(img._image).trigger("load");
-	equal(event, "loaded");
+	
+	
 });
