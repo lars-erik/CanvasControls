@@ -49,6 +49,18 @@ test("can add a node to timelineboard", function () {
     ok(board.getShapes()[0] instanceof canvascontrols.TimelineBoardNode);
 });
 
+test("can remove a node from board", function () {
+	var board = new canvascontrols.TimelineBoard();
+	var node = new canvascontrols.TimelineBoardNode();
+	board.add(node);
+	ok(board != null);
+	ok(node != null);
+	equal(board.getShapeCount(), 1);
+	equal(board.getShapes()[0], node);
+	board.remove(node);
+	equal(board.getShapeCount(), 0);
+});
+
 test("TimelineBoard getPeriod returns period", function() {
     var board = new canvascontrols.TimelineBoard();
     ok(board.getPeriod() != null);
@@ -97,39 +109,50 @@ test("Mousedown on board raises boardClicked", function () {
 
 });
 test("Mousedown finds correct action", function () {
-	var startOfMonth = new Date();
+	var startOfMonth = new Date(2012, 2, 1);
 	startOfMonth.setDate(1);
 	startOfMonth.setHours(0);
-	startOfMonth.setMinutes(0);
-	startOfMonth.setSeconds(0);
-	
-	var board = new canvascontrols.TimelineBoard();
+	startOfMonth.setMinutes(1);
+	startOfMonth.setSeconds(1);
+
+	var board = new canvascontrols.TimelineBoard({
+		period: new canvascontrols.Period(
+				new canvascontrols.Month({ start: new Date(2012, 2, 1), zoom: 12 })
+			)
+	}
+	);
+
 	var node1 = new canvascontrols.TimelineBoardNode({
-		start: new Date(startOfMonth.getTime()),
-		end: new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 2, 0, 23, 59, 59)
+		start: new Date(2012, 2, 1),
+		end: new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 2, 0, 23, 59, 59),
+		x: 10,
+		width : 100
 	});
+
 	var node2 = new canvascontrols.TimelineBoardNode({
-		start: new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() +2 , 1, 0, 0, 0),
-		end: new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 4, 0, 23, 59, 59)
+		start: new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 2, 1, 0, 0, 0),
+		end: new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 4, 0, 23, 59, 59),
+		x: 200,
+		width : 100
 	});
 
 	board.add(node1);
 	board.add(node2);
 	board.paint(mock);
+	
+	//equal(parseInt(node1.x() * 10) / 10, 85.4, node1.x());
+	//equal(parseInt(node2.x() * 10) / 10, 167.6, node2.x() + " " + node2.width());
 
-	equal(parseInt(node1.x() * 10) / 10, -84.5, node1.x());
-	equal(parseInt(node2.x() * 10) / 10, 82.8, node2.x() + " " + node2.width());
-
-	board._raise("mousedown", { offsetX: -83, offsetY: 10, pageX: 2 });
+	board._raise("mousedown", { offsetX: node1.x() + 5, offsetY: 10, pageX: 2 });
 	ok(node1._isMouseDown);
 	ok(node1._dragHandler === node1._resizeLeft);
 	node1._raise("mousemove", {});
 
-	board._raise("mousedown", { offsetX: 100, offsetY: 10, pageX: 2 });
+	board._raise("mousedown", { offsetX: node2.x() + 20, offsetY: 10, pageX: 2 });
 	ok(node2._isMouseDown);
 	ok(node2._dragHandler === node2._drag);
 
-	board._raise("mousedown", { offsetX: 250, offsetY: 10, pageX: 22 });
+	board._raise("mousedown", { offsetX: node2.x() + node2.width() - 5, offsetY: 10, pageX: 22 });
 	ok(node2._isMouseDown);
 	ok(node2._dragHandler === node2._resizeRight);
 
@@ -139,7 +162,7 @@ test("Mousedown finds correct action", function () {
 	board._raise("mousedown", { offsetX: 450, offsetY: 10, pageX: 22 });
 	ok(!node1._isMouseDown);
 	ok(!node2._isMouseDown);
-	// TODO: New raise, test hit outside, no action (possibly reset state first)
+	
 });
 /*
 test("Mousemove raises resized event", function () {
