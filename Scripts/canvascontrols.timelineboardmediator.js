@@ -10,8 +10,8 @@
 			timeline.on("demandRedraw.cc nodeClicked.cc", this, this._onTimelineRedrawDemanded);
 			timeline.on("periodChanged.cc", this, this._onPeriodChange);
 			timeline.on("drag.cc", this, this._onTimelineDragged);
-
-			board.on("mousemove", this, this._onMouseMove);
+			
+			//board.on("mousemove", this, this._onMouseMove);
 			board.on("demandRedraw.cc", this, this._onBoardRedrawDemanded);
 			board.on("nodeAdded.cc", this, this._onBoardRedrawDemanded);
 			board.on("nodeRemoved.cc", this, this._onBoardRedrawDemanded);
@@ -29,11 +29,11 @@
 			this.board.setPeriod(data.period);
 			this.boardCanvas.paint();
 		},
-		_onMouseMove: function (sender, data) {
-			this.timeline._raise("mousemove", data);
-		},
+		/*_onMouseMove: function (sender, data) {
+		this.timeline._raise("mousemove", data);
+		},*/
 		_onTimelineDragged: function (sender, data) {
-			this.board.setOffset(data.offset);
+			this.board.setOffset(data.offset, data.dragLength);
 			this.boardCanvas.paint();
 		},
 		_updateY: function () {
@@ -44,4 +44,5 @@
 		}
 
 	});
+
 })(canvascontrols);
