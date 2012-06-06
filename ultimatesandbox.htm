@@ -1,0 +1,458 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script src="Scripts/class.js" type="text/javascript"></script>
+	<script src="Scripts/jquery-1.7.1.js" type="text/javascript"></script>
+	<script src="Scripts/jquery.mousewheel.js" type="text/javascript"></script>
+	<script src="Scripts/jquery.validate.min.js" type="text/javascript"></script>
+	<script src="Scripts/knockout.debug.js" type="text/javascript"></script>
+	<script src="Scripts/knockout.mapping-latest.debug.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.observable.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.shape.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.compositeshape.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.image.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.canvasview.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.dragging.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.markers.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.timeline.tree.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.period.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.timeline.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.timelineboard.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.ajaxqueue.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.treecontroller.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.boardcontroller.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.treeboardmediator.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.timelineboardmediator.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.treeboardmediator.js" type="text/javascript"></script>
+	<script src="Scripts/ActionTracker.js" type="text/javascript"></script>
+	
+	<script src="Scripts/treemockdatasource.js" type="text/javascript"></script>
+	<script src="Scripts/boardmockdatasource.js" type="text/javascript"></script>
+	<!--
+	<script src="Scripts/mp.javascriptui.js" type="text/javascript"></script>
+	<script src="Scripts/marketingplan.js" type="text/javascript"></script>
+	
+	<script src="Scripts/marketingplan.initiativedatasource.js" type="text/javascript"></script>
+	<script src="Scripts/marketingplan.goaldatasource.js" type="text/javascript"></script>-->
+	<style type="text/css">
+		body {
+		margin: 0px;
+		padding: 0px;
+		
+	}
+	.controls {
+		position: relative;
+		width: 100%;
+		height: 50px;
+		background: #FFF0BF;
+		border-bottom: 1px solid #888;
+		
+	}
+	.ctrlslot {
+		display: inline-block;
+		padding: 5px;
+		margin: 5px;
+		border-right: 1px solid #888;
+	}
+	.menu
+	{
+		position: absolute;
+		width: 100px;
+		height: 100px;
+		border: 1px solid black;
+		background-color: #ECECEC;
+		display: none;
+	}
+	.wrapper
+	{
+		position: relative;
+		
+	}
+	.container
+	{
+		position: absolute;
+		left: 0px;
+		top: 5px;
+		right: 0px;
+		background-color: #FFE17F;
+		-moz-box-shadow: 0 0 3px 5px #888;
+		-webkit-box-shadow: 0 0 3px 5px #888;
+		box-shadow: 0 0 5px 3px #888;
+		border: 1px solid #666;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-o-user-select: none;
+		-khtml-user-select: none;
+		user-select: none;
+		
+	}
+	 
+	.timeline
+	{
+		position: absolute;
+		width: 100%;
+		height: 45px;
+		left: 200px;
+		border-bottom: 1px solid #000;
+		background-color: #FFF0BF;
+		
+	}
+	.timelineMarkers
+	{
+		position: absolute;
+		width: 100%;
+		height: 45px;
+		left: 200px;
+	}
+	
+	.board
+	{
+		position: absolute;
+		width: 100%;
+		left: 200px;
+		top: 0px;
+		
+		background-color: #FFF0BF;
+	}
+	
+	.tree
+	{
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 200px;
+		-moz-box-shadow: 1px 0 5px #AAA;
+		-webkit-box-shadow: 1px 0 5px #AAA;
+		box-shadow: 1px 0 5px #AAA;
+	}
+	.spacer
+	{
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 200px;
+	}
+	.boardContainer
+	{
+		position: absolute;
+		width: 100%;
+		left: 0px;
+		top: 45px;
+		
+		overflow-y: auto;
+		overflow-x: hidden;
+	}
+	.topContainer
+	{
+		position: absolute;
+		width: 100%;
+		left: 0px;
+		top: 0px;
+		height: 300px;
+		overflow-y: auto;
+		overflow-x: hidden;
+	}
+	.boardContainer
+	{
+		overflow-y: auto;
+	}
+	.menu
+	{
+		font-family: Segoe UI;
+		position: absolute;
+		width: 100px;
+		height: 100px;
+		border: 1px solid black;
+		background-color: #ECECEC;
+		display: none;
+	}
+	
+	.menu span
+	{
+		display: block;
+		cursor: pointer;
+	}
+	
+	.menu span:hover
+	{
+		background-color: #E0E0E0;
+	}
+	
+	#testpanel
+	{
+		position: absolute;
+		bottom: 0px;
+	}
+	
+	#goaldialog {
+		display: none;
+	}
+	
+	.transparent {
+		zoom: 1;
+		filter: alpha(opacity=50);
+		opacity: 0.5;
+	}
+	</style>
+</head>
+<body>
+	<div id="controls" class="controls">
+	<div class="ctrlslot">
+		
+		<label for="defaultNodeSizeSelect">Default node size</label>
+		<select id="defaultNodeSizeSelect">
+			<option value="">Board decides</option>
+			<option value="month">Day</option>
+			<option value="month">Month</option>
+			<option value="month">Quarter</option>
+			<option value="month">Year</option>
+		</select>
+	</div>
+	<div class="ctrlslot">		
+		<label for="defaultLabelsOn">Labels on</label>
+		<input type="checkbox" id="defaultLabelsOn"/>			
+	</div>
+	<div class="ctrlslot">		
+		<label for="defaultLampsOn">Lamps on</label>
+		<input type="checkbox" id="defaultLampsOn"/>			
+	</div>
+	<div class="ctrlslot">
+		<label for="defaultSnapToSlot">Snap to slot size</label>
+		<input type="checkbox" id="defaultSnapToSlot"/>
+	</div>
+	<div class="ctrlslot">
+		<label for="defaultSnapToAbove">Snap to goal above</label>
+		<input type="checkbox" id="defaultSnapToAbove"/>
+	</div>
+	
+</div>
+
+<div class="wrapper">
+	<div class="container">
+		<div id="topContainer" class="topContainer">
+			<div class="spacer">
+				Sennep is a color?
+			</div>
+			<canvas id="timeline" class="timeline"></canvas>
+		</div>
+		<div id="boardContainer" class="boardContainer">
+			<canvas id="tree" class="tree" width="200"></canvas>
+			<canvas id="board" class="board"></canvas>
+			<canvas id="dragView" style="position: absolute; width: 100%;"></canvas>
+		</div>
+	</div>
+</div>
+<div id="menu" class="menu">
+	<span id="add">add</span> <span id="remove">remove</span> <span id="rename">rename</span>
+</div>
+<div id="boardmenu" class="menu">
+	<span id="boardmenuadd">add</span> <span id="boardmenuremove">remove</span>
+</div>
+
+	<script type="text/javascript">
+		var console = console || { log: function() {} };
+		var actionTracker = new canvascontrols.ActionTracker();
+		var queue = new canvascontrols.AjaxQueue();
+
+		var timelineCanvasView = new canvascontrols.CanvasView("#timeline");
+		var timeline = new canvascontrols.Timeline();
+		timelineCanvasView.add(timeline);
+
+		var dragView = new canvascontrols.DragView("#dragView");
+
+		var treeCanvasView = new canvascontrols.CanvasView("#tree");
+		var tree = new canvascontrols.TimelineTree();
+		treeCanvasView.add(tree);
+
+		var boardCanvasView = new canvascontrols.CanvasView("#board");
+		var board = new canvascontrols.TimelineBoard();
+		board.setActionTracker(actionTracker);
+		boardCanvasView.add(board);
+
+		var datasource = new canvascontrols.TreeDataSource(queue);
+		var boardDatasource = new canvascontrols.BoardDataSource(queue);
+		var treeController = new canvascontrols.TreeController(tree, datasource);
+		var boardController = new canvascontrols.BoardController(board, boardDatasource);
+		var treeBoardMediator = new canvascontrols.TreeBoardMediator(tree, board, treeController, boardController);
+		var timelineBoardMediator = new canvascontrols.TimelineBoardMediator(timeline, board, timelineCanvasView, boardCanvasView);
+
+		var currentNode;
+
+		setWidths();
+		timelineCanvasView.paint();
+		treeCanvasView.paint();
+		boardCanvasView.paint();
+		setFormItems();
+		$(window).resize(function () {
+			setWidths();
+			timelineCanvasView.paint();
+			treeCanvasView.paint();
+			boardCanvasView.paint();
+		});
+		$(window).mousemove(function (e) {
+
+			$.extend(e, {
+				offsetX: (e.pageX == undefined ? e.originalEvent.pageX : e.pageX) - $("#timeline").offset().left,
+				offsetY: (e.pageY == undefined ? e.originalEvent.pageY : e.pageY) - $("#timeline").offset().top
+			});
+
+			//e.pageX = e.pageX - $("#timeline").offset().left;
+			timeline._raise("mousemove", e);
+
+			$.extend(e, {
+				offsetX: (e.pageX == undefined ? e.originalEvent.pageX : e.pageX) - $("#board").offset().left,
+				offsetY: (e.pageY == undefined ? e.originalEvent.pageY : e.pageY) - $("#board").offset().top
+			});
+			board._onMouseMoveExt(this, e);
+		});
+		treeController.load();
+
+		timeline.on("periodChanged.cc", {}, function (sender, data) {
+			timelineCanvasView.paint();
+			board.setPeriod(data.period);
+			boardCanvasView.paint();
+		});
+
+		timeline.on("demandRedraw.cc nodeClicked.cc", {}, function () {
+			timelineCanvasView.paint();
+			boardCanvasView.paint();
+		});
+
+		tree.on("nodeAdded.cc toggled.cc", {}, function () {
+			treeCanvasView.paint();
+		});
+		treeCanvasView.on("contextmenu", {}, function (s, e) {
+			$("#menu").hide();
+			if (e.handlers[0] instanceof canvascontrols.CanvasView)
+				currentNode = tree;
+			else
+				currentNode = e.handlers[0];
+			$("#menu").css("left", e.pageX);
+			$("#menu").css("top", e.pageY);
+			$("#menu").show();
+			e.preventDefault();
+		});
+
+		$(document.body).click(function (e) {
+			if (e.srcElement != $("#menu")[0])
+				$("#menu").hide();
+
+			if (e.srcElement != $("#boardmenu")[0])
+				$("#boardmenu").hide();
+		});
+
+		$("#add").click(function () {
+			treeController.addTo(currentNode);
+			$("#menu").hide();
+		});
+
+		$("#remove").click(function () {
+			if (currentNode instanceof canvascontrols.TimelineTreeNode) {
+				currentNode.parent().remove(currentNode);
+			}
+			$("#menu").hide();
+		});
+
+		$("#rename").click(function () {
+			if (currentNode instanceof canvascontrols.TimelineTreeNode) {
+				currentNode.edit();
+			}
+			$("#menu").hide();
+		});
+		var currentBoardItem = null;
+		var currentTreeItem = null;
+		var currentX = 0;
+
+		boardCanvasView.on("contextmenu", {}, function (s, e) {
+			$("#boardmenu").hide();
+			currentTreeItem = tree.findShapeAt(e, true);
+			currentX = e.offsetX;
+			if (e.handlers[0] instanceof canvascontrols.TimelineBoardNode) {
+				currentBoardItem = e.handlers[0];
+				$("#boardmenuadd").css("color", "#ccc");
+				$("#boardmenuremove").css("color", "#000");
+			} else {
+				currentBoardItem = board;
+				$("#boardmenuadd").css("color", "#000");
+				$("#boardmenuremove").css("color", "#ccc");
+			}
+			$("#boardmenu").css("left", e.pageX);
+			$("#boardmenu").css("top", e.pageY);
+			$("#boardmenu").show();
+			e.preventDefault();
+		});
+
+		$("#boardmenuadd").click(function (e) {
+			if (currentBoardItem != null && currentTreeItem != null) {
+
+				//var newNode = new canvascontrols.TimelineBoardNode({
+				//	start: new Date(d.getFullYear(), d.getMonth(), 1),
+				//	end: new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59),
+				//	y: currentTreeItem.globalY(),
+				//	height: currentTreeItem._boxHeight,
+				//	valid: false
+				//});
+				//newNode.treeNode = currentTreeItem;
+
+				//board.add(newNode);
+				boardController.addBoardNodeWithTree(currentX, currentTreeItem);
+			}
+			$("#boardmenu").hide();
+		});
+
+		$("#boardmenuremove").click(function (e) {
+			if (currentBoardItem != null) {
+				currentBoardItem.tellDataSource = true;
+				board.remove(currentBoardItem);
+			}
+			$("#boardmenu").hide();
+		});
+	
+		function setWidths() {
+			//$(document.body).height($(window).height() - 50);
+			$(".container").height($(window).height() - 80);
+			$("#boardContainer").height($(".container").height() - 35);
+			$("#tree").height($("#boardContainer").height() - 10);
+			$("#board").height($("#boardContainer").height() - 10);
+			$("#dragView").height($(window).height() - 60);
+
+			$("#timeline").css("width", $("#timeline").parent().width() - $("#timeline").position().left);
+			$("#board").css("width", $("#board").parent().width() - $("#board").position().left);
+
+			tree._width = $("#tree").width();
+			tree._height = $("#tree").height();
+
+			board._width = $("#board").width();
+			board._height = $("#board").height();
+		}
+
+		function popError(jqXHR, textStatus, errorThrown) {
+			alert(errorThrown);
+		}
+
+		function setFormItems() {
+			$("#defaultLabelsOn").prop('checked', true);
+			$("#defaultLampsOn").prop('checked', true);
+
+			$("#defaultLampsOn").change(function () {
+				board.setLampsOn($(this).prop('checked'));
+			});
+			$("#defaultLabelsOn").change(function () {
+				board.setLabelsOn($(this).prop('checked'));
+			});
+			$("#defaultSnapToAbove").change(function () {
+				board.setSnapToAbove($(this).prop('checked'));
+			});
+		}
+		// For IE
+		if (console.debug == undefined) {
+			console.debug = function (v) {
+				console.log(v);
+			};
+		}
+	</script>
+
+</body>
+</html>

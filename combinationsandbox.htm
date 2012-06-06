@@ -13,8 +13,9 @@
 	<script src="Scripts/canvascontrols.canvasview.js" type="text/javascript"></script>
 	<script src="Scripts/canvascontrols.dragging.js" type="text/javascript"></script>
     <script src="Scripts/canvascontrols.timeline.tree.js" type="text/javascript"></script>
-    <script src="Scripts/canvascontrols.period.js" type="text/javascript"></script>
-    <script src="Scripts/canvascontrols.markers.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.period.js" type="text/javascript"></script>
+	<script src="Scripts/canvascontrols.markers.js" type="text/javascript"></script>
+    <script src="Scripts/canvascontrols.image.js" type="text/javascript"></script>
     <script src="Scripts/canvascontrols.timeline.js" type="text/javascript"></script>
     <script src="Scripts/canvascontrols.timelineboard.js" type="text/javascript"></script>
 
@@ -217,7 +218,7 @@
 
             });
             
-            for (var i = 0; i < model.length; i++ ) {
+            /*for (var i = 0; i < model.length; i++ ) {
                 var entry = model[i];
                 var treeNode = new canvascontrols.TimelineTreeNode({ label: entry.name });
                 
@@ -229,7 +230,7 @@
                 }
                 tree.add(treeNode);
             }
-
+			*/
 
             timeline.on("periodChanged.cc", {}, function (sender, data) {
                 timelineCanvasView.paint();
