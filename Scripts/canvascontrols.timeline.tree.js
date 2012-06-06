@@ -9,6 +9,7 @@
 			node.setPosition(this._childXPadding(), this._childYPadding() + this._getChildHeight());
 			node.on("toggled.cc nodeAdded.cc nodeRemoved.cc", this, this._childEvent);
 			node.on("renamed.cc", this, this._childEvent);
+			
 			node._parent = this;
 			node._state = "new";
 			this._hasChildren = true;
