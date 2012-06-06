@@ -49,6 +49,7 @@
 		paint: function () {
 		},
 		isInBounds: function (coords, yOnly) {
+			
 			return yOnly
 				? coords.offsetY >= 0 && coords.offsetY <= this.height()
 				: coords.offsetX >= 0 && coords.offsetX <= this.width() && coords.offsetY >= 0 && coords.offsetY <= this.height();
